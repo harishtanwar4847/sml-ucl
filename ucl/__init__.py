@@ -1,5 +1,10 @@
 import frappe
 import ucl
+import random
+import string
+import ucl.exceptions as exceptions
+from datetime import datetime, timedelta
+from traceback import format_exc
 
 __version__ = "0.0.1"
 
@@ -8,6 +13,39 @@ user_token_expiry_map = {
     "Login OTP": 10,
     "Reset Pin OTP": 10,
 }
+
+class ValidationError(Exception):
+    http_status_code = 422
+
+
+class ServerError(Exception):
+    http_status_code = 500
+
+
+class FirebaseError(Exception):
+    pass
+
+
+class FirebaseCredentialsFileNotFoundError(FirebaseError):
+    pass
+
+
+class InvalidFirebaseCredentialsError(FirebaseError):
+    pass
+
+
+class FirebaseTokensNotProvidedError(FirebaseError):
+    pass
+
+
+class FirebaseDataNotProvidedError(FirebaseError):
+    pass
+
+def validate_http_method(*methods):
+	if frappe.request:
+		if frappe.request.method.upper() not in [method.upper() for method in methods]:
+			raise exceptions.MethodNotAllowedException
+
 
 def create_user_access_token(user_name):
 	user_details = frappe.get_doc('User', user_name)
@@ -46,7 +84,7 @@ def create_user(first_name, last_name, mobile, email, tester):
 
         return user
     except Exception as e:
-        raise ucl.exceptions.APIException(message=str(e))
+        raise exceptions.APIException(message=str(e))
     
 
 def __user(input=None):
@@ -56,10 +94,31 @@ def __user(input=None):
     res = frappe.get_all("User", or_filters={"email": input, "username": input})
 
     if len((res)) == 0:
-        raise ucl.exceptions.UserNotFoundException
+        raise exceptions.UserNotFoundException
 
     return frappe.get_doc("User", res[0].name)
     
+def random_token(length=10, is_numeric=False):
+
+    if is_numeric:
+        sample_str = "".join((random.choice(string.digits) for i in range(length)))
+    else:
+        letters_count = random.randrange(length)
+        digits_count = length - letters_count
+
+        sample_str = "".join(
+            (random.choice(string.ascii_letters) for i in range(letters_count))
+        )
+        sample_str += "".join(
+            (random.choice(string.digits) for i in range(digits_count))
+        )
+
+    # Convert string to list and shuffle it to mix letters and digits
+    sample_list = list(sample_str)
+    random.shuffle(sample_list)
+    final_string = "".join(sample_list)
+    return final_string
+
 
 def token_mark_as_used(token):
     if token.used == 0:
@@ -123,3 +182,99 @@ def add_firebase_token(firebase_token, app_version_platform, user=None):
         token_type="Firebase Token",
         app_version_platform=app_version_platform,
     )
+
+def appErrorLog(title, error):
+    d = frappe.get_doc(
+        {
+            "doctype": "Error Log",
+            "title": str("User:") + str(title + " " + "App Error"),
+            "error": format_exc(),
+        }
+    )
+    d = d.insert(ignore_permissions=True)
+    return d
+
+
+def generateResponse(is_success=True, status=200, message=None, data={}, error=None):
+    response = {}
+    if is_success:
+        response["status"] = int(status)
+        response["message"] = message
+        response["data"] = data
+    else:
+        appErrorLog(frappe.session.user, str(error))
+        response["status"] = 500
+        response["message"] = message or "Something Went Wrong"
+        response["data"] = data
+    return response
+
+
+def log_api_error(mess=""):
+    try:
+        """
+        Log API error to Error Log
+
+        This method should be called before API responds the HTTP status code
+        """
+
+        # AI ALERT:
+        # the title and message may be swapped
+        # the better API for this is log_error(title, message), and used in many cases this way
+        # this hack tries to be smart about whats a title (single line ;-)) and fixes it
+        request_parameters = frappe.local.form_dict
+        headers = {k: v for k, v in frappe.local.request.headers.items()}
+        customer = frappe.get_all("Loan Customer", filters={"user": __user().name})
+
+        if len(customer) == 0:
+            message = "Request Parameters : {}\n\nHeaders : {}".format(
+                str(request_parameters), str(headers)
+            )
+        else:
+            message = (
+                "Customer ID : {}\n\nRequest Parameters : {}\n\nHeaders : {}".format(
+                    customer[0].name, str(request_parameters), str(headers)
+                )
+            )
+
+        title = (
+            request_parameters.get("cmd").split(".")[-1].replace("_", " ").title()
+            + " API Error"
+        )
+
+        error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n" + message
+        log = frappe.get_doc(
+            dict(doctype="API Error Log", error=frappe.as_unicode(error), method=title)
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        return log
+
+    except Exception:
+        frappe.log_error(
+            message=frappe.get_traceback(),
+            title=_("API Error Log Error"),
+        )
+
+
+def random_token(length=10, is_numeric=False):
+    import random
+    import string
+
+    if is_numeric:
+        sample_str = "".join((random.choice(string.digits) for i in range(length)))
+    else:
+        letters_count = random.randrange(length)
+        digits_count = length - letters_count
+
+        sample_str = "".join(
+            (random.choice(string.ascii_letters) for i in range(letters_count))
+        )
+        sample_str += "".join(
+            (random.choice(string.digits) for i in range(digits_count))
+        )
+
+    # Convert string to list and shuffle it to mix letters and digits
+    sample_list = list(sample_str)
+    random.shuffle(sample_list)
+    final_string = "".join(sample_list)
+    return final_string

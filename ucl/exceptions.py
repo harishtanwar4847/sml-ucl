@@ -105,3 +105,8 @@ class RespondWithFailureException(APIException):
     http_status_code = 500
     message = frappe._("Something went wrong")
     save_error_log = False
+
+class MethodNotAllowedException(APIException):
+	http_status_code = 405
+	message = frappe._('Method not allowed')
+	save_error_log = False
