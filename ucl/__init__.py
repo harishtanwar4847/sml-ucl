@@ -252,7 +252,7 @@ def log_api_error(mess=""):
     except Exception:
         frappe.log_error(
             message=frappe.get_traceback(),
-            title=_("API Error Log Error"),
+            title=frappe._("API Error Log Error"),
         )
 
 
