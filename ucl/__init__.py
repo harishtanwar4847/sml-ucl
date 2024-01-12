@@ -1,20 +1,23 @@
 import json
 import os
 import frappe
+from frappe import _
 import ucl
 import random
+import re
 import string
 import ucl.exceptions as exceptions
 from datetime import datetime, timedelta
 from frappe import _
 from traceback import format_exc
+from .exceptions import *
 
 __version__ = "0.0.1"
 
 
 user_token_expiry_map = {
-    "Login OTP": 10,
-    "Reset Pin OTP": 10,
+    "OTP": 10,
+    "Forgot Pin OTP": 10,
 }
 
 class ValidationError(Exception):
@@ -44,10 +47,45 @@ class FirebaseTokensNotProvidedError(FirebaseError):
 class FirebaseDataNotProvidedError(FirebaseError):
     pass
 
+from ucl.validator.rules import *
+from validator import validate as validate_
+
+
+def validate(data, rules):
+	valid, valid_data, errors = validate_(data, rules, return_info=True)
+
+	if not valid:
+		from ucl.exceptions import ValidationException
+		raise ValidationException(errors=errors)
+
+	return valid_data
+
 def validate_http_method(*methods):
 	if frappe.request:
 		if frappe.request.method.upper() not in [method.upper() for method in methods]:
-			raise exceptions.MethodNotAllowedException
+			from ucl.exceptions import MethodNotAllowedException
+			raise MethodNotAllowedException
+
+@frappe.whitelist(allow_guest=True)
+def send_otp(entity):
+    try:
+        OTP_CODE = random_token(length=4, is_numeric=True)
+        otp_doc = create_user_token(entity=entity, token=OTP_CODE)
+
+        data = {
+            "otp":frappe.get_doc("User Token", otp_doc).token
+        }
+
+        if not otp_doc:
+            raise ServerError(
+                _("There was some problem while sending OTP. Please try again.")
+            )
+        return ucl.responder.respondWithSuccess(
+                message=frappe._("OTP Sent"), data=data
+            )
+    except Exception as e:
+        generateResponse(is_success=False, error=e)
+        raise
 
 
 def create_user_access_token(user_name):
@@ -94,7 +132,7 @@ def __user(input=None):
     # get session user if input is not provided
     if not input:
         input = frappe.session.user
-    res = frappe.get_all("User", or_filters={"email": input, "username": input})
+    res = frappe.get_all("User", or_filters={"mobile_no": input})
 
     if len((res)) == 0:
         raise exceptions.UserNotFoundException
@@ -121,6 +159,16 @@ def random_token(length=10, is_numeric=False):
     random.shuffle(sample_list)
     final_string = "".join(sample_list)
     return final_string
+
+def verify_user_token(entity, token, token_type):
+    filters = {"entity": entity, "token": token, "token_type": token_type, "used": 0}
+
+    token_name = frappe.db.get_value("User Token", filters, "name")
+
+    if not token_name:
+        raise InvalidUserTokenException("Invalid {}".format(token_type))
+
+    return frappe.get_doc("User Token", token_name)
 
 
 def token_mark_as_used(token):
@@ -258,7 +306,17 @@ def log_api_error(mess=""):
             title=_("API Error Log Error"),
         )
 
+def regex_special_characters(search, regex=None):
+    if regex:
+        regex = regex
+    else:
+        regex = re.compile("[@_!#$%^&*()<>?/\|}{~:`]")
 
+    if regex.search(search) != None:
+        return True
+    else:
+        return False
+    
 def random_token(length=10, is_numeric=False):
     import random
     import string

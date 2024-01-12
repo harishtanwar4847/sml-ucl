@@ -29,7 +29,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Token Type",
-   "options": "OTP\nFirebase Token\nForgot Pin OTP",
+   "options": "OTP\nEmail Verification Token\nFirebase Token\nForgot Pin OTP",
    "read_only": 1,
    "reqd": 1
   },
@@ -81,7 +81,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-11 15:11:42.766479",
+ "modified": "2024-01-12 10:23:35.813316",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "User Token",
