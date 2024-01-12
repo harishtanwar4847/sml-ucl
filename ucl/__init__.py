@@ -1,9 +1,12 @@
+import json
+import os
 import frappe
 import ucl
 import random
 import string
 import ucl.exceptions as exceptions
 from datetime import datetime, timedelta
+from frappe import _
 from traceback import format_exc
 
 __version__ = "0.0.1"
@@ -252,7 +255,7 @@ def log_api_error(mess=""):
     except Exception:
         frappe.log_error(
             message=frappe.get_traceback(),
-            title=frappe._("API Error Log Error"),
+            title=_("API Error Log Error"),
         )
 
 
@@ -278,3 +281,159 @@ def random_token(length=10, is_numeric=False):
     random.shuffle(sample_list)
     final_string = "".join(sample_list)
     return final_string
+
+
+def create_log(log, file_name):
+    try:
+        log_file = frappe.utils.get_files_path("{}.json".format(file_name))
+        logs = None
+        if os.path.exists(log_file):
+            with open(log_file, "r") as f:
+                logs = f.read()
+            f.close()
+        logs = json.loads(logs or "[]")
+        logs.append(log)
+        with open(log_file, "w") as f:
+            f.write(json.dumps(logs))
+        f.close()
+    except json.decoder.JSONDecodeError:
+        log_text_file = (
+            log_file.replace(".json", "") + str(frappe.utils.now_datetime()) + ".txt"
+        ).replace(" ", "-")
+        with open(log_text_file, "w") as txt_f:
+            txt_f.write(logs + "\nLast Log \n" + str(log))
+        txt_f.close()
+        os.remove(log_file)
+        frappe.log_error(
+            message=frappe.get_traceback()
+            + "\n\nFile name -\n{}\n\nLog details -\n{}".format(file_name, str(log)),
+            title="Create Log JSONDecodeError",
+        )
+    except Exception as e:
+        frappe.log_error(
+            message=frappe.get_traceback()
+            + "\n\nFile name -\n{}\n\nLog details -\n{}".format(file_name, str(log)),
+            title="Create Log Error",
+        )
+
+
+def validate_receiver_nos(receiver_list):
+    validated_receiver_list = []
+    for d in receiver_list:
+        # remove invalid character
+        for x in [" ", "-", "(", ")"]:
+            d = d.replace(x, "")
+
+        validated_receiver_list.append(d)
+
+    if not validated_receiver_list:
+        frappe.throw(_("Please enter valid mobile nos"))
+
+    return validated_receiver_list
+
+
+def send_sms(receiver_list, msg, sender_name="", success_msg=True):
+
+    import json
+
+    from six import string_types
+
+    if isinstance(receiver_list, string_types):
+        receiver_list = json.loads(receiver_list)
+        if not isinstance(receiver_list, list):
+            receiver_list = [receiver_list]
+
+    receiver_list = validate_receiver_nos(receiver_list)
+
+    arg = {
+        "receiver_list": receiver_list,
+        "message": frappe.safe_decode(msg).encode("utf-8"),
+        "success_msg": success_msg,
+    }
+
+    if frappe.db.get_value("SMS Settings", None, "sms_gateway_url"):
+        send_via_gateway(arg)
+    else:
+        frappe.msgprint(_("Please Update SMS Settings"))
+
+
+def send_via_gateway(arg):
+    ss = frappe.get_doc("SMS Settings", "SMS Settings")
+    headers = get_headers(ss)
+
+    args = {ss.message_parameter: arg.get("message")}
+    for d in ss.get("parameters"):
+        if not d.header:
+            args[d.parameter] = d.value
+
+    success_list = []
+    for d in arg.get("receiver_list"):
+        args[ss.receiver_parameter] = d
+        status = send_request(ss.sms_gateway_url, args, headers, ss.use_post)
+
+        if 200 <= status < 300:
+            success_list.append(d)
+
+    if len(success_list) > 0:
+        args.update(arg)
+        create_sms_log(args, success_list)
+        if arg.get("success_msg"):
+            frappe.msgprint(
+                _("SMS sent to following numbers: {0}").format(
+                    "\n" + "\n".join(success_list)
+                )
+            )
+
+
+def get_headers(sms_settings=None):
+    if not sms_settings:
+        sms_settings = frappe.get_doc("SMS Settings", "SMS Settings")
+
+    headers = {"Accept": "text/plain, text/html, */*"}
+    for d in sms_settings.get("parameters"):
+        if d.header == 1:
+            headers.update({d.parameter: d.value})
+
+    return headers
+
+
+def send_request(gateway_url, params, headers=None, use_post=False):
+    import requests
+
+    if not headers:
+        headers = get_headers()
+
+    if use_post:
+        response = requests.post(gateway_url, headers=headers, data=params)
+    else:
+        response = requests.get(gateway_url, headers=headers, params=params)
+    # SMS LOG
+    import json
+
+    frappe.logger().info(params)
+    if type(params["sms"]) == bytes:
+        params["sms"] = params["sms"].decode("ascii")
+    log = {
+        "url": gateway_url,
+        "params": params,
+        "response": response.json(),
+    }
+    create_log(log, "sms_log")
+    # SMS LOG end
+    response.raise_for_status()
+    return response.status_code
+
+
+# Create SMS Log
+def create_sms_log(args, sent_to):
+    sl = frappe.new_doc("SMS Log")
+    from frappe.utils import nowdate
+
+    sl.sent_on = nowdate()
+    sl.message = args["message"].decode("utf-8")
+    sl.no_of_requested_sms = len(args["receiver_list"])
+    sl.requested_numbers = "\n".join(args["receiver_list"])
+    sl.no_of_sent_sms = len(sent_to)
+    sl.sent_to = "\n".join(sent_to)
+    sl.flags.ignore_permissions = True
+    sl.save()
