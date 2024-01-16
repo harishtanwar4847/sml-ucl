@@ -1,4 +1,5 @@
 import frappe
+import json
 from frappe import _
 import ucl
 import re
@@ -21,7 +22,7 @@ def verify_email(**kwargs):
             {
                 "mobile": ["required"],
                 "email": ["required"],
-                "is_manual": ["required"],
+                # "is_manual": ["required"],
                 "first_name": ["required"],
                 "last_name": ["required"],
             },
@@ -50,11 +51,11 @@ def verify_email(**kwargs):
                 token=ucl.create_user_access_token(user.name)
             )
         
-        # ucl.create_user_token(
-        #     entity=frappe.session.user,
-        #     token=ucl.random_token(),
-        #     token_type="Email Verification Token",
-        # )
+        ucl.create_user_token(
+            entity=user.email,
+            token=ucl.random_token(),
+            token_type="Email Verification Token",
+        )
 
         return ucl.responder.respondWithSuccess(
                 message=frappe._("User Created Successfully"), data=token
@@ -66,6 +67,50 @@ def verify_email(**kwargs):
     except Exception as e:
         ucl.log_api_error()
         return ucl.generateResponse(is_success=False, error=e)
+    
+
+@frappe.whitelist()
+def resend_verification_email(email):
+    try:
+        user_token = frappe.get_last_doc(
+            "User Token",
+            filters={"entity": email, "token_type": "Email Verification Token"},
+        )
+        if not user_token.used:
+            doc = frappe.get_doc("User", email).as_dict()
+            doc["url"] = frappe.utils.get_url(
+                "/api/method/lms.auth.verify_user?token={}&user={}".format(
+                    user_token.token, email
+                )
+            )
+            frappe.enqueue_doc(
+                "Notification",
+                "User Email Verification",
+                method="send",
+                doc=doc,
+            )
+            frappe.msgprint(
+                msg="Verification email resent Successfully",
+                title="Email Verification",
+                indicator="green",
+            )
+        else:
+            ucl.create_user_token(
+                entity=email,
+                token=ucl.random_token(),
+                token_type="Email Verification Token",
+            )
+            frappe.msgprint(
+                msg="Verification email sent Successfully",
+                title="Email Verification",
+                indicator="green",
+            )
+    except Exception as e:
+        ucl.log_api_error()
+        frappe.log_error(
+            frappe.get_traceback() + "\nResend Email Info:\n" + json.dumps(email),
+            e.args,
+        )
     
 
 
@@ -503,7 +548,7 @@ def login(**kwargs):
                 "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
                 "pin": [ucl.validator.rules.LengthRule(4)],
                 "firebase_token": [ucl.validator.rules.RequiredIfPresent("pin")],
-                "accept_terms": "decimal|between:0,1",
+                # "accept_terms": "decimal|between:0,1",
                 "platform": "",
                 "app_version": "",
             },
@@ -527,10 +572,13 @@ def login(**kwargs):
             user = ucl.__user(data.get("mobile"))
         except UserNotFoundException:
             user = None
+            raise ucl.exceptions.UserNotFoundException()
+            
 
         # frappe.db.begin()
         if data.get("pin"):
             try:
+                print(user)
                 frappe.local.login_manager.authenticate(
                     user=user.name, pwd=data.get("pin")
                 )
@@ -613,3 +661,228 @@ def login(**kwargs):
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))
         # raise lms.exceptions.UnauthorizedException(str(e))
+    
+
+@frappe.whitelist(allow_guest=True)
+def get_user_details(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+                "authtoken": ["required"],
+            },
+        )
+
+        res = re.findall(r'\w+', data.get("authtoken"))
+        print(res[1])
+        print(res[2])
+        # if frappe.db.exists("User", "harish.tanwar@atriina.com"):
+        try:
+            if frappe.db.exists("User", {"api_key": res[1]}):
+                print("user exist")
+                user = frappe.get_doc('User',{'api_key': res[1]})
+                print(user)
+                if frappe.db.exists("Partner", {"user_id": user.name}):
+                    partner = frappe.get_doc('Partner',{'user_id': user.name})
+                    print(partner)
+                    return ucl.responder.respondWithSuccess(
+                    message=frappe._("Partner details"), data = "data"
+                )
+                else:
+                    return ucl.responder.respondWithFailure(
+                        message=frappe._("Partner Not Found for existing user")
+                    )
+            else:
+                return ucl.responder.respondWithFailure(
+                    message=frappe._("User Not Found")
+                )
+        except UserNotFoundException:
+            user = None
+            raise ucl.exceptions.UserNotFoundException()
+        # if data.get("firebase_token"):
+        #     # for firebase token "-_:" these characters are excluded from regex string
+        #     reg = ucl.regex_special_characters(
+        #         search=data.get("firebase_token"),
+        #         regex=re.compile("[@!#$%^&*()<>?/\|}{~`]"),
+        #     )
+        #     if reg:
+        #         # return utils.respondWithFailure(
+        #         #     status=422,
+        #         #     message=frappe._("Special Characters not allowed."),
+        #         # )
+        #         raise ucl.exceptions.FailureException(
+        #             _("Special Characters not allowed.")
+        #         )
+
+        # try:except UserNotFoundException:
+            # user = None
+        #     user = ucl.__user(data.get("mobile"))
+        # except UserNotFoundException:
+        #     user = None
+
+        # # frappe.db.begin()
+        # if data.get("pin"):
+        #     try:
+        #         frappe.local.login_manager.authenticate(
+        #             user=user.name, pwd=data.get("pin")
+        #         )
+        #     except frappe.SecurityException as e:
+        #         # raise utils.respondUnauthorized(message=str(e))
+        #         raise ucl.exceptions.UnauthorizedException(str(e))
+        #     except frappe.AuthenticationError as e:
+        #         message = frappe._("Incorrect PIN.")
+        #         invalid_login_attempts = get_login_attempt_tracker(user.name)
+        #         if invalid_login_attempts.login_failed_count > 0:
+        #             message += " {} invalid {}.".format(
+        #                 invalid_login_attempts.login_failed_count,
+        #                 "attempt"
+        #                 if invalid_login_attempts.login_failed_count == 1
+        #                 else "attempts",
+        #             )
+        #         # return utils.respondUnauthorized(message=message)
+        #         raise ucl.exceptions.UnauthorizedException(message)
+
+        #     # customer = lms.__customer(user.name)
+        #     # try:
+        #     #     user_kyc = lms.__user_kyc(user.name)
+        #     # except UserKYCNotFoundException:
+        #     #     user_kyc = {}
+
+        #     # if user_kyc:
+        #     #     user_kyc = lms.user_kyc_hashing(user_kyc)
+
+        #     token = dict(
+        #         token=ucl.create_user_access_token(user.name)
+        #     )
+        #     app_version_platform = ""
+        #     if data.get("app_version") and data.get("platform"):
+        #         app_version_platform = (
+        #             data.get("app_version") + " | " + data.get("platform")
+        #         )
+        #     # lms.add_firebase_token(
+        #     #     data.get("firebase_token"), app_version_platform, user.name
+        #     # )
+        #     # ucl.auth.login_activity(customer)
+        #     return ucl.responder.respondWithSuccess(
+        #         message=frappe._("Logged in Successfully"), data=token
+        #     )
+        # else:
+        #     if not data.get("accept_terms"):
+        #         # return utils.respondUnauthorized(
+        #         #     message=frappe._("Please accept Terms of Use and Privacy Policy.")
+        #         # )
+        #         raise ucl.exceptions.UnauthorizedException(
+        #             _("Please accept Terms of Use and Privacy Policy.")
+        #         )
+
+        #     # save user login consent
+        # #     login_consent_doc = frappe.get_doc(
+        # #         {
+        # #             "doctype": "User Consent",
+        # #             "mobile": data.get("mobile"),
+        # #             "consent": "Login",
+        # #         }
+        # #     )
+        # #     login_consent_doc.insert(ignore_permissions=True)
+
+        # # # check if dummy account
+        # # is_dummy_account = lms.validate_spark_dummy_account(data.get("mobile"))
+
+        # # if not is_dummy_account:
+        # #     lms.create_user_token(
+        # #         entity=data.get("mobile"),
+        # #         token=lms.random_token(length=4, is_numeric=True),
+        # #     )
+
+        # # frappe.db.commit()
+        # # return utils.respondWithSuccess(message=frappe._("OTP Sent"))
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return ucl.responder.respondUnauthorized(message=str(e))
+        # raise lms.exceptions.UnauthorizedException(str(e))
+    
+
+@frappe.whitelist(allow_guest=True)
+def verify_user(token, user):
+    token_document = frappe.db.get_all(
+        "User Token",
+        filters={
+            "entity": user,
+            "token_type": "Email Verification Token",
+            "token": token,
+            # "used": 0,
+        },
+        fields=["*"],
+    )
+
+    url = frappe.utils.get_url("/everify")
+    if token_document:
+        if token_document[0].used == 0:
+            url = frappe.utils.get_url("/everify?success")
+            frappe.db.set_value("User Token", token_document[0].name, "used", 1)
+            usr = frappe.get_doc("User", user)
+            print(usr.full_name)
+            print(usr.mobile_no)
+            print(usr.name)
+            ucl.create_partner(first_name = usr.full_name, mobile = usr.mobile_no, email = usr.name, user = usr.name)
+            # partner = ucl.get_partner(user)
+            # partner.is_email_verified = 1
+            # partner.save(ignore_permissions=True)
+            frappe.db.commit()
+
+        elif token_document[0].used == 1:
+            url = frappe.utils.get_url("/everify?already-verified")
+
+    frappe.local.response["type"] = "redirect"
+    frappe.local.response["location"] = url
+
+    # webbrowser.open(url, new=1)
+    # if len(token_document) == 0:
+    #     return frappe.respond_as_web_page(
+    #         frappe._("Something went wrong"),
+    #         frappe._("Your token is invalid."),
+    #         indicator_color="red",
+    #     )
+
+    # if (
+    #     len(token_document) > 0
+    #     and token_document[0].expiry < frappe.utils.now_datetime()
+    # ):
+    #     return frappe.respond_as_web_page(
+    #         frappe._("Something went wrong"),
+    #         frappe._("Verification link has been Expired!"),
+    #         indicator_color="red",
+    #     )
+
+    # frappe.db.set_value("User Token", token_document[0].name, "used", 1)
+    # customer = lms.get_customer(user)
+    # customer.is_email_verified = 1
+    # customer.save(ignore_permissions=True)
+    # frappe.db.commit()
+
+    """changes as per latest email notification list-sent by vinayak - email verification final 2.0"""
+    # doc = frappe.get_doc("User", user)
+
+    # frappe.enqueue_doc("Notification", "User Welcome Email", method="send", doc=doc)
+
+    # mess = frappe._(
+    #     "Dear"
+    #     + " "
+    #     + customer.first_name
+    #     + ",\nYour registration at Spark.Loans was successfull!\nWelcome aboard."
+    # )
+    # mess = frappe._("Welcome aboard. Your registration at Spark.Loans was successfull!")
+    # frappe.enqueue(method=send_sms, receiver_list=[doc.phone], msg=mess)
+
+    # frappe.respond_as_web_page(
+    #     frappe._("Success"),
+    #     frappe._("Your email has been successfully verified."),
+    #     indicator_color="green",
+    # )

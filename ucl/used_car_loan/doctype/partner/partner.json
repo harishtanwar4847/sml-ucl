@@ -1,13 +1,13 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:partner_id",
  "creation": "2024-01-10 17:36:08.556320",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "partner_name",
   "partner_id",
+  "is_email_verified",
   "user_id",
   "status",
   "pan_number",
@@ -45,7 +45,6 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Partner ID",
-   "reqd": 1,
    "unique": 1
   },
   {
@@ -64,8 +63,7 @@
   {
    "fieldname": "pan_number",
    "fieldtype": "Data",
-   "label": "PAN Number",
-   "reqd": 1
+   "label": "PAN Number"
   },
   {
    "fieldname": "first_name",
@@ -157,15 +155,20 @@
    "fieldname": "digital_agreement",
    "fieldtype": "Attach",
    "label": "Digital Agreement"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_email_verified",
+   "fieldtype": "Check",
+   "label": "Email Verified?"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-11 11:05:09.939600",
+ "modified": "2024-01-15 15:26:28.293437",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
- "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

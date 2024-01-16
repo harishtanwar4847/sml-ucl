@@ -71,17 +71,22 @@ def send_otp(entity):
     try:
         OTP_CODE = random_token(length=4, is_numeric=True)
         otp_doc = create_user_token(entity=entity, token=OTP_CODE)
-
-        data = {
-            "otp":frappe.get_doc("User Token", otp_doc).token
-        }
+        print(otp_doc)
+        print(frappe.get_doc("User Token", otp_doc).token)
+        print(frappe.get_doc("User Token", otp_doc).token_type)
 
         if not otp_doc:
             raise ServerError(
                 _("There was some problem while sending OTP. Please try again.")
             )
+        else:
+            otp_name = frappe.get_doc("User Token", otp_doc)
+            otp = otp_name.token
+            token = {
+            "otp":otp
+        }
         return ucl.responder.respondWithSuccess(
-                message=frappe._("OTP Sent"), data=data
+                message=frappe._("OTP Sent"), data=token
             )
     except Exception as e:
         generateResponse(is_success=False, error=e)
@@ -127,6 +132,23 @@ def create_user(first_name, last_name, mobile, email):
     except Exception as e:
         raise exceptions.APIException(message=str(e))
     
+def create_partner(first_name, mobile, email, user):
+    print("Inside create partner")
+    try:
+        partner = frappe.get_doc(
+            {
+                "doctype": "Partner",
+                "email_id": email,
+                "user_id": user,
+                "partner_name": first_name,
+                "mobile_number": mobile
+            }
+        ).insert(ignore_permissions=True)
+
+        return partner
+    except Exception as e:
+        raise exceptions.APIException(message=str(e))
+    
 
 def __user(input=None):
     # get session user if input is not provided
@@ -138,7 +160,25 @@ def __user(input=None):
         raise exceptions.UserNotFoundException
 
     return frappe.get_doc("User", res[0].name)
+
+# def get_user(input, throw=False):
+#     user_data = frappe.db.sql(
+#         """select name from `tabUser` where email=%s or phone=%s""",
+#         (input, input),
+#         as_dict=1,
+#     )
+#     # print("get_user", frappe.as_json(user_data))
+#     if len(user_data) >= 1:
+#         return user_data[0].name
+#     else:
+#         if throw:
+#             raise ValidationError(_("Mobile no. does not exist."))
+#         return False
     
+# def get_partner(entity):
+#     partner_list = frappe.get_all("Partner", filters={"user_id": get_user(entity)})
+#     return frappe.get_doc("Partner", partner_list[0].name)
+
 def random_token(length=10, is_numeric=False):
 
     if is_numeric:
@@ -202,8 +242,8 @@ def create_user_token(entity, token, token_type="OTP", app_version_platform=""):
 
     if app_version_platform:
         doc_data["app_version_platform"] = app_version_platform
-        doc_data["customer_id"] = frappe.db.get_value(
-            "Loan Customer", {"user": entity}, "name"
+        doc_data["partner_id"] = frappe.db.get_value(
+            "Partner", {"user_id": entity}, "name"
         )
 
     user_token = frappe.get_doc(doc_data)
@@ -274,7 +314,7 @@ def log_api_error(mess=""):
         # this hack tries to be smart about whats a title (single line ;-)) and fixes it
         request_parameters = frappe.local.form_dict
         headers = {k: v for k, v in frappe.local.request.headers.items()}
-        customer = frappe.get_all("Loan Customer", filters={"user": __user().name})
+        customer = frappe.get_all("Partner", filters={"user_id": __user().name})
 
         if len(customer) == 0:
             message = "Request Parameters : {}\n\nHeaders : {}".format(
