@@ -48,10 +48,10 @@ class ValidationException(APIException):
 		self.errors = errors_
 		self.data = data
 
-class CustomerNotFoundException(APIException):
+class PartnerNotFoundException(APIException):
     http_status_code = 404
 
-    def __init__(self, message="Customer not found"):
+    def __init__(self, message="Partner not found"):
         self.message = message
 
 

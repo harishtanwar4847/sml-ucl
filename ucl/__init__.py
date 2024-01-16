@@ -535,3 +535,40 @@ def create_sms_log(args, sent_to):
     sl.sent_to = "\n".join(sent_to)
     sl.flags.ignore_permissions = True
     sl.save()
+
+
+def __partner(entity=None):
+    res = frappe.get_all("Partner", filters={"user": __user(entity).name})
+    if len(res) == 0:
+        raise PartnerNotFoundException
+
+    return frappe.get_doc("Partner", res[0].name)
+
+
+def lender_list():
+    res = frappe.get_all("Lender", fields = ["name"])
+    if len(res) == 0:
+        raise NotFoundException
+
+    return list(res.values)
+
+def bank_list():
+    res = frappe.get_all("Bank", fields = ["name"])
+    if len(res) == 0:
+        raise NotFoundException
+
+    return list(res.values)
+
+def pincode_list():
+    res = frappe.get_all("Pincode", fields = ["name"])
+    if len(res) == 0:
+        raise NotFoundException
+
+    return list(res.values)
+
+def employer_list():
+    res = frappe.get_all("Employer", fields = ["name"])
+    if len(res) == 0:
+        raise NotFoundException
+
+    return list(res.values)
