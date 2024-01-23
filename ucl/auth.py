@@ -886,3 +886,22 @@ def verify_user(token, user):
     #     frappe._("Your email has been successfully verified."),
     #     indicator_color="green",
     # )
+
+@frappe.whitelist(allow_guest=True)
+def terms_of_use_nd_privacy_policy():
+    try:
+        ucl.validate_http_method("GET")
+
+        ucl_setting = frappe.get_single("UCL Settings")
+        data = {
+            "terms_of_use": frappe.utils.get_url(ucl_setting.terms_of_use)
+            or "",
+            "privacy_policy": frappe.utils.get_url(
+                ucl_setting.privacy_policy
+            )
+        }
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=data)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
