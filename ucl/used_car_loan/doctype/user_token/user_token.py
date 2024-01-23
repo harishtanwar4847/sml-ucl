@@ -116,7 +116,6 @@ class UserToken(Document):
 
             # frappe.enqueue(method=send_sms, receiver_list=[self.entity], msg=mess)
         if self.token_type == "Email Verification Token":
-            print("Maillllllllllllllllllllllllllllllllllll")
             doc = frappe.get_doc("User", self.entity).as_dict()
             doc["url"] = frappe.utils.get_url(
                 "/api/method/ucl.auth.verify_user?token={}&user={}".format(

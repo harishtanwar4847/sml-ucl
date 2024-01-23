@@ -1,45 +1,29 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2024-01-10 16:43:35.809166",
+ "autoname": "Prompt",
+ "creation": "2024-01-18 16:26:45.653301",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "seen",
-  "method",
-  "error"
+  "consent"
  ],
  "fields": [
   {
-   "default": "0",
-   "fieldname": "seen",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Seen"
-  },
-  {
-   "fieldname": "error",
-   "fieldtype": "Code",
+   "fieldname": "consent",
+   "fieldtype": "Text",
    "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Error",
-   "read_only": 1
-  },
-  {
-   "fieldname": "method",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Title",
-   "read_only": 1
+   "label": "Consent",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-17 13:48:58.400811",
+ "modified": "2024-01-18 16:27:50.953342",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
- "name": "API Error Log",
+ "name": "Consent",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

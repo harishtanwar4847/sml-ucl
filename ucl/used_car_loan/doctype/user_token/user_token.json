@@ -29,7 +29,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Token Type",
-   "options": "OTP\nEmail Verification Token\nFirebase Token\nForgot Pin OTP",
+   "options": "Login OTP\nEmail Verification Token\nFirebase Token\nForgot Pin OTP",
    "read_only": 1,
    "reqd": 1
   },
@@ -55,8 +55,7 @@
   {
    "fieldname": "expiry",
    "fieldtype": "Datetime",
-   "label": "Expiry",
-   "read_only": 1
+   "label": "Expiry"
   },
   {
    "fieldname": "app_version_platform",
@@ -81,7 +80,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-12 10:23:35.813316",
+ "modified": "2024-01-23 12:33:46.353180",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "User Token",

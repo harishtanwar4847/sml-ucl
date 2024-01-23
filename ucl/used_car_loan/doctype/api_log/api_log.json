@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "api_name",
   "request",
   "response",
   "request_time",
@@ -14,27 +15,38 @@
   {
    "fieldname": "request",
    "fieldtype": "Small Text",
-   "label": "Request"
+   "label": "Request",
+   "read_only": 1
   },
   {
    "fieldname": "response",
    "fieldtype": "Small Text",
-   "label": "Response"
+   "label": "Response",
+   "read_only": 1
   },
   {
    "fieldname": "request_time",
    "fieldtype": "Datetime",
-   "label": "Request Time"
+   "label": "Request Time",
+   "read_only": 1
   },
   {
    "fieldname": "response_time",
    "fieldtype": "Datetime",
-   "label": "Response Time"
+   "label": "Response Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "api_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "API Name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-11 10:51:26.484262",
+ "modified": "2024-01-19 11:21:03.073873",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "API Log",
@@ -57,5 +69,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
+ "title_field": "api_name",
  "track_changes": 1
 }

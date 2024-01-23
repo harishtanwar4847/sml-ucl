@@ -7,7 +7,6 @@
  "field_order": [
   "partner_name",
   "partner_id",
-  "is_email_verified",
   "user_id",
   "status",
   "pan_number",
@@ -58,7 +57,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Approved\nRejected"
+   "options": "Pending for Approval\nApproved\nRejected"
   },
   {
    "fieldname": "pan_number",
@@ -155,17 +154,11 @@
    "fieldname": "digital_agreement",
    "fieldtype": "Attach",
    "label": "Digital Agreement"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_email_verified",
-   "fieldtype": "Check",
-   "label": "Email Verified?"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-15 15:26:28.293437",
+ "modified": "2024-01-17 15:17:54.708644",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

@@ -16,7 +16,7 @@ __version__ = "0.0.1"
 
 
 user_token_expiry_map = {
-    "OTP": 10,
+    "Login OTP": 10,
     "Forgot Pin OTP": 10,
 }
 
@@ -67,28 +67,41 @@ def validate_http_method(*methods):
 			raise MethodNotAllowedException
 
 @frappe.whitelist(allow_guest=True)
-def send_otp(entity):
+def send_otp(**kwargs):
     try:
-        OTP_CODE = random_token(length=4, is_numeric=True)
-        otp_doc = create_user_token(entity=entity, token=OTP_CODE)
-        print(otp_doc)
-        print(frappe.get_doc("User Token", otp_doc).token)
-        print(frappe.get_doc("User Token", otp_doc).token_type)
+        print("********")
+        ucl.validate_http_method("POST")
 
-        if not otp_doc:
-            raise ServerError(
-                _("There was some problem while sending OTP. Please try again.")
+        data = ucl.validate(
+            kwargs,
+            {
+                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
+                "token_type": "required",
+            },
+        )
+        if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
+            user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type")})
+            user_token.used = 1
+            user_token.save(ignore_permissions=True)
+        api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
+        create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
+        login_consent_doc = frappe.get_doc(
+                {
+                    "doctype": "User Consent",
+                    "mobile": data.get("mobile"),
+                    "consent": "Login",
+                }
             )
-        else:
-            otp_name = frappe.get_doc("User Token", otp_doc)
-            otp = otp_name.token
-            token = {
-            "otp":otp
-        }
+        login_consent_doc.insert(ignore_permissions=True)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = "OTP Sent"
+        api_log_doc.save(ignore_permissions=True)
+        frappe.db.commit()
         return ucl.responder.respondWithSuccess(
-                message=frappe._("OTP Sent"), data=token
+                message=frappe._("OTP Sent"),
             )
     except Exception as e:
+        log_api_error()
         generateResponse(is_success=False, error=e)
         raise
 
@@ -119,10 +132,9 @@ def create_user(first_name, last_name, mobile, email):
                 "mobile_no": mobile,
                 "send_welcome_email": 0,
                 # "new_password": frappe.mock("password"),
-                # "roles": [
-                #     {"doctype": "Has Role", "role": "Partner"}
-                #     # {"doctype": "Has Role", "role": "Spark Tester"},
-                # ]
+                "roles": [
+                    {"doctype": "Has Role", "role": "Partner"}
+                ]
                 # if tester
                 # else [{"doctype": "Has Role", "role": "Loan Customer"}],
             }
@@ -132,8 +144,18 @@ def create_user(first_name, last_name, mobile, email):
     except Exception as e:
         raise exceptions.APIException(message=str(e))
     
+
+def delete_user(user):
+    if not frappe.db.exists("Partner", {"user_id": user.name}):
+        frappe.db.sql("delete from `tabUser` where name = %s", user.name)
+        frappe.db.commit()
+    else:
+        ucl.responder.respondWithFailure(
+            message=frappe._("Partner already present with this Mobile No. Please use a different Mobile No"),
+        )
+
+    
 def create_partner(first_name, mobile, email, user):
-    print("Inside create partner")
     try:
         partner = frappe.get_doc(
             {
@@ -161,23 +183,6 @@ def __user(input=None):
 
     return frappe.get_doc("User", res[0].name)
 
-# def get_user(input, throw=False):
-#     user_data = frappe.db.sql(
-#         """select name from `tabUser` where email=%s or phone=%s""",
-#         (input, input),
-#         as_dict=1,
-#     )
-#     # print("get_user", frappe.as_json(user_data))
-#     if len(user_data) >= 1:
-#         return user_data[0].name
-#     else:
-#         if throw:
-#             raise ValidationError(_("Mobile no. does not exist."))
-#         return False
-    
-# def get_partner(entity):
-#     partner_list = frappe.get_all("Partner", filters={"user_id": get_user(entity)})
-#     return frappe.get_doc("Partner", partner_list[0].name)
 
 def random_token(length=10, is_numeric=False):
 
@@ -217,7 +222,7 @@ def token_mark_as_used(token):
         token.save(ignore_permissions=True)
         frappe.db.commit()
 
-def create_user_token(entity, token, token_type="OTP", app_version_platform=""):
+def create_user_token(entity, token, token_type, app_version_platform=""):
     doc_data = {
         "doctype": "User Token",
         "entity": entity,
@@ -299,40 +304,37 @@ def generateResponse(is_success=True, status=200, message=None, data={}, error=N
         response["data"] = data
     return response
 
+def log_api(method, request_time, request):
+    try:
+        method = method
+        request_time = request_time
+        request = request
+        log = frappe.get_doc(
+            dict(doctype="API Log", api_name = method, request_time = datetime.now(), request = request)
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        return log
+
+    except Exception:
+        frappe.log_error(
+            message=frappe.get_traceback(),
+            title=_("API Log Error"),
+        )
+
+
 
 def log_api_error(mess=""):
     try:
-        """
-        Log API error to Error Log
-
-        This method should be called before API responds the HTTP status code
-        """
-
-        # AI ALERT:
-        # the title and message may be swapped
-        # the better API for this is log_error(title, message), and used in many cases this way
-        # this hack tries to be smart about whats a title (single line ;-)) and fixes it
         request_parameters = frappe.local.form_dict
         headers = {k: v for k, v in frappe.local.request.headers.items()}
-        customer = frappe.get_all("Partner", filters={"user_id": __user().name})
-
-        if len(customer) == 0:
-            message = "Request Parameters : {}\n\nHeaders : {}".format(
-                str(request_parameters), str(headers)
-            )
-        else:
-            message = (
-                "Customer ID : {}\n\nRequest Parameters : {}\n\nHeaders : {}".format(
-                    customer[0].name, str(request_parameters), str(headers)
-                )
-            )
 
         title = (
             request_parameters.get("cmd").split(".")[-1].replace("_", " ").title()
             + " API Error"
         )
 
-        error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n" + message
+        error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n"
         log = frappe.get_doc(
             dict(doctype="API Error Log", error=frappe.as_unicode(error), method=title)
         ).insert(ignore_permissions=True)
@@ -550,25 +552,25 @@ def lender_list():
     if len(res) == 0:
         raise NotFoundException
 
-    return list(res.values)
+    return list(i['name'] for i in res)
 
 def bank_list():
     res = frappe.get_all("Bank", fields = ["name"])
     if len(res) == 0:
         raise NotFoundException
-
-    return list(res.values)
+    
+    return list(i['name'] for i in res)
 
 def pincode_list():
-    res = frappe.get_all("Pincode", fields = ["name"])
+    res = frappe.get_all("Pin Code", fields = ["name"])
     if len(res) == 0:
         raise NotFoundException
 
-    return list(res.values)
+    return list(i['name'] for i in res)
 
 def employer_list():
     res = frappe.get_all("Employer", fields = ["name"])
     if len(res) == 0:
         raise NotFoundException
 
-    return list(res.values)
+    return list(i['name'] for i in res)
