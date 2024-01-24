@@ -69,7 +69,6 @@ def validate_http_method(*methods):
 @frappe.whitelist(allow_guest=True)
 def send_otp(**kwargs):
     try:
-        print("********")
         ucl.validate_http_method("POST")
 
         data = ucl.validate(
@@ -79,6 +78,7 @@ def send_otp(**kwargs):
                 "token_type": "required",
             },
         )
+        print(data.get("token_type"))
         if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
             user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type")})
             user_token.used = 1
@@ -166,7 +166,7 @@ def create_partner(first_name, mobile, email, user):
                 "mobile_number": mobile
             }
         ).insert(ignore_permissions=True)
-
+        frappe.db.commit()
         return partner
     except Exception as e:
         raise exceptions.APIException(message=str(e))

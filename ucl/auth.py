@@ -187,7 +187,7 @@ def verify_otp(**kwargs):
             
             
             if user:
-                data = {
+                user_data = {
                         "first_name":user.first_name,
                         "last_name":user.last_name,
                         "email":user.name,
@@ -195,7 +195,10 @@ def verify_otp(**kwargs):
                     }
                 if "Partner" in frappe.get_roles(user.name) or "Partner Associate" in frappe.get_roles(user.name):
                     partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
-                    data['partner'] = partner
+                    user_data['partner'] = partner
+            
+            else:
+                user_data = "User not found"
 
             # if not is_dummy_account:
             #     token.used = 1
@@ -213,7 +216,7 @@ def verify_otp(**kwargs):
             api_log_doc.response = "OTP Verified" + "\n" + str(data)
             api_log_doc.save(ignore_permissions=True)
             frappe.db.commit()
-            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = data)
+            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = user_data)
 
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
@@ -291,6 +294,10 @@ def set_pin(**kwargs):
         if data.get("pin"):
             if data.get("pin"):
                 update_password(data.get("email"), data.get("pin"))
+                partner = frappe.get_doc('Partner', {"user_id":user.name})
+                if partner:
+                    partner.is_pin_set = 1
+                    partner.save(ignore_permissions=True)
                 api_log_doc.response = "User PIN has been updated."
                 api_log_doc.save(ignore_permissions=True)
                 frappe.db.commit()
@@ -535,7 +542,7 @@ def login(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def get_user_details(**kwargs):
     try:
-        ucl.validate_http_method("POST")
+        ucl.validate_http_method("GET")
 
         data = ucl.validate(
             kwargs,
@@ -592,7 +599,6 @@ def get_user_details(**kwargs):
         frappe.db.rollback()
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))
-        # raise lms.exceptions.UnauthorizedException(str(e))
     
 
 @frappe.whitelist(allow_guest=True)
@@ -703,3 +709,257 @@ def get_employer_list():
         frappe.db.rollback()
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))        
+
+
+@frappe.whitelist(allow_guest=True)
+def terms_of_use_nd_privacy_policy():
+    try:
+        ucl.validate_http_method("GET")
+
+        ucl_setting = frappe.get_single("UCL Settings")
+        data = {
+            "terms_of_use": frappe.utils.get_url(ucl_setting.terms_of_use)
+            or "",
+            "privacy_policy": frappe.utils.get_url(
+                ucl_setting.privacy_policy
+            )
+        }
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=data)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+@frappe.whitelist(allow_guest=True)
+def pan_plus(**kwargs):
+    import requests
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "pan_number": ["required"]
+        })
+        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(data))
+
+        url = "https://production.deepvue.tech/v1/verification/panadvanced?pan_number={}".format(data.get("pan_number"))
+    
+        payload={}
+        headers = {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjE3ODI1MH0.u8Bu3BbsbW4k7EZ-shd8FV0lhTsikbd9TT0KWByDmMo',
+        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = response.text
+        api_log_doc.save(ignore_permissions=True)    
+        return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+
+    
+@frappe.whitelist(allow_guest=True)
+def pan_ocr(**kwargs):
+    import requests
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "pan_url": ["required"]
+        })
+        api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(data))
+        url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
+        payload={
+            "document1": data.get("pan_url"),
+            "document2": "string",
+            "name": "string"
+        }
+        headers = {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjE3ODI1MH0.u8Bu3BbsbW4k7EZ-shd8FV0lhTsikbd9TT0KWByDmMo',
+        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
+        }
+        response = requests.request("POST", url, headers=headers, json=payload)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = response.text
+        api_log_doc.save(ignore_permissions=True)
+    
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def save_pan_details(**kwargs):
+    try:
+        api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
+        
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = "Pan details saved successfully"
+        api_log_doc.save(ignore_permissions=True)  
+    
+        return ucl.responder.respondWithSuccess(message=frappe._("Pan details saved successfully"))
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+@frappe.whitelist(allow_guest=True)
+def aadhaar_ocr(**kwargs):
+    import requests
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "aadhaar_url": ["required"]
+        })
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str(data))
+        url = "https://production.deepvue.tech/v1/documents/extraction/ind_aadhaar" 
+        payload={
+            "document1": data.get("aadhaar_url"),
+            "document2": "string",
+            "name": "string"
+        }
+        headers = {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjA4NTE0MX0.nVE9IlSyxUtFaPoaZYMn-IX-0I5EKXlZDw4VhDwKtN0',
+        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
+        }
+        response = requests.request("POST", url, headers=headers, json=payload)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = response.text
+        api_log_doc.save(ignore_permissions=True)  
+    
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+@frappe.whitelist(allow_guest=True)
+def face_match(**kwargs):
+    import requests
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "file_1": "required",
+            "file_2": "required" 
+        })
+        api_log_doc = ucl.log_api(method = "Face Match", request_time = datetime.now(), request = str(data))
+        url = "https://production.deepvue.tech/v1/facematch"
+        headers = {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjA4NTE0MX0.nVE9IlSyxUtFaPoaZYMn-IX-0I5EKXlZDw4VhDwKtN0',
+        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
+        }
+        file = {'file_a': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb'),'file_b': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb')}
+        response = requests.post(url, headers=headers, files=file)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = response.json()
+        api_log_doc.save(ignore_permissions=True)  
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def rc_advance(**kwargs):
+    import requests
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "rc_number": "required"
+        })
+        api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str(data))
+        url = "https://production.deepvue.tech/v1/verification/rc-advanced?rc_number={}".format(data.get("rc_number"))
+        payload = {}
+        headers = {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjA4NTE0MX0.nVE9IlSyxUtFaPoaZYMn-IX-0I5EKXlZDw4VhDwKtN0',
+        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
+        }
+        response = requests.request("GET",url, headers=headers, json = payload)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = response.text
+        api_log_doc.save(ignore_permissions=True)
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+@frappe.whitelist(allow_guest=True)
+def penny_drop(**kwargs):
+    import requests
+    import base64
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "beneficiary_account_no" : "required",
+            "beneficiary_ifsc": "required",
+            "beneficiary_name": ""
+        })
+        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str(data))
+        url = "https://api.digio.in/client/verify/bank_account"
+        payload = {
+            "beneficiary_account_no" : data.get("beneficiary_account_no"),
+            "beneficiary_ifsc": data.get("beneficiary_ifsc"),
+            "beneficiary_name": data.get("beneficiary_name")
+            }
+        
+        username = "AIXIC9J5YKIYDGBTN9LG19TGBRGUYJ38"
+        password = "DU8RQISBGDLJ5IQXKJZSWTXERBHWZWUO"
+        credentials = f"{username}:{password}"
+        base64_credentials = base64.b64encode(credentials.encode()).decode()
+        headers = {
+        "Authorization": f"Basic {base64_credentials}",
+        "Content-Type": "application/json"
+        }
+        response = requests.request("POST",url, headers=headers, json = payload)
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.response = response.text
+        api_log_doc.save(ignore_permissions=True)
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def partner_type():
+    try:
+        ucl.validate_http_method("POST")
+
+        data = {
+            "partner_id": ["required"],
+            "partner_type": ["required"]
+        }
+        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(data))
+        doc = frappe.get_doc({
+        'doctype': 'Partner',
+        'partner_id': data.get("partner_id")
+        })
+        doc.partner_type = data.get("partner_type")
+        doc.save(ignore_permissions=True)
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=data)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()

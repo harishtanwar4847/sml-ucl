@@ -5,29 +5,60 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "personal_details_section",
   "partner_name",
-  "partner_id",
+  "partner_type",
   "user_id",
-  "status",
-  "pan_number",
-  "first_name",
-  "last_name",
-  "gender",
-  "dob",
-  "email_id",
-  "masked_aadhar",
   "column_break_ufuf",
-  "current_address",
-  "permanent_address",
+  "is_pin_set",
+  "status",
+  "live_image",
+  "digital_agreement",
+  "pan_details_section",
+  "pan_number",
+  "pan_full_name",
+  "line_1",
+  "line_2",
+  "street_name",
+  "zip",
+  "pan_city",
+  "pan_state",
+  "pan_country",
+  "pan_full_address",
+  "column_break_exzu",
+  "pan_phone_number",
+  "pan_father_name",
+  "pan_gender",
+  "age",
+  "date_of_issue",
+  "masked_aadhaar",
+  "aadhaar_linked",
+  "email_id",
+  "category",
+  "pan_dob",
+  "aadhaar_details_section",
   "pin_code",
-  "city",
-  "state",
+  "house_number",
+  "street_address",
+  "district",
+  "aadhaar_state",
+  "aadhaar_pin_code",
+  "aadhaar_address",
+  "column_break_pmrt",
+  "id_number",
+  "aadhaar_dob",
+  "aadhaar_gender",
+  "is_scanned",
+  "year_of_birth",
+  "aadhaar_father_name",
+  "name_on_card",
+  "bank_details_section",
   "cancelled_cheque",
   "bank_name",
-  "ifsc_code",
   "bank_address",
-  "live_image",
-  "digital_agreement"
+  "column_break_uvju",
+  "ifsc_code",
+  "beneficiary_name"
  ],
  "fields": [
   {
@@ -37,14 +68,6 @@
    "in_standard_filter": 1,
    "label": "Partner Name",
    "reqd": 1
-  },
-  {
-   "fieldname": "partner_id",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Partner ID",
-   "unique": 1
   },
   {
    "fieldname": "user_id",
@@ -65,64 +88,19 @@
    "label": "PAN Number"
   },
   {
-   "fieldname": "first_name",
-   "fieldtype": "Data",
-   "label": "First Name"
-  },
-  {
-   "fieldname": "last_name",
-   "fieldtype": "Data",
-   "label": "Last Name"
-  },
-  {
-   "fieldname": "gender",
-   "fieldtype": "Data",
-   "label": "Gender"
-  },
-  {
-   "fieldname": "dob",
-   "fieldtype": "Date",
-   "label": "DOB"
-  },
-  {
    "fieldname": "email_id",
    "fieldtype": "Data",
    "label": "Email ID"
-  },
-  {
-   "fieldname": "masked_aadhar",
-   "fieldtype": "Data",
-   "label": "Masked Aadhar"
   },
   {
    "fieldname": "column_break_ufuf",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "current_address",
-   "fieldtype": "Data",
-   "label": "Current Address"
-  },
-  {
-   "fieldname": "permanent_address",
-   "fieldtype": "Data",
-   "label": "Permanent Address"
-  },
-  {
    "fieldname": "pin_code",
    "fieldtype": "Link",
    "label": "Pin Code",
    "options": "Pin Code"
-  },
-  {
-   "fieldname": "city",
-   "fieldtype": "Data",
-   "label": "City"
-  },
-  {
-   "fieldname": "state",
-   "fieldtype": "Data",
-   "label": "State"
   },
   {
    "fieldname": "bank_name",
@@ -154,11 +132,220 @@
    "fieldname": "digital_agreement",
    "fieldtype": "Attach",
    "label": "Digital Agreement"
+  },
+  {
+   "fieldname": "partner_type",
+   "fieldtype": "Select",
+   "label": "Partner Type",
+   "options": "\nDealer\nDealer Associate\nPartner\nPartner Associate"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_pin_set",
+   "fieldtype": "Check",
+   "label": "Is Pin Set?"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "personal_details_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Details"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "pan_details_section",
+   "fieldtype": "Section Break",
+   "label": "PAN Details"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "aadhaar_details_section",
+   "fieldtype": "Section Break",
+   "label": "Aadhaar Details"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "bank_details_section",
+   "fieldtype": "Section Break",
+   "label": "Bank Details"
+  },
+  {
+   "fieldname": "column_break_uvju",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_exzu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_pmrt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "masked_aadhaar",
+   "fieldtype": "Data",
+   "label": "Masked Aadhaar"
+  },
+  {
+   "fieldname": "line_1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "fieldname": "line_2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "fieldname": "street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "pan_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "pan_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "pan_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "pan_phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "aadhaar_linked",
+   "fieldtype": "Data",
+   "label": "Aadhaar Linked"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category"
+  },
+  {
+   "fieldname": "pan_full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Int",
+   "label": "Age"
+  },
+  {
+   "fieldname": "date_of_issue",
+   "fieldtype": "Date",
+   "label": "Date of Issue"
+  },
+  {
+   "fieldname": "pan_full_address",
+   "fieldtype": "Data",
+   "label": "Full Address"
+  },
+  {
+   "fieldname": "pan_dob",
+   "fieldtype": "Date",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "pan_father_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
+  },
+  {
+   "fieldname": "pan_gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "aadhaar_address",
+   "fieldtype": "Data",
+   "label": "Address",
+   "options": "Pin Code"
+  },
+  {
+   "fieldname": "aadhaar_dob",
+   "fieldtype": "Date",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "district",
+   "fieldtype": "Data",
+   "label": "District"
+  },
+  {
+   "fieldname": "aadhaar_father_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
+  },
+  {
+   "fieldname": "aadhaar_gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "house_number",
+   "fieldtype": "Data",
+   "label": "House Number"
+  },
+  {
+   "fieldname": "id_number",
+   "fieldtype": "Data",
+   "label": "ID Number"
+  },
+  {
+   "fieldname": "is_scanned",
+   "fieldtype": "Data",
+   "label": "Is Scanned"
+  },
+  {
+   "fieldname": "name_on_card",
+   "fieldtype": "Data",
+   "label": "Name on Card"
+  },
+  {
+   "fieldname": "aadhaar_pin_code",
+   "fieldtype": "Data",
+   "label": "Pin Code"
+  },
+  {
+   "fieldname": "aadhaar_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "street_address",
+   "fieldtype": "Data",
+   "label": "Street Address"
+  },
+  {
+   "fieldname": "year_of_birth",
+   "fieldtype": "Int",
+   "label": "Year of Birth"
+  },
+  {
+   "fieldname": "beneficiary_name",
+   "fieldtype": "Data",
+   "label": "Beneficiary Name With Bank"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-17 15:17:54.708644",
+ "modified": "2024-01-24 16:41:59.671023",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

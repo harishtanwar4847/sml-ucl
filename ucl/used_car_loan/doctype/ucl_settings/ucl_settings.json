@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-23 12:14:12.797736",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "terms_and_policy_section",
+  "terms_of_use",
+  "column_break_nejm",
+  "privacy_policy"
+ ],
+ "fields": [
+  {
+   "fieldname": "terms_and_policy_section",
+   "fieldtype": "Section Break",
+   "label": "Terms and Policy"
+  },
+  {
+   "fieldname": "terms_of_use",
+   "fieldtype": "Attach",
+   "label": "Terms of Use"
+  },
+  {
+   "fieldname": "column_break_nejm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "privacy_policy",
+   "fieldtype": "Attach",
+   "label": "Privacy Policy"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-01-23 12:14:57.101235",
+ "modified_by": "Administrator",
+ "module": "Used Car Loan",
+ "name": "UCL Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
