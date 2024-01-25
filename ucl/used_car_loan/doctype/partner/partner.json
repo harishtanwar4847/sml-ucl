@@ -82,7 +82,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Pending for Approval\nApproved\nRejected"
+   "options": "Draft\nApproved by Partner\nApproved by SML\nRejected by Partner\nRejected by SML"
   },
   {
    "fieldname": "pan_number",
