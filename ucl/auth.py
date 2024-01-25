@@ -28,52 +28,65 @@ def verify_email(**kwargs):
                 "last_name": ["required"],
             },
         )
-        api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = str(data))
 
-        email_regex = (
-            r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
-        )
-        if re.search(email_regex, data.get("email")) is None or (
-            len(data.get("email").split("@")) > 2
-        ):
-            raise ucl.exceptions.FailureException(_("Please enter valid email ID."))
-        
-        if data.get("resend") == 1:
-            try:
-                user = ucl.__user(data.get("mobile"))
-            except UserNotFoundException:
-                user = None
+        if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "used": 1}):
+            api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = str(data))
 
-            if user:
-                ucl.delete_user(user)
-        
-        ucl.create_user(first_name = data.get("first_name"),last_name = data.get("last_name"),email = data.get("email"),mobile = data.get("mobile"),)
-
-        try:
-            user = ucl.__user(data.get("mobile"))
-        except UserNotFoundException:
-            user = None
-
-        token = dict(
-                token=ucl.create_user_access_token(user.name)
+            email_regex = (
+                r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
             )
-        if data.get("is_manual") == 1:
-            ucl.create_user_token(
-                entity=user.email,
-                token=ucl.random_token(),
-                token_type="Email Verification Token",
-            )
-        if data.get("is_manual") == 0:
-            ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
+            if re.search(email_regex, data.get("email")) is None or (
+                len(data.get("email").split("@")) > 2
+            ):
+                raise ucl.exceptions.FailureException(_("Please enter valid email ID."))
             
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
-        api_log_doc.response = "User Created Successfully"
-        api_log_doc.save(ignore_permissions=True)
+            if data.get("resend") == 1:
+                try:
+                    user = ucl.__user(data.get("mobile"))
+                except UserNotFoundException:
+                    user = None
 
-        return ucl.responder.respondWithSuccess(
-                message=frappe._("User Created Successfully"), data=token
-            )
+                if user:
+                    ucl.delete_user(user)
+
+            
+            if not frappe.db.exists("User", {"name" : data.get("email")}):
+                ucl.create_user(first_name = data.get("first_name"),last_name = data.get("last_name"),email = data.get("email"),mobile = data.get("mobile"),)
+
+                try:
+                    user = ucl.__user(data.get("mobile"))
+                except UserNotFoundException:
+                    user = None
+
+                token = dict(
+                        token=ucl.create_user_access_token(user.name)
+                    )
+                if data.get("is_manual") == 1:
+                    ucl.create_user_token(
+                        entity=user.email,
+                        token=ucl.random_token(),
+                        token_type="Email Verification Token",
+                    )
+                if data.get("is_manual") == 0:
+                    ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
+                    
+                api_log_doc.response_time = datetime.now()
+                api_log_doc.api_type = "Internal"
+                api_log_doc.response = "User Created Successfully"
+                api_log_doc.save(ignore_permissions=True)
+
+                return ucl.responder.respondWithSuccess(
+                        message=frappe._("User Created Successfully"), data=token
+                    )
+            else:
+                return ucl.responder.respondForbidden(
+                    message=frappe._("User already exists"), data = {}
+                )
+        
+        else:
+            return ucl.responder.respondWithFailure(
+                    message=frappe._("Please verify your mobile no."), data = []
+                )
     
 
     except (ucl.ValidationError, ucl.ServerError) as e:
@@ -174,7 +187,8 @@ def verify_otp(**kwargs):
                         "attempt"
                         if invalid_login_attempts.login_failed_count == 1
                         else "attempts",
-                    )
+                                   empty_token = {}
+ )
             raise ucl.exceptions.UnauthorizedException(message)
 
         if token:
@@ -187,7 +201,7 @@ def verify_otp(**kwargs):
 
                 raise ucl.exceptions.UnauthorizedException("OTP Expired")
             
-            
+            user_data = {}
             if user:
                 user_data = {
                         "first_name":user.first_name,
@@ -199,8 +213,8 @@ def verify_otp(**kwargs):
                     partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
                     user_data['partner'] = partner
             
-            else:
-                user_data = "User not found"
+            # else:
+            #     user_data = {}
 
             # if not is_dummy_account:
             #     token.used = 1
@@ -218,7 +232,7 @@ def verify_otp(**kwargs):
             api_log_doc.response = "OTP Verified" + "\n" + str(data)
             api_log_doc.save(ignore_permissions=True)
             frappe.db.commit()
-            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = user_data)
+            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = user_data if user_data else {})
 
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
@@ -233,12 +247,10 @@ def verify_otp(**kwargs):
 def set_pin(**kwargs):
     try:
         ucl.validate_http_method("POST")
-
+    
         data = ucl.validate(
             kwargs,
             {
-                "email": ["required"],
-                "authtoken": ["required"],
                 "pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
             },
         )
@@ -247,19 +259,9 @@ def set_pin(**kwargs):
         api_log_doc.response_time = datetime.now()
         api_log_doc.api_type = "Internal"
         frappe.db.commit()
-        email_regex = (
-            r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
-        )
-        if re.search(email_regex, data.get("email")) is None or (
-            len(data.get("email").split("@")) > 2
-        ):  
-            api_log_doc.response = "Please enter valid email ID."
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
-            raise ucl.exceptions.FailureException(_("Please enter valid email ID."))
 
         try:
-            user = frappe.get_doc("User", data.get("email"))
+            user = ucl.__user()
         except frappe.DoesNotExistError:
             raise ucl.exceptions.UserNotFoundException()
 
@@ -296,7 +298,7 @@ def set_pin(**kwargs):
 
         if data.get("pin"):
             if data.get("pin"):
-                update_password(data.get("email"), data.get("pin"))
+                update_password(user.name, data.get("pin"))
                 partner = frappe.get_doc('Partner', {"user_id":user.name})
                 if partner:
                     partner.is_pin_set = 1
@@ -334,32 +336,16 @@ def verify_forgot_pin_otp(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "email": ["required"],
                 "otp": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
                 "new_pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
-                "retype_pin": [
-                    "required",
-                    "decimal",
-                    ucl.validator.rules.LengthRule(4),
-                ],
             },
         )
         api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = str(data))
         api_log_doc.response_time = datetime.now()
         api_log_doc.api_type = "Internal"
-        email_regex = (
-            r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
-        )
-        if re.search(email_regex, data.get("email")) is None or (
-            len(data.get("email").split("@")) > 2
-        ):
-            api_log_doc.response = "Please enter valid email ID."
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
-            raise ucl.exceptions.FailureException(_("Please enter valid email ID."))
 
         try:
-            user = frappe.get_doc("User", data.get("email"))
+            user = ucl.__user()
         except frappe.DoesNotExistError:
             raise ucl.exceptions.UserNotFoundException()
 
@@ -398,9 +384,9 @@ def verify_forgot_pin_otp(**kwargs):
                 frappe.db.commit()
                 raise ucl.exceptions.UnauthorizedException(_("OTP Expired"))
 
-        if data.get("otp") and data.get("new_pin") and data.get("retype_pin"):
-            if data.get("retype_pin") == data.get("new_pin"):
-                update_password(data.get("email"), data.get("retype_pin"))
+        if data.get("otp") and data.get("new_pin"):
+            if data.get("new_pin"):
+                update_password(user.name, data.get("new_pin"))
                 api_log_doc.response = "User PIN has been updated."
                 api_log_doc.save(ignore_permissions=True)
                 frappe.db.commit()
@@ -409,20 +395,13 @@ def verify_forgot_pin_otp(**kwargs):
                     message=frappe._("User PIN has been updated.")
                 )
 
-            else:
-                api_log_doc.response = "Please retype correct pin."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
-                raise ucl.exceptions.RespondFailureException(
-                    _("Please retype correct pin.")
-                )
 
-        elif not data.get("retype_pin") or not data.get("new_pin"):
-            api_log_doc.response = "Please Enter value for new pind and retype pin."
+        elif not data.get("new_pin"):
+            api_log_doc.response = "Please Enter value for new pin"
             api_log_doc.save(ignore_permissions=True)
             frappe.db.commit()
             raise ucl.exceptions.RespondFailureException(
-                _("Please Enter value for new pind and retype pin.")
+                _("Please Enter value for new pin.")
             )
 
         # if not is_dummy_account:
@@ -438,11 +417,9 @@ def verify_forgot_pin_otp(**kwargs):
 def login(**kwargs):
     try:
         ucl.validate_http_method("POST")
-
         data = ucl.validate(
             kwargs,
             {
-                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
                 "pin": [ucl.validator.rules.LengthRule(4)],
                 "firebase_token": [ucl.validator.rules.RequiredIfPresent("pin")],
                 # "accept_terms": "decimal|between:0,1",
@@ -468,7 +445,7 @@ def login(**kwargs):
                 )
 
         try:
-            user = ucl.__user(data.get("mobile"))
+            user = ucl.__user()
         except UserNotFoundException:
             user = None
             raise ucl.exceptions.UserNotFoundException()
@@ -547,56 +524,34 @@ def login(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def get_user_details(**kwargs):
     try:
-        ucl.validate_http_method("GET")
-
-        data = ucl.validate(
-            kwargs,
-            {
-                "authtoken": ["required"],
-            },
-        )
-        api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
-
-        res = re.findall(r'\w+', data.get("authtoken"))
         try:
-            if frappe.db.exists("User", {"api_key": res[1]}):
-                user = frappe.get_doc('User',{'api_key': res[1]})
-                if res[2] == user.get_password('api_secret'):
-                    print(user)
-                    if frappe.db.exists("Partner", {"user_id": user.name}):
-                        partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
-                        api_log_doc.response = "Partner details" + "\n" + str(partner)
-                        api_log_doc.save(ignore_permissions=True)
-                        frappe.db.commit()
-                        return ucl.responder.respondWithSuccess(
-                        message=frappe._("Partner details"), data = partner
-                    )
-                    else:
-                        api_log_doc.response = "Partner Not Found for existing user"
-                        api_log_doc.save(ignore_permissions=True)
-                        frappe.db.commit()
-                        return ucl.responder.respondWithFailure(
-                            message=frappe._("Partner Not Found for existing user")
-                        )
-                else:
-                    api_log_doc.response = "User Not Found"
-                    api_log_doc.save(ignore_permissions=True)
-                    frappe.db.commit()
-                    return ucl.responder.respondWithFailure(
-                        message=frappe._("User Not Found")
-                    )
-            else:
-                api_log_doc.response = "User Not Found"
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
-                return ucl.responder.respondWithFailure(
-                    message=frappe._("User Not Found")
-                )
+            user = ucl.__user()
         except UserNotFoundException:
             user = None
             raise ucl.exceptions.UserNotFoundException()
+            
+        api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(data))
+        api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
+      
+        if user:
+            if frappe.db.exists("Partner", {"user_id": user.name}):
+                partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
+                api_log_doc.response = "Partner details" + "\n" + str(partner)
+                api_log_doc.save(ignore_permissions=True)
+                frappe.db.commit()
+                return ucl.responder.respondWithSuccess(
+                message=frappe._("Partner details"), data = partner
+            )
+            else:
+                api_log_doc.response = "Partner Not Found for existing user"
+                api_log_doc.save(ignore_permissions=True)
+                frappe.db.commit()
+                return ucl.responder.respondWithFailure(
+                    message=frappe._(api_log_doc.response)
+                )
+                
+        
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         ucl.log_api_error()
@@ -961,7 +916,9 @@ def partner_type():
 
         data = {
             "partner_id": ["required"],
-            "partner_type": ["required"]
+            "partner_type": ["required"],
+            "associate": ["required"],
+            "parent_partner": ""
         }
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(data))
         doc = frappe.get_doc({

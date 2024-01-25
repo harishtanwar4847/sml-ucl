@@ -8,6 +8,8 @@
   "personal_details_section",
   "partner_name",
   "partner_type",
+  "associate",
+  "parent_partner_code",
   "user_id",
   "column_break_ufuf",
   "is_pin_set",
@@ -137,7 +139,7 @@
    "fieldname": "partner_type",
    "fieldtype": "Select",
    "label": "Partner Type",
-   "options": "\nDealer\nDealer Associate\nPartner\nPartner Associate"
+   "options": "\nIndividual\nCorporate"
   },
   {
    "default": "0",
@@ -341,11 +343,24 @@
    "fieldname": "beneficiary_name",
    "fieldtype": "Data",
    "label": "Beneficiary Name With Bank"
+  },
+  {
+   "default": "0",
+   "fieldname": "associate",
+   "fieldtype": "Check",
+   "label": "Associate?"
+  },
+  {
+   "depends_on": "eval:doc.associate == 1;",
+   "fieldname": "parent_partner_code",
+   "fieldtype": "Link",
+   "label": "Parent Partner Code",
+   "options": "Partner"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-24 16:41:59.671023",
+ "modified": "2024-01-25 19:12:20.434074",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

@@ -170,13 +170,15 @@ def create_partner(first_name, mobile, email, user):
         return partner
     except Exception as e:
         raise exceptions.APIException(message=str(e))
-    
+
 
 def __user(input=None):
     # get session user if input is not provided
     if not input:
-        input = frappe.session.user
-    res = frappe.get_all("User", or_filters={"mobile_no": input})
+        res = frappe.get_all("User", or_filters={"email": frappe.session.user})
+        # input = frappe.session.user
+    else:
+        res = frappe.get_all("User", or_filters={"mobile_no": input})
 
     if len((res)) == 0:
         raise exceptions.UserNotFoundException

@@ -25,8 +25,8 @@ def respondWithFailure(status=500, message='Something went wrong', data={}, erro
 def respondUnauthorized(status=401, message='Unauthorized'):
 	return respond(status=status, message=message)
 
-def respondForbidden(status=403, message='Forbidden'):
-	return respond(status=status, message=message)
+def respondForbidden(status=403, message='Forbidden',data={}):
+	return respond(status=status, message=message, data=data)
 
 def respondNotFound(status=404, message='Not Found'):
 	return respond(status=status, message=message)
