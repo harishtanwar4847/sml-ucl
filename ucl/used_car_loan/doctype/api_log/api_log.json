@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "api_name",
+  "api_type",
   "request",
   "response",
   "request_time",
@@ -42,11 +43,19 @@
    "in_list_view": 1,
    "label": "API Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "api_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "API Type",
+   "options": "\nInternal\nThird Party",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-19 11:21:03.073873",
+ "modified": "2024-01-25 10:40:25.284018",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "API Log",

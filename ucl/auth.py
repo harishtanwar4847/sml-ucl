@@ -67,6 +67,7 @@ def verify_email(**kwargs):
             ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
             
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
         api_log_doc.response = "User Created Successfully"
         api_log_doc.save(ignore_permissions=True)
 
@@ -151,6 +152,7 @@ def verify_otp(**kwargs):
 
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
 
         if not token:
             message = frappe._("Invalid OTP.")
@@ -243,6 +245,7 @@ def set_pin(**kwargs):
 
         api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = str(data))
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
         frappe.db.commit()
         email_regex = (
             r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
@@ -343,6 +346,7 @@ def verify_forgot_pin_otp(**kwargs):
         )
         api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = str(data))
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
         email_regex = (
             r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
         )
@@ -449,6 +453,7 @@ def login(**kwargs):
 
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = str(data))
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
         if data.get("firebase_token"):
             reg = ucl.regex_special_characters(
                 search=data.get("firebase_token"),
@@ -552,6 +557,7 @@ def get_user_details(**kwargs):
         )
         api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(data))
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
 
         res = re.findall(r'\w+', data.get("authtoken"))
         try:
@@ -752,6 +758,7 @@ def pan_plus(**kwargs):
         }
         response = requests.request("GET", url, headers=headers, data=payload)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Third Party"
         api_log_doc.response = response.text
         api_log_doc.save(ignore_permissions=True)    
         return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=response.text)
@@ -785,6 +792,7 @@ def pan_ocr(**kwargs):
         }
         response = requests.request("POST", url, headers=headers, json=payload)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Third Party"
         api_log_doc.response = response.text
         api_log_doc.save(ignore_permissions=True)
     
@@ -834,6 +842,7 @@ def aadhaar_ocr(**kwargs):
         }
         response = requests.request("POST", url, headers=headers, json=payload)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Third Party"
         api_log_doc.response = response.text
         api_log_doc.save(ignore_permissions=True)  
     
@@ -864,6 +873,7 @@ def face_match(**kwargs):
         file = {'file_a': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb'),'file_b': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb')}
         response = requests.post(url, headers=headers, files=file)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Third Party"
         api_log_doc.response = response.json()
         api_log_doc.save(ignore_permissions=True)  
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
@@ -893,6 +903,7 @@ def rc_advance(**kwargs):
         }
         response = requests.request("GET",url, headers=headers, json = payload)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Third Party"
         api_log_doc.response = response.text
         api_log_doc.save(ignore_permissions=True)
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.text)
@@ -933,6 +944,7 @@ def penny_drop(**kwargs):
         }
         response = requests.request("POST",url, headers=headers, json = payload)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Third Party"
         api_log_doc.response = response.text
         api_log_doc.save(ignore_permissions=True)
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.text)

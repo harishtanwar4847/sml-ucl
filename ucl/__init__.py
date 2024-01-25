@@ -78,7 +78,6 @@ def send_otp(**kwargs):
                 "token_type": "required",
             },
         )
-        print(data.get("token_type"))
         if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
             user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type")})
             user_token.used = 1
@@ -94,6 +93,7 @@ def send_otp(**kwargs):
             )
         login_consent_doc.insert(ignore_permissions=True)
         api_log_doc.response_time = datetime.now()
+        api_log_doc.api_type = "Internal"
         api_log_doc.response = "OTP Sent"
         api_log_doc.save(ignore_permissions=True)
         frappe.db.commit()
