@@ -542,7 +542,7 @@ def create_sms_log(args, sent_to):
 
 
 def __partner(entity=None):
-    res = frappe.get_all("Partner", filters={"user": __user(entity).name})
+    res = frappe.get_all("Partner", filters={"user_id": entity})
     if len(res) == 0:
         raise PartnerNotFoundException
 

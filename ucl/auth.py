@@ -530,27 +530,26 @@ def get_user_details(**kwargs):
             user = None
             raise ucl.exceptions.UserNotFoundException()
             
-        api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
+        api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(user))
       
         if user:
+            user_doc = frappe.get_doc("User", user.name).as_dict()
             if frappe.db.exists("Partner", {"user_id": user.name}):
-                partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
-                api_log_doc.response = "Partner details" + "\n" + str(partner)
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                partner = ucl.__partner(user.name)
+                partner_doc = frappe.get_doc("Partner", partner.name)
+                user_doc.partner = partner_doc.as_dict()
+                response = "User details" + "\n" + str(user_doc)
                 return ucl.responder.respondWithSuccess(
-                message=frappe._("Partner details"), data = partner
+                message=frappe._("User details"), data = user_doc
             )
             else:
-                api_log_doc.response = "Partner Not Found for existing user"
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
-                return ucl.responder.respondWithFailure(
-                    message=frappe._(api_log_doc.response)
-                )
-                
+                user_doc = frappe.get_doc("User", user.name).as_dict()
+                user_doc.partner = None
+                response = "User details" + "\n" + str(user_doc)
+                return ucl.responder.respondWithSuccess(
+                message=frappe._("User details"), data = user_doc
+            )
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
         
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
@@ -560,7 +559,6 @@ def get_user_details(**kwargs):
         frappe.db.rollback()
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))
-    
 
 @frappe.whitelist(allow_guest=True)
 def verify_user(token, user):
