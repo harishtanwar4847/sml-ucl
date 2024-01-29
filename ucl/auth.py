@@ -25,7 +25,7 @@ def verify_email(**kwargs):
                 "resend": ["required"],
                 "is_manual": ["required"],
                 "first_name": ["required"],
-                "last_name": ["required"],
+                "last_name": "",
             },
         )
 
