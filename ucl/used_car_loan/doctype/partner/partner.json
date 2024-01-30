@@ -7,9 +7,10 @@
  "field_order": [
   "personal_details_section",
   "partner_name",
-  "partner_type",
   "associate",
   "parent_partner_code",
+  "partner_type",
+  "company_type",
   "user_id",
   "column_break_ufuf",
   "is_pin_set",
@@ -19,6 +20,15 @@
   "pan_details_section",
   "pan_number",
   "pan_full_name",
+  "pan_father_name",
+  "pan_gender",
+  "pan_dob",
+  "age",
+  "pan_phone_number",
+  "email_id",
+  "pan_type",
+  "masked_aadhaar",
+  "column_break_exzu",
   "line_1",
   "line_2",
   "street_name",
@@ -27,33 +37,37 @@
   "pan_state",
   "pan_country",
   "pan_full_address",
-  "column_break_exzu",
-  "pan_phone_number",
-  "pan_father_name",
-  "pan_gender",
-  "age",
-  "date_of_issue",
-  "masked_aadhaar",
   "aadhaar_linked",
-  "email_id",
-  "category",
-  "pan_dob",
   "aadhaar_details_section",
-  "pin_code",
-  "house_number",
-  "street_address",
-  "district",
-  "aadhaar_state",
-  "aadhaar_pin_code",
-  "aadhaar_address",
-  "column_break_pmrt",
   "id_number",
+  "name_on_card",
+  "aadhaar_father_name",
   "aadhaar_dob",
   "aadhaar_gender",
-  "is_scanned",
   "year_of_birth",
-  "aadhaar_father_name",
-  "name_on_card",
+  "column_break_pmrt",
+  "house_number",
+  "street_address",
+  "aadhaar_pin_code",
+  "district",
+  "aadhaar_state",
+  "aadhaar_address",
+  "company_pan_details_section",
+  "company_pan_number",
+  "company_documents_section",
+  "business_proof",
+  "column_break_nxdy",
+  "company_gst_certificate",
+  "current_address_section",
+  "same_as_on_pan",
+  "ca_line1",
+  "ca_line2",
+  "ca_street_name",
+  "column_break_sxhj",
+  "ca_pincode",
+  "ca_city",
+  "ca_state",
+  "ca_country",
   "bank_details_section",
   "cancelled_cheque",
   "bank_name",
@@ -97,12 +111,6 @@
   {
    "fieldname": "column_break_ufuf",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "pin_code",
-   "fieldtype": "Link",
-   "label": "Pin Code",
-   "options": "Pin Code"
   },
   {
    "fieldname": "bank_name",
@@ -191,12 +199,12 @@
   {
    "fieldname": "line_1",
    "fieldtype": "Data",
-   "label": "Line 1"
+   "label": "Address Line 1"
   },
   {
    "fieldname": "line_2",
    "fieldtype": "Data",
-   "label": "Line 2"
+   "label": "Address Line 2"
   },
   {
    "fieldname": "street_name",
@@ -229,14 +237,10 @@
    "label": "Phone Number"
   },
   {
+   "default": "0",
    "fieldname": "aadhaar_linked",
-   "fieldtype": "Data",
+   "fieldtype": "Check",
    "label": "Aadhaar Linked"
-  },
-  {
-   "fieldname": "category",
-   "fieldtype": "Data",
-   "label": "Category"
   },
   {
    "fieldname": "pan_full_name",
@@ -249,13 +253,8 @@
    "label": "Age"
   },
   {
-   "fieldname": "date_of_issue",
-   "fieldtype": "Date",
-   "label": "Date of Issue"
-  },
-  {
    "fieldname": "pan_full_address",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Full Address"
   },
   {
@@ -275,7 +274,7 @@
   },
   {
    "fieldname": "aadhaar_address",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Address",
    "options": "Pin Code"
   },
@@ -308,11 +307,6 @@
    "fieldname": "id_number",
    "fieldtype": "Data",
    "label": "ID Number"
-  },
-  {
-   "fieldname": "is_scanned",
-   "fieldtype": "Data",
-   "label": "Is Scanned"
   },
   {
    "fieldname": "name_on_card",
@@ -356,11 +350,112 @@
    "fieldtype": "Link",
    "label": "Parent Partner Code",
    "options": "Partner"
+  },
+  {
+   "depends_on": "eval:doc.partner_type == \"Corporate\";",
+   "fieldname": "company_type",
+   "fieldtype": "Select",
+   "label": "Company Type",
+   "options": "\nProprietary Firm\nPartnership Firm\nLLP Firm\nPvt Ltd Firm\nPublic Ltd Firm\nHUF\nTrust"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.partner_type == \"Corporate\";",
+   "fieldname": "company_pan_details_section",
+   "fieldtype": "Section Break",
+   "label": "Company PAN Details"
+  },
+  {
+   "fieldname": "company_pan_number",
+   "fieldtype": "Data",
+   "label": "Company PAN Number"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.partner_type == \"Corporate\";",
+   "fieldname": "company_documents_section",
+   "fieldtype": "Section Break",
+   "label": "Company Documents"
+  },
+  {
+   "fieldname": "business_proof",
+   "fieldtype": "Attach",
+   "label": "Business Proof"
+  },
+  {
+   "fieldname": "column_break_nxdy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company_gst_certificate",
+   "fieldtype": "Attach",
+   "label": "Company GST Certificate"
+  },
+  {
+   "fieldname": "current_address_section",
+   "fieldtype": "Section Break",
+   "label": "Current Address"
+  },
+  {
+   "default": "0",
+   "fieldname": "same_as_on_pan",
+   "fieldtype": "Check",
+   "label": "Same as on PAN"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_line1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_line2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "column_break_sxhj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_pincode",
+   "fieldtype": "Data",
+   "label": "Pincode"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "ca_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "pan_type",
+   "fieldtype": "Data",
+   "label": "PAN Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-25 19:12:20.434074",
+ "modified": "2024-01-29 14:28:21.158538",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

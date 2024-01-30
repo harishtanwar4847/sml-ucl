@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from frappe import _
 from traceback import format_exc
 from .exceptions import *
+import requests
 
 __version__ = "0.0.1"
 
@@ -79,9 +80,8 @@ def send_otp(**kwargs):
             },
         )
         if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
-            user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type")})
-            user_token.used = 1
-            user_token.save(ignore_permissions=True)
+            user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
+            token_mark_as_used(user_token)
         api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
         create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
         login_consent_doc = frappe.get_doc(
@@ -90,13 +90,13 @@ def send_otp(**kwargs):
                     "mobile": data.get("mobile"),
                     "consent": "Login",
                 }
-            )
-        login_consent_doc.insert(ignore_permissions=True)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
-        api_log_doc.response = "OTP Sent"
-        api_log_doc.save(ignore_permissions=True)
-        frappe.db.commit()
+            ).insert(ignore_permissions=True)
+        log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
+        # api_log_doc.response_time = datetime.now()
+        # api_log_doc.api_type = "Internal"
+        # api_log_doc.response = "OTP Sent"
+        # api_log_doc.save(ignore_permissions=True)
+        # frappe.db.commit()
         return ucl.responder.respondWithSuccess(
                 message=frappe._("OTP Sent"),
             )
@@ -187,25 +187,23 @@ def __user(input=None):
 
 
 def random_token(length=10, is_numeric=False):
-
     if is_numeric:
         sample_str = "".join((random.choice(string.digits) for i in range(length)))
     else:
         letters_count = random.randrange(length)
         digits_count = length - letters_count
-
         sample_str = "".join(
             (random.choice(string.ascii_letters) for i in range(letters_count))
         )
         sample_str += "".join(
             (random.choice(string.digits) for i in range(digits_count))
         )
-
     # Convert string to list and shuffle it to mix letters and digits
     sample_list = list(sample_str)
     random.shuffle(sample_list)
     final_string = "".join(sample_list)
     return final_string
+
 
 def verify_user_token(entity, token, token_type):
     filters = {"entity": entity, "token": token, "token_type": token_type, "used": 0}
@@ -323,6 +321,13 @@ def log_api(method, request_time, request):
             message=frappe.get_traceback(),
             title=_("API Log Error"),
         )
+
+def log_api_response(api_log_doc, api_type, response):
+    api_log_doc.response_time = datetime.now()
+    api_log_doc.api_type = api_type
+    api_log_doc.response = response
+    api_log_doc.save(ignore_permissions=True)
+    frappe.db.commit()
 
 
 
@@ -542,7 +547,7 @@ def create_sms_log(args, sent_to):
 
 
 def __partner(entity=None):
-    res = frappe.get_all("Partner", filters={"user": __user(entity).name})
+    res = frappe.get_all("Partner", filters={"user_id": entity})
     if len(res) == 0:
         raise PartnerNotFoundException
 
@@ -576,3 +581,26 @@ def employer_list():
         raise NotFoundException
 
     return list(i['name'] for i in res)
+
+@frappe.whitelist()
+def authorize_deepvue():
+    try:
+        ucl.validate_http_method("POST")
+        ucl_setting = frappe.get_single("UCL Settings")
+        url = "https://production.deepvue.tech/v1/authorize"
+        payload = {"client_id" : ucl_setting.deepvue_client_id, "client_secret" : ucl_setting.deepvue_client_secret}
+        headers = {'Content-Type' : 'application/x-www-form-urlencoded',}
+        api_log_doc = ucl.log_api(method = "Deepvue Authorize", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(payload)))
+        response = requests.request("POST",url, headers=headers, data = payload)
+
+        if response.status_code == 200:
+            ucl_setting.bearer_token = "Bearer " + (response.json())["access_token"]
+            ucl_setting.save(ignore_permissions = True)
+            frappe.db.commit()
+        else:
+            return RespondWithFailureException()
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()

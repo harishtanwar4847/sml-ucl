@@ -5,6 +5,16 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "deepvue_details_section",
+  "deepvue_client_id",
+  "column_break_tydl",
+  "deepvue_client_secret",
+  "column_break_jted",
+  "bearer_token",
+  "digio_details_section",
+  "digio_client_id",
+  "column_break_klbf",
+  "digio_client_secret",
   "terms_and_policy_section",
   "terms_of_use",
   "column_break_nejm",
@@ -29,12 +39,59 @@
    "fieldname": "privacy_policy",
    "fieldtype": "Attach",
    "label": "Privacy Policy"
+  },
+  {
+   "fieldname": "deepvue_details_section",
+   "fieldtype": "Section Break",
+   "label": "Deepvue Details"
+  },
+  {
+   "fieldname": "deepvue_client_id",
+   "fieldtype": "Data",
+   "label": "Deepvue Client id"
+  },
+  {
+   "fieldname": "column_break_tydl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "deepvue_client_secret",
+   "fieldtype": "Data",
+   "label": "Deepvue Client Secret"
+  },
+  {
+   "fieldname": "column_break_jted",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bearer_token",
+   "fieldtype": "Data",
+   "label": "Bearer Token"
+  },
+  {
+   "fieldname": "digio_details_section",
+   "fieldtype": "Section Break",
+   "label": "Digio Details"
+  },
+  {
+   "fieldname": "digio_client_id",
+   "fieldtype": "Data",
+   "label": "Digio Client Id"
+  },
+  {
+   "fieldname": "column_break_klbf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "digio_client_secret",
+   "fieldtype": "Data",
+   "label": "Digio Client Secret"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-23 12:14:57.101235",
+ "modified": "2024-01-28 21:14:12.128077",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Settings",

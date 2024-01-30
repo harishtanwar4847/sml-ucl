@@ -1,3 +1,6 @@
+import base64
+import os
+from random import randint
 import frappe
 import json
 from frappe import _
@@ -20,12 +23,12 @@ def verify_email(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "mobile": ["required"],
-                "email": ["required"],
-                "resend": ["required"],
-                "is_manual": ["required"],
-                "first_name": ["required"],
-                "last_name": ["required"],
+                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
+                "email": "required",
+                "resend": ["required", "decimal|between:0,1"],
+                "is_manual": ["required", "decimal|between:0,1"],
+                "first_name": "required",
+                "last_name": "required"
             },
         )
 
@@ -45,7 +48,6 @@ def verify_email(**kwargs):
                     user = ucl.__user(data.get("mobile"))
                 except UserNotFoundException:
                     user = None
-
                 if user:
                     ucl.delete_user(user)
 
@@ -70,10 +72,7 @@ def verify_email(**kwargs):
                 if data.get("is_manual") == 0:
                     ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
                     
-                api_log_doc.response_time = datetime.now()
-                api_log_doc.api_type = "Internal"
-                api_log_doc.response = "User Created Successfully"
-                api_log_doc.save(ignore_permissions=True)
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "User Created Successfully")
 
                 return ucl.responder.respondWithSuccess(
                         message=frappe._("User Created Successfully"), data=token
@@ -152,7 +151,7 @@ def verify_otp(**kwargs):
             token = ucl.verify_user_token(
                 entity=data.get("mobile"), token=data.get("otp"), token_type="Login OTP"
             )
-        #     else:
+        #    else:
         #         token = lms.validate_spark_dummy_account_token(
         #             data.get("mobile"), data.get("otp")
         #         )
@@ -164,14 +163,10 @@ def verify_otp(**kwargs):
             user = None
 
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
 
         if not token:
-            message = frappe._("Invalid OTP.")
-            api_log_doc.response = "Invalid OTP"
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
+            response = "Invalid OTP."
+            message = frappe._(response)
 
             if user:
                 LoginAttemptTracker(user_name=user.name).add_failure_attempt()
@@ -195,11 +190,9 @@ def verify_otp(**kwargs):
             # frappe.db.begin()
             # if (not is_dummy_account) and (token.expiry <= frappe.utils.now_datetime()):
             if token.expiry <= frappe.utils.now_datetime():
-                api_log_doc.response = "OTP Expired"
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                response = "OTP Expired"
 
-                raise ucl.exceptions.UnauthorizedException("OTP Expired")
+                raise ucl.exceptions.UnauthorizedException(response)
             
             user_data = {}
             if user:
@@ -210,8 +203,8 @@ def verify_otp(**kwargs):
                         "role":frappe.get_roles(user.name)
                     }
                 if "Partner" in frappe.get_roles(user.name) or "Partner Associate" in frappe.get_roles(user.name):
-                    partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
-                    user_data['partner'] = partner
+                    partner = ucl.__partner(user.name)
+                    user_data['partner'] = partner.as_dict()
             
             # else:
             #     user_data = {}
@@ -229,10 +222,10 @@ def verify_otp(**kwargs):
             #     data.get("firebase_token"), app_version_platform, user.name
             # )
             ucl.token_mark_as_used(token)
-            api_log_doc.response = "OTP Verified" + "\n" + str(data)
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
+            response = "OTP Verified" + "\n" + str(data)
             return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = user_data if user_data else {})
+
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)    
 
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
@@ -256,9 +249,6 @@ def set_pin(**kwargs):
         )
 
         api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
-        frappe.db.commit()
 
         try:
             user = ucl.__user()
@@ -266,10 +256,10 @@ def set_pin(**kwargs):
             raise ucl.exceptions.UserNotFoundException()
 
         if not user.enabled:
-            api_log_doc.response = "User disabled or missing"
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
-            raise ucl.exceptions.UnauthorizedException(_("User disabled or missing"))
+            response
+            response = "User disabled or missing"
+
+            raise ucl.exceptions.UnauthorizedException(_(response))
 
         # try:
         #     is_dummy_account = lms.validate_spark_dummy_account(
@@ -303,22 +293,19 @@ def set_pin(**kwargs):
                 if partner:
                     partner.is_pin_set = 1
                     partner.save(ignore_permissions=True)
-                api_log_doc.response = "User PIN has been updated."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                response = "User PIN has been updated."
 
                 return ucl.responder.respondWithSuccess(
-                    message=frappe._("User PIN has been updated.")
+                    message=frappe._(response)
                 )
 
         else:
-            api_log_doc.response = "Please Enter value for pin."
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
+            response = "Please Enter value for pin."
             raise ucl.exceptions.RespondFailureException(
-                _("Please Enter value for pin.")
+                _(response)
             )
 
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
         # if not is_dummy_account:
         #     lms.token_mark_as_used(token)
 
@@ -341,8 +328,6 @@ def verify_forgot_pin_otp(**kwargs):
             },
         )
         api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
 
         try:
             user = ucl.__user()
@@ -350,10 +335,8 @@ def verify_forgot_pin_otp(**kwargs):
             raise ucl.exceptions.UserNotFoundException()
 
         if not user.enabled:
-            api_log_doc.response = "User disabled or missing"
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
-            raise ucl.exceptions.UnauthorizedException(_("User disabled or missing"))
+            response = "User disabled or missing"
+            raise ucl.exceptions.UnauthorizedException(_(response))
 
         try:
             # is_dummy_account = ucl.validate_spark_dummy_account(
@@ -370,40 +353,33 @@ def verify_forgot_pin_otp(**kwargs):
             #         user.username, data.get("otp"), token_type="Forgot Pin OTP"
             #     )
         except InvalidUserTokenException:
-            api_log_doc.response = "Invalid Forgot Pin OTP"
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
-            raise ucl.exceptions.ForbiddenException(_("Invalid Forgot Pin OTP"))
+            response = "Invalid Forgot Pin OTP"
+            raise ucl.exceptions.ForbiddenException(_(response))
 
         # frappe.db.begin()
 
         if token:
             if token.expiry <= frappe.utils.now_datetime():
-                api_log_doc.response = "OTP Expired"
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
-                raise ucl.exceptions.UnauthorizedException(_("OTP Expired"))
+                response = "OTP Expired"
+                raise ucl.exceptions.UnauthorizedException(_(response))
 
         if data.get("otp") and data.get("new_pin"):
             if data.get("new_pin"):
                 update_password(user.name, data.get("new_pin"))
-                api_log_doc.response = "User PIN has been updated."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                response = "User PIN has been updated."
 
                 return ucl.responder.respondWithSuccess(
-                    message=frappe._("User PIN has been updated.")
+                    message=frappe._(response)
                 )
 
 
         elif not data.get("new_pin"):
-            api_log_doc.response = "Please Enter value for new pin"
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
+            response = "Please Enter value for new pin."
             raise ucl.exceptions.RespondFailureException(
-                _("Please Enter value for new pin.")
+                _(response)
             )
 
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
         # if not is_dummy_account:
         ucl.token_mark_as_used(token)
 
@@ -429,19 +405,16 @@ def login(**kwargs):
         )
 
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
         if data.get("firebase_token"):
             reg = ucl.regex_special_characters(
                 search=data.get("firebase_token"),
                 regex=re.compile("[@!#$%^&*()<>?/\|}{~`]"),
             )
             if reg:
-                api_log_doc.response = "Special Characters not allowed."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                response = "Special Characters not allowed."
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
                 raise ucl.exceptions.FailureException(
-                    _("Special Characters not allowed.")
+                    _(response)
                 )
 
         try:
@@ -458,15 +431,13 @@ def login(**kwargs):
                     user=user.name, pwd=data.get("pin")
                 )
             except frappe.SecurityException as e:
-                api_log_doc.response = "Incorrect PIN."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                response = "Incorrect PIN."
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
                 raise ucl.exceptions.UnauthorizedException(str(e))
             except frappe.AuthenticationError as e:
-                message = frappe._("Incorrect PIN.")
-                api_log_doc.response = "Incorrect PIN."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                message = frappe._(response)
+                response = "Incorrect PIN."
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
                 invalid_login_attempts = get_login_attempt_tracker(user.name)
                 if invalid_login_attempts.login_failed_count > 0:
                     message += " {} invalid {}.".format(
@@ -485,21 +456,19 @@ def login(**kwargs):
                 app_version_platform = (
                     data.get("app_version") + " | " + data.get("platform")
                 )
-            api_log_doc.response = "Logged in Successfully"
-            api_log_doc.save(ignore_permissions=True)
-            frappe.db.commit()
+            response = "Logged in Successfully"
             return ucl.responder.respondWithSuccess(
-                message=frappe._("Logged in Successfully"), data=token
+                message=frappe._(response), data=token
             )
         else:
             if not data.get("accept_terms"):
-                api_log_doc.response = "Please accept Terms of Use and Privacy Policy."
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                response = "Please accept Terms of Use and Privacy Policy."
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
                 raise ucl.exceptions.UnauthorizedException(
-                    _("Please accept Terms of Use and Privacy Policy.")
+                    _(response)
                 )
 
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
         # # check if dummy account
         # is_dummy_account = lms.validate_spark_dummy_account(data.get("mobile"))
 
@@ -530,27 +499,26 @@ def get_user_details(**kwargs):
             user = None
             raise ucl.exceptions.UserNotFoundException()
             
-        api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(data))
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Internal"
+        api_log_doc = ucl.log_api(method = "User details", request_time = datetime.now(), request = str(user))
       
         if user:
+            user_doc = frappe.get_doc("User", user.name).as_dict()
             if frappe.db.exists("Partner", {"user_id": user.name}):
-                partner = frappe.get_all("Partner", filters={'user_id': user.name}, fields = ["*"])
-                api_log_doc.response = "Partner details" + "\n" + str(partner)
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                partner = ucl.__partner(user.name)
+                partner_doc = frappe.get_doc("Partner", partner.name)
+                user_doc.partner = partner_doc.as_dict()
+                response = "User details" + "\n" + str(user_doc)
                 return ucl.responder.respondWithSuccess(
-                message=frappe._("Partner details"), data = partner
+                message=frappe._("User details"), data = user_doc
             )
             else:
-                api_log_doc.response = "Partner Not Found for existing user"
-                api_log_doc.save(ignore_permissions=True)
-                frappe.db.commit()
-                return ucl.responder.respondWithFailure(
-                    message=frappe._(api_log_doc.response)
-                )
-                
+                user_doc = frappe.get_doc("User", user.name).as_dict()
+                user_doc.partner = None
+                response = "User details" + "\n" + str(user_doc)
+                return ucl.responder.respondWithSuccess(
+                message=frappe._("User details"), data = user_doc
+            )
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
         
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
@@ -676,8 +644,8 @@ def get_employer_list():
 def terms_of_use_nd_privacy_policy():
     try:
         ucl.validate_http_method("GET")
-
         ucl_setting = frappe.get_single("UCL Settings")
+
         data = {
             "terms_of_use": frappe.utils.get_url(ucl_setting.terms_of_use)
             or "",
@@ -692,31 +660,20 @@ def terms_of_use_nd_privacy_policy():
         return e.respond()
     
 @frappe.whitelist(allow_guest=True)
-def pan_plus(**kwargs):
+def pan_plus(pan_number):
     import requests
     try:
-        ucl.validate_http_method("POST")
+        ucl_setting = frappe.get_single("UCL Settings")
 
-        data = ucl.validate(
-            kwargs,
-            {
-            "pan_number": ["required"]
-        })
-        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(data))
-
-        url = "https://production.deepvue.tech/v1/verification/panadvanced?pan_number={}".format(data.get("pan_number"))
+        url = "https://production.deepvue.tech/v1/verification/pan-plus?pan_number=" + (pan_number)
     
         payload={}
-        headers = {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjE3ODI1MH0.u8Bu3BbsbW4k7EZ-shd8FV0lhTsikbd9TT0KWByDmMo',
-        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
-        }
+        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+
         response = requests.request("GET", url, headers=headers, data=payload)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Third Party"
-        api_log_doc.response = response.text
-        api_log_doc.save(ignore_permissions=True)    
-        return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=response.text)
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        return response.json()
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -728,80 +685,91 @@ def pan_ocr(**kwargs):
     import requests
     try:
         ucl.validate_http_method("POST")
+        user = ucl.__user("5376276827")
+        partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,
             {
-            "pan_url": ["required"]
+                "document1": ["required"],
+                "document2": "",
+                "name": "",
+                "extension" : ['required']
         })
-        api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(data))
+        pan_file = "{partner}_pan_card_{rand}.{extension}".format(partner = partner.partner_name, rand = randint(1,99), extension = data.get("extension")).replace(" ", "-")
+        pan_file_path = frappe.utils.get_files_path(pan_file)
+        pan_file_url = frappe.utils.get_url("files/{file_name}".format(file_name = pan_file).replace(" ", "-"))
+
+        base64_encoded_image = data.get("document1")
+        decoded_image = base64.b64decode(base64_encoded_image)
+        with open(pan_file_path, "wb") as output_image_file:
+            output_image_file.write(decoded_image)
+        data["document1"] = pan_file_url
+
+        # image_path = frappe.utils.get_files_path(pan_file)
+        # if os.path.exists(image_path):
+        #     os.remove(image_path)
+        # image_decode = base64.decodestring(data.get("document1"))
+        # image_file = open(pan_file_path, "wb").write(image_decode)
+        print(data["document1"])
+        ucl_setting = frappe.get_single("UCL Settings")
         url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
-        payload={
-            "document1": data.get("pan_url"),
-            "document2": "string",
-            "name": "string"
-        }
-        headers = {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjE3ODI1MH0.u8Bu3BbsbW4k7EZ-shd8FV0lhTsikbd9TT0KWByDmMo',
-        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
-        }
-        response = requests.request("POST", url, headers=headers, json=payload)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Third Party"
-        api_log_doc.response = response.text
-        api_log_doc.save(ignore_permissions=True)
+        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+
+        api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
+
+        ocr_response = requests.request("POST", url, headers=headers, json=data)
+        print(ocr_response.json())
+
+        if ocr_response.json()['data']['id_number']:
+            id_number = ocr_response.json()["data"]["id_number"]
+            pan_plus_response = pan_plus(id_number)
+
+            response = pan_plus_response["data"]
+            response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+            response["pan_type"] = ocr_response.json()['data']["pan_type"]
+        else:
+            response = ocr_response
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
     
-
-@frappe.whitelist(allow_guest=True)
-def save_pan_details(**kwargs):
-    try:
-        api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
-        
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.response = "Pan details saved successfully"
-        api_log_doc.save(ignore_permissions=True)  
-    
-        return ucl.responder.respondWithSuccess(message=frappe._("Pan details saved successfully"))
-
-    except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
-        return e.respond()
     
 @frappe.whitelist(allow_guest=True)
 def aadhaar_ocr(**kwargs):
     import requests
     try:
         ucl.validate_http_method("POST")
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,
             {
-            "aadhaar_url": ["required"]
+                "document1": ["required"],
+                "document2": "",
+                "name": ""
         })
-        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str(data))
+        ucl_setting = frappe.get_single("UCL Settings")
         url = "https://production.deepvue.tech/v1/documents/extraction/ind_aadhaar" 
-        payload={
-            "document1": data.get("aadhaar_url"),
-            "document2": "string",
-            "name": "string"
-        }
-        headers = {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjA4NTE0MX0.nVE9IlSyxUtFaPoaZYMn-IX-0I5EKXlZDw4VhDwKtN0',
-        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
-        }
-        response = requests.request("POST", url, headers=headers, json=payload)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Third Party"
-        api_log_doc.response = response.text
-        api_log_doc.save(ignore_permissions=True)  
+        
+        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
+        response = requests.request("POST", url, headers=headers, json=data)
+        if response.json()['data']['id_number']:
+            id_number = response.json()['data']['id_number']
+            if partner.aadhaar_linked and id_number != partner.masked_aadhaar[-4:]:
+                raise ucl.exceptions.UnauthorizedException(
+                        _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
+                    )
+
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json())
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -827,10 +795,8 @@ def face_match(**kwargs):
         }
         file = {'file_a': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb'),'file_b': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb')}
         response = requests.post(url, headers=headers, files=file)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Third Party"
-        api_log_doc.response = response.json()
-        api_log_doc.save(ignore_permissions=True)  
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.json())
+ 
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
     except ucl.exceptions.APIException as e:
@@ -847,26 +813,22 @@ def rc_advance(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-            "rc_number": "required"
+            "rc_number": ["required"]
         })
-        api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str(data))
-        url = "https://production.deepvue.tech/v1/verification/rc-advanced?rc_number={}".format(data.get("rc_number"))
+        ucl_setting = frappe.get_single("UCL Settings")
+        url = "https://production.deepvue.tech/v1/verification/rc-advanced?rc_number=" + data.get("rc_number")
         payload = {}
-        headers = {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjA4NTE0MX0.nVE9IlSyxUtFaPoaZYMn-IX-0I5EKXlZDw4VhDwKtN0',
-        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
-        }
+        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+        api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
         response = requests.request("GET",url, headers=headers, json = payload)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Third Party"
-        api_log_doc.response = response.text
-        api_log_doc.save(ignore_permissions=True)
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.text)
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
     
+
 @frappe.whitelist(allow_guest=True)
 def penny_drop(**kwargs):
     import requests
@@ -877,57 +839,25 @@ def penny_drop(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-            "beneficiary_account_no" : "required",
-            "beneficiary_ifsc": "required",
+            "beneficiary_account_no" : ["required"],
+            "beneficiary_ifsc": ["required"],
             "beneficiary_name": ""
         })
-        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str(data))
         url = "https://api.digio.in/client/verify/bank_account"
-        payload = {
-            "beneficiary_account_no" : data.get("beneficiary_account_no"),
-            "beneficiary_ifsc": data.get("beneficiary_ifsc"),
-            "beneficiary_name": data.get("beneficiary_name")
-            }
-        
-        username = "AIXIC9J5YKIYDGBTN9LG19TGBRGUYJ38"
-        password = "DU8RQISBGDLJ5IQXKJZSWTXERBHWZWUO"
-        credentials = f"{username}:{password}"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()
         headers = {
         "Authorization": f"Basic {base64_credentials}",
         "Content-Type": "application/json"
         }
-        response = requests.request("POST",url, headers=headers, json = payload)
-        api_log_doc.response_time = datetime.now()
-        api_log_doc.api_type = "Third Party"
-        api_log_doc.response = response.text
-        api_log_doc.save(ignore_permissions=True)
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.text)
+        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
+        
+        response = requests.request("POST",url, headers=headers, json = data)
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
-    except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
-        return e.respond()
-    
-
-@frappe.whitelist(allow_guest=True)
-def partner_type():
-    try:
-        ucl.validate_http_method("POST")
-
-        data = {
-            "partner_id": ["required"],
-            "partner_type": ["required"],
-            "associate": ["required"],
-            "parent_partner": ""
-        }
-        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(data))
-        doc = frappe.get_doc({
-        'doctype': 'Partner',
-        'partner_id': data.get("partner_id")
-        })
-        doc.partner_type = data.get("partner_type")
-        doc.save(ignore_permissions=True)
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=data)
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
