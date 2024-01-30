@@ -55,7 +55,8 @@
   {
    "fieldname": "expiry",
    "fieldtype": "Datetime",
-   "label": "Expiry"
+   "label": "Expiry",
+   "read_only": 1
   },
   {
    "fieldname": "app_version_platform",
@@ -80,7 +81,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-23 12:33:46.353180",
+ "modified": "2024-01-30 10:53:36.929237",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "User Token",
