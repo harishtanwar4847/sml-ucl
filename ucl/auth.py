@@ -9,6 +9,7 @@ import ucl
 import re
 from .exceptions import *
 from frappe.auth import LoginAttemptTracker, get_login_attempt_tracker
+from pdf2image import convert_from_path
 from frappe.utils.password import (
     check_password,
     delete_login_failed_cache,
@@ -187,10 +188,12 @@ def verify_otp(**kwargs):
             
             user_data = {}
             if user:
+                access_token = ucl.create_user_access_token(user.name)
                 user_data = {
                         "first_name":user.first_name,
                         "last_name":user.last_name,
                         "email":user.name,
+                        "token":access_token,
                         "role":frappe.get_roles(user.name)
                     }
                 if "Partner" in frappe.get_roles(user.name) or "Partner Associate" in frappe.get_roles(user.name):
@@ -695,10 +698,15 @@ def pan_ocr(**kwargs):
         with open(pan_file_path, "wb") as output_image_file:
             output_image_file.write(decoded_image)
         
+        images = convert_from_path(pan_file_path)
+        image_file = "{partner}_pan_card_{rand}.png".format(partner = partner.partner_name, rand = randint(1,99)).replace(" ", "-")
+        for i, image in enumerate(images):
+            image.save(image_file, "PNG")
+        
         file = frappe.get_doc(
 				{
 					"doctype": "File",
-					"file_name": pan_file,
+					"file_name": image_file,
 					"attached_to_doctype": "Partner",
 					"attached_to_name": partner.name,
                     "attached_to_field" : partner.pan_card_file,
@@ -707,6 +715,7 @@ def pan_ocr(**kwargs):
 				}
 			).insert(ignore_permissions=True)
         frappe.db.commit()
+
         data["document1"] = frappe.utils.get_url(file.file_url)
 
         # image_path = frappe.utils.get_files_path(pan_file)
