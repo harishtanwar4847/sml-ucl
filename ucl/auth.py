@@ -694,6 +694,18 @@ def pan_ocr(**kwargs):
         decoded_image = base64.b64decode(base64_encoded_image)
         with open(pan_file_path, "wb") as output_image_file:
             output_image_file.write(decoded_image)
+        
+        file = frappe.get_doc(
+				{
+					"doctype": "File",
+					"file_name": pan_file,
+					"attached_to_doctype": "Partner",
+					"attached_to_name": partner.name,
+                    "attached_to_field" : partner.pan_card_file,
+					"content": decoded_image,
+					"is_private": False,
+				}
+			)
         data["document1"] = pan_file_url
 
         # image_path = frappe.utils.get_files_path(pan_file)
@@ -716,7 +728,7 @@ def pan_ocr(**kwargs):
             pan_plus_response = pan_plus(id_number)
 
             response = pan_plus_response["data"]
-            response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+            # response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
             response["pan_type"] = ocr_response.json()['data']["pan_type"]
         else:
             response = ocr_response

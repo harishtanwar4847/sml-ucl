@@ -18,6 +18,7 @@
   "live_image",
   "digital_agreement",
   "pan_details_section",
+  "pan_card_file",
   "pan_number",
   "pan_full_name",
   "pan_father_name",
@@ -39,6 +40,7 @@
   "pan_full_address",
   "aadhaar_linked",
   "aadhaar_details_section",
+  "aadhaar_file",
   "id_number",
   "name_on_card",
   "aadhaar_father_name",
@@ -53,6 +55,8 @@
   "aadhaar_state",
   "aadhaar_address",
   "company_pan_details_section",
+  "company_pan_file",
+  "column_break_rvio",
   "company_pan_number",
   "company_documents_section",
   "business_proof",
@@ -451,11 +455,30 @@
    "fieldname": "pan_type",
    "fieldtype": "Data",
    "label": "PAN Type"
+  },
+  {
+   "fieldname": "pan_card_file",
+   "fieldtype": "Attach",
+   "label": "PAN Card File"
+  },
+  {
+   "fieldname": "aadhaar_file",
+   "fieldtype": "Attach",
+   "label": "Aadhaar File"
+  },
+  {
+   "fieldname": "company_pan_file",
+   "fieldtype": "Attach",
+   "label": "Company PAN File"
+  },
+  {
+   "fieldname": "column_break_rvio",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-29 14:28:21.158538",
+ "modified": "2024-01-31 13:04:44.677824",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
