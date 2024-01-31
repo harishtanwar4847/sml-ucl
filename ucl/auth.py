@@ -705,8 +705,9 @@ def pan_ocr(**kwargs):
 					"content": decoded_image,
 					"is_private": False,
 				}
-			)
-        data["document1"] = pan_file_url
+			).insert(ignore_permissions=True)
+        frappe.db.commit()
+        data["document1"] = frappe.utils.get_url(file.file_url)
 
         # image_path = frappe.utils.get_files_path(pan_file)
         # if os.path.exists(image_path):
@@ -722,8 +723,9 @@ def pan_ocr(**kwargs):
 
         ocr_response = requests.request("POST", url, headers=headers, json=data)
         print(ocr_response.json())
+        ucl.log_api_error(ocr_response.json())
 
-        if ocr_response.json()['data']['id_number']:
+        if ocr_response.json()['data']:
             id_number = ocr_response.json()["data"]["id_number"]
             pan_plus_response = pan_plus(id_number)
 
@@ -731,6 +733,7 @@ def pan_ocr(**kwargs):
             # response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
             response["pan_type"] = ocr_response.json()['data']["pan_type"]
         else:
+            ucl.log_api_error(mess = response)
             response = ocr_response
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
     
