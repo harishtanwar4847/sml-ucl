@@ -55,9 +55,9 @@
   "aadhaar_state",
   "aadhaar_address",
   "company_pan_details_section",
-  "company_pan_file",
-  "column_break_rvio",
   "company_pan_number",
+  "column_break_tclh",
+  "company_pan_file",
   "company_documents_section",
   "business_proof",
   "column_break_nxdy",
@@ -472,13 +472,13 @@
    "label": "Company PAN File"
   },
   {
-   "fieldname": "column_break_rvio",
+   "fieldname": "column_break_tclh",
    "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-31 13:04:44.677824",
+ "modified": "2024-02-02 18:33:09.005437",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
@@ -500,5 +500,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
+ "title_field": "partner_name",
  "track_changes": 1
 }

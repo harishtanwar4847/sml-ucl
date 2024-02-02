@@ -15,28 +15,29 @@ import numpy as np
 
 
 @frappe.whitelist(allow_guest=True)
-def update_partner_type():
+def update_partner_type(**kwargs):
     try:
         ucl.validate_http_method("GET")
         user = ucl.__user()
         partner = ucl.__partner(user)
 
-        data = {
+        data = ucl.validate(
+        kwargs,{
             "associate": ["required"],
-            "parent_partner_id": "",
+            "parent_partner_name": "",
             "partner_type": "",
             "company_type": "",
-        }
+        })
         api_log_doc = ucl.log_api(method = "Update Partner Type", request_time = datetime.now(), request = str(data))
 
         if data.get("associate") == 1:
             if not data.get("parent_partner"):
-                response = "Please Enter Parent Partner id."
+                response = "Please Enter Parent Partner Name."
                 raise ucl.exceptions.RespondFailureException(_(response))
             else:
                 partner.associate = 1
-                partner.parent_partner_code = data.get("parent_partner_id")
-                parent_partner = frappe.get_doc("Partner", data.get("parent_partner_id"))
+                partner.parent_partner_code = data.get("parent_partner_name")
+                parent_partner = frappe.get_doc("Partner", data.get("parent_partner_name"))
                 partner.partner_type = parent_partner.partner_type
                 if parent_partner.partner_type == "Corporate":
                     partner.company_type = parent_partner.company_type
@@ -70,13 +71,14 @@ def update_partner_type():
 
 
 @frappe.whitelist(allow_guest=True)
-def save_pan_details(**kwargs):
+def update_pan_details(**kwargs):
     try:
         ucl.validate_http_method("GET")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
 
-        data = {
+        data = ucl.validate(
+        kwargs,{
             "fathers_name": "",
             "pan_number": ["required"],
             "pan_type": "",
@@ -95,7 +97,7 @@ def save_pan_details(**kwargs):
             "gender": "",
             "dob": "",
             "aadhaar_linked": ["required", "decimal|between:0,1"],
-        }
+        })
         api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
         partner = {
             "fathers_name": data.get("pan_father_name"),
@@ -129,7 +131,7 @@ def save_pan_details(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def save_aadhaar_details(**kwargs):
+def update_aadhaar_details(**kwargs):
     try:
         ucl.validate_http_method("GET")
         user = ucl.__user()

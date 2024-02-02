@@ -1,11 +1,13 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "naming_series:",
  "creation": "2024-01-10 17:44:58.049299",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "sub_product",
+  "naming_series",
   "source",
   "partner_code",
   "mobile_number",
@@ -271,14 +273,22 @@
    "fieldtype": "Data",
    "label": "Country",
    "reqd": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "LEAD-.YYYY.-"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-25 11:31:19.162748",
+ "modified": "2024-02-01 12:11:21.265765",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

@@ -632,7 +632,26 @@ def get_employer_list():
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))        
 
-
+@frappe.whitelist(allow_guest=True)
+def get_partner_list():
+    try:
+        try:
+            partner = ucl.partner_list()
+            return ucl.responder.respondWithSuccess(
+                    message=frappe._("List"), data=partner
+                )
+            
+        except NotFoundException:
+            raise ucl.exceptions.NotFoundException()
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return ucl.responder.respondUnauthorized(message=str(e))
+    
 @frappe.whitelist(allow_guest=True)
 def terms_of_use_nd_privacy_policy():
     try:
@@ -678,7 +697,7 @@ def pan_ocr(**kwargs):
     import requests
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("8888888888")
+        user = ucl.__user("8708759004")
         partner = ucl.__partner(user.name)
 
         data = ucl.validate(
@@ -689,24 +708,25 @@ def pan_ocr(**kwargs):
                 "name": "",
                 "extension" : ['required']
         })
-        pan_file = "{partner}_pan_card_{rand}.{extension}".format(partner = partner.partner_name, rand = randint(1,99), extension = data.get("extension")).replace(" ", "-")
-        pan_file_path = frappe.utils.get_files_path(pan_file)
-        pan_file_url = frappe.utils.get_url("files/{file_name}".format(file_name = pan_file).replace(" ", "-"))
+        # pan_file = "{partner}_pan_card_{rand}.{extension}".format(partner = partner.partner_name, rand = randint(1,99), extension = data.get("extension")).replace(" ", "-")
+        # pan_file_path = frappe.utils.get_files_path(pan_file)
+        # pan_file_url = frappe.utils.get_url("files/{file_name}".format(file_name = pan_file).replace(" ", "-"))
 
         base64_encoded_image = data.get("document1")
         decoded_image = base64.b64decode(base64_encoded_image)
-        with open(pan_file_path, "wb") as output_image_file:
-            output_image_file.write(decoded_image)
+        print(decoded_image)
+        # with open(pan_file_path, "wb") as output_image_file:
+        #     output_image_file.write(decoded_image)
         
-        images = convert_from_path(pan_file_path)
-        image_file = "{partner}_pan_card_{rand}.png".format(partner = partner.partner_name, rand = randint(1,99)).replace(" ", "-")
-        for i, image in enumerate(images):
-            image.save(image_file, "PNG")
+        # images = convert_from_path(pan_file_path)
+        # image_file = "{partner}_pan_card_{rand}.png".format(partner = partner.partner_name, rand = randint(1,99)).replace(" ", "-")
+        # for i, image in enumerate(images):
+        #     image.save(image_file, "PNG")
         
         file = frappe.get_doc(
 				{
 					"doctype": "File",
-					"file_name": image_file,
+					"file_name": "Pan_Card",
 					"attached_to_doctype": "Partner",
 					"attached_to_name": partner.name,
                     "attached_to_field" : partner.pan_card_file,
@@ -715,38 +735,41 @@ def pan_ocr(**kwargs):
 				}
 			).insert(ignore_permissions=True)
         frappe.db.commit()
+        # print(frappe.utils.get_url(file.file_url))
+        # data["document1"] = frappe.utils.get_url(file.file_url)
 
-        data["document1"] = frappe.utils.get_url(file.file_url)
-
-        # image_path = frappe.utils.get_files_path(pan_file)
-        # if os.path.exists(image_path):
-        #     os.remove(image_path)
-        # image_decode = base64.decodestring(data.get("document1"))
-        # image_file = open(pan_file_path, "wb").write(image_decode)
-        print(data["document1"])
+        # # image_path = frappe.utils.get_files_path(pan_file)
+        # # if os.path.exists(image_path):
+        # #     os.remove(image_path)
+        # # image_decode = base64.decodestring(data.get("document1"))
+        # # image_file = open(pan_file_path, "wb").write(image_decode)
+        # print(data["document1"])
+        payload = {
+            "document1": decoded_image
+        }
         ucl_setting = frappe.get_single("UCL Settings")
         url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
 
         api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
 
-        ocr_response = requests.request("POST", url, headers=headers, json=data)
+        ocr_response = requests.request("POST", url, headers=headers, json=payload)
         print(ocr_response.json())
         ucl.log_api_error(ocr_response.json())
 
-        if ocr_response.json()['data']:
-            id_number = ocr_response.json()["data"]["id_number"]
-            pan_plus_response = pan_plus(id_number)
+        # if ocr_response.json()['data']:
+        #     id_number = ocr_response.json()["data"]["id_number"]
+        #     pan_plus_response = pan_plus(id_number)
 
-            response = pan_plus_response["data"]
-            # response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
-            response["pan_type"] = ocr_response.json()['data']["pan_type"]
-        else:
-            ucl.log_api_error(mess = response)
-            response = ocr_response
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+        #     response = pan_plus_response["data"]
+        #     # response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+        #     response["pan_type"] = ocr_response.json()['data']["pan_type"]
+        # else:
+        #     ucl.log_api_error(mess = response)
+        #     response = ocr_response
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response.text))
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=ocr_response.text)
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
