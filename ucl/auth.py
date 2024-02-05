@@ -682,10 +682,10 @@ def pan_plus(pan_number):
         payload={}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
-
+        print(api_log_doc)
         response = requests.request("GET", url, headers=headers, data=payload)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-        return response.json()
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -706,27 +706,16 @@ def pan_ocr(**kwargs):
                 "document1": ["required"],
                 "document2": "",
                 "name": "",
-                "extension" : ['required']
+                "extension" : ["required"]
         })
-        # pan_file = "{partner}_pan_card_{rand}.{extension}".format(partner = partner.partner_name, rand = randint(1,99), extension = data.get("extension")).replace(" ", "-")
-        # pan_file_path = frappe.utils.get_files_path(pan_file)
-        # pan_file_url = frappe.utils.get_url("files/{file_name}".format(file_name = pan_file).replace(" ", "-"))
 
         base64_encoded_image = data.get("document1")
         decoded_image = base64.b64decode(base64_encoded_image)
-        print(decoded_image)
-        # with open(pan_file_path, "wb") as output_image_file:
-        #     output_image_file.write(decoded_image)
-        
-        # images = convert_from_path(pan_file_path)
-        # image_file = "{partner}_pan_card_{rand}.png".format(partner = partner.partner_name, rand = randint(1,99)).replace(" ", "-")
-        # for i, image in enumerate(images):
-        #     image.save(image_file, "PNG")
-        
+
         file = frappe.get_doc(
 				{
 					"doctype": "File",
-					"file_name": "Pan_Card",
+					"file_name": "Pan_Card.{extension}".format(extension = data.get("extension")),
 					"attached_to_doctype": "Partner",
 					"attached_to_name": partner.name,
                     "attached_to_field" : partner.pan_card_file,
@@ -734,42 +723,37 @@ def pan_ocr(**kwargs):
 					"is_private": False,
 				}
 			).insert(ignore_permissions=True)
+        partner.save(ignore_permissions=True)
         frappe.db.commit()
-        # print(frappe.utils.get_url(file.file_url))
-        # data["document1"] = frappe.utils.get_url(file.file_url)
+        file_name = file.file_url
+        # pan_file_url = "https://e54a21162976d8.lhr.life/{file_name}".format(file_name = file_name).replace(" ", "-")
+        pan_file_url = frappe.utils.get_url("{file_name}".format(file_name = file_name).replace(" ", "-"))
 
-        # # image_path = frappe.utils.get_files_path(pan_file)
-        # # if os.path.exists(image_path):
-        # #     os.remove(image_path)
-        # # image_decode = base64.decodestring(data.get("document1"))
-        # # image_file = open(pan_file_path, "wb").write(image_decode)
-        # print(data["document1"])
         payload = {
-            "document1": decoded_image
+            "document1": pan_file_url
         }
         ucl_setting = frappe.get_single("UCL Settings")
         url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
 
-        api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
-
+        api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         ocr_response = requests.request("POST", url, headers=headers, json=payload)
         print(ocr_response.json())
         ucl.log_api_error(ocr_response.json())
 
-        # if ocr_response.json()['data']:
-        #     id_number = ocr_response.json()["data"]["id_number"]
-        #     pan_plus_response = pan_plus(id_number)
+        if ocr_response.json()['data']:
+            id_number = ocr_response.json()["data"]["id_number"]
+            pan_plus_response = pan_plus(id_number)
 
-        #     response = pan_plus_response["data"]
-        #     # response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
-        #     response["pan_type"] = ocr_response.json()['data']["pan_type"]
-        # else:
-        #     ucl.log_api_error(mess = response)
-        #     response = ocr_response
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response.text))
+            response = pan_plus_response["data"]
+            response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+            response["pan_type"] = ocr_response.json()['data']["pan_type"]
+        else:
+            ucl.log_api_error(mess = response)
+            response = ocr_response
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=ocr_response.text)
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -789,7 +773,8 @@ def aadhaar_ocr(**kwargs):
             {
                 "document1": ["required"],
                 "document2": "",
-                "name": ""
+                "name": "",
+                "extension": ["required"]
         })
         ucl_setting = frappe.get_single("UCL Settings")
         url = "https://production.deepvue.tech/v1/documents/extraction/ind_aadhaar" 

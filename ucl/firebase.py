@@ -4,7 +4,7 @@ import firebase_admin
 import frappe
 from firebase_admin import credentials, exceptions, messaging
 
-import lms
+import ucl
 
 
 class FirebaseAdmin:
