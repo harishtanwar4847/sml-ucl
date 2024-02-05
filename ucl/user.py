@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import ucl
 import re
 from .exceptions import *
-import fitz  # PyMuPDF
+import fitz
 from PIL import Image
 from urllib.parse import urlparse
 import os
@@ -227,60 +227,54 @@ def update_current_address(**kwargs):
         ucl.log_api_error()
         return e.respond()
     
-
+@frappe.whitelist(allow_guest=True)
 def face_match(**kwargs):
-    user = ucl.__user()
-    partner = ucl.__partner(user.name)
+    try:
+        user = ucl.__user("8708759004")
+        partner = ucl.__partner(user.name)
 
-    ucl.validate_http_method("POST")
-        
-    data = ucl.validate(
-        kwargs,
-        {
-            "image": ["required"],
-        },
-    )
-
-    live_picture_file = "{}_live_image.jpeg".format(
-        partner.partner_name
-    ).replace(" ", "-")
-
-    image_path = frappe.utils.get_files_path(live_picture_file)
-    if os.path.exists(image_path):
-        os.remove(image_path)
-    live_picture_file_path = frappe.utils.get_files_path(live_picture_file)
-    image_decode = base64.decodestring(data.get("image"))
-    image_file = open(live_picture_file_path, "wb").write(image_decode)
-    profile_picture_file_url = frappe.utils.get_url(
-        "files/{}_live_image.jpeg".format(
-            partner.partner_name
-        ).replace(" ", "-")
-    )
-
-    if partner.pan_card_attach:
-
-        path = urlparse(partner.pan_card_attach).path
-        file_extension = os.path.splitext(path)[1]
-
-        if file_extension ==".pdf":
-        # Specify the input PDF file and output folder
-            input_pdf_path = profile_picture_file_url
-            output_folder = "/home/aditi/ucl-bench/sites/sml_ucl/public/files"
+        ucl.validate_http_method("POST")
             
-            pdf_document = fitz.open(input_pdf_path)
-            for page_number in range(pdf_document.page_count):
-                page = pdf_document[page_number]
-                image = page.get_pixmap()
-                pil_image = Image.frombytes("RGB", [image.width, image.height], image.samples)
-                output_file_path = f"{output_folder}/{partner.partner_name}_pan_card.jpg"
-                pil_image.save(output_file_path, "JPEG")
-            pdf_document.close()
-        
-        else:
+        data = ucl.validate(
+            kwargs,
+            {
+                "image": ["required"],
+                "extension": "required"
+            },
+        )
 
-            image_path_1 = "/home/aditi/ucl-bench/sites/sml_ucl/public/files/Aditi_wbg.jpg"
-            image_path_2 = "/home/aditi/ucl-bench/sites/sml_ucl/public/files/aditi_pan.jpeg"
+        live_picture_file = "{}_live_image.{}".format(
+            partner.partner_name,data.get("extension")
+        ).replace(" ", "-")
 
+        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
+        image_path_1 = frappe.utils.get_files_path(live_picture_file)
+        if partner.pan_card_file:
+            print(partner.pan_card_file)
+            path = urlparse(partner.pan_card_file).path
+            file_extension = os.path.splitext(path)[1]
+
+            if file_extension ==".pdf":
+            # Specify the input PDF file and output folder
+                input_pdf_path = frappe.utils.get_files_path(partner.pan_card_file)
+                # output_folder = frappe.utils.get_files_path("/files")
+                print(input_pdf_path)
+                
+                pdf_document = fitz.open(input_pdf_path)
+                for page_number in range(pdf_document.page_count):
+                    page = pdf_document[page_number]
+                    image = page.get_pixmap()
+                    pil_image = Image.frombytes("RGB", [image.width, image.height], image.samples)
+                    # image_path_2 = f"{output_folder}/{partner.partner_name}_pan_card.jpg"
+                    image_path_2 = frappe.utils.get_files_path("{}_pan_card.jpg".format(partner.partner_name))
+                    pil_image.save(image_path_2, "JPEG")
+                pdf_document.close()
+            
+            else:
+                image_path_2 = frappe.utils.get_files_path(partner.pan_card_file)
+            
+            print(image_path_1)
+            print(image_path_2)
             image_1 = face_recognition.load_image_file(image_path_1)
             image_2 = face_recognition.load_image_file(image_path_2)
 
@@ -298,7 +292,15 @@ def face_match(**kwargs):
 
                 if results[0]:
                     print("Faces match!")
+                    return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
+
                 else:
                     print("Faces do not match.")
+                    return ucl.responder.respondUnauthorized(message = "Faces do not match.")
             else:
                 print("No faces detected.")
+                return ucl.responder.respondNotFound(message = "No faces detected.")
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()

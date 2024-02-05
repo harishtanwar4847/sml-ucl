@@ -12,6 +12,7 @@ from frappe import _
 from traceback import format_exc
 from .exceptions import *
 import requests
+import base64
 
 __version__ = "0.0.1"
 
@@ -611,3 +612,23 @@ def authorize_deepvue():
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
+    
+def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,attached_to_field,partner=None):
+    base64_encoded_image = image_bytes
+    decoded_image = base64.b64decode(base64_encoded_image)
+    file = frappe.get_doc(
+            {
+                "doctype": "File",
+                "file_name": file_name,
+                "attached_to_doctype": attached_to_doctype,
+                "attached_to_name": attached_to_name,
+                "attached_to_field" : attached_to_field,
+                "content" : decoded_image,
+                "is_private": False,
+            }
+        ).insert(ignore_permissions=True)
+    frappe.db.commit()
+    file_name = file.file_url
+    file_url = "https://771cf816fbc8db.lhr.life/{file_name}".format(file_name = file_name).replace(" ", "-")
+    # pan_file_url = frappe.utils.get_url("{file_name}".format(file_name = file_name).replace(" ", "-"))
+    return file_url

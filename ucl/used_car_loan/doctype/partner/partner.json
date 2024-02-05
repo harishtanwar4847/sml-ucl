@@ -41,6 +41,7 @@
   "aadhaar_linked",
   "aadhaar_details_section",
   "aadhaar_file",
+  "aadhaar_file_2",
   "id_number",
   "name_on_card",
   "aadhaar_father_name",
@@ -474,11 +475,16 @@
   {
    "fieldname": "column_break_tclh",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "aadhaar_file_2",
+   "fieldtype": "Attach",
+   "label": "Aadhaar File 2"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-02 18:33:09.005437",
+ "modified": "2024-02-05 16:41:23.723198",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

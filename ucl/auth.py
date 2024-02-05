@@ -684,8 +684,8 @@ def pan_plus(pan_number):
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         print(api_log_doc)
         response = requests.request("GET", url, headers=headers, data=payload)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        return response.json()
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -699,7 +699,6 @@ def pan_ocr(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user("8708759004")
         partner = ucl.__partner(user.name)
-
         data = ucl.validate(
             kwargs,
             {
@@ -709,26 +708,7 @@ def pan_ocr(**kwargs):
                 "extension" : ["required"]
         })
 
-        base64_encoded_image = data.get("document1")
-        decoded_image = base64.b64decode(base64_encoded_image)
-
-        file = frappe.get_doc(
-				{
-					"doctype": "File",
-					"file_name": "Pan_Card.{extension}".format(extension = data.get("extension")),
-					"attached_to_doctype": "Partner",
-					"attached_to_name": partner.name,
-                    "attached_to_field" : partner.pan_card_file,
-					"content": decoded_image,
-					"is_private": False,
-				}
-			).insert(ignore_permissions=True)
-        partner.save(ignore_permissions=True)
-        frappe.db.commit()
-        file_name = file.file_url
-        # pan_file_url = "https://e54a21162976d8.lhr.life/{file_name}".format(file_name = file_name).replace(" ", "-")
-        pan_file_url = frappe.utils.get_url("{file_name}".format(file_name = file_name).replace(" ", "-"))
-
+        pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name="{}_pan_card.{extension}".format(partner.partner_name,extension=data.get("extension")),attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
         payload = {
             "document1": pan_file_url
         }
@@ -738,12 +718,12 @@ def pan_ocr(**kwargs):
 
         api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         ocr_response = requests.request("POST", url, headers=headers, json=payload)
-        print(ocr_response.json())
         ucl.log_api_error(ocr_response.json())
 
-        if ocr_response.json()['data']:
+        if ocr_response.json()['code'] == 200:
             id_number = ocr_response.json()["data"]["id_number"]
             pan_plus_response = pan_plus(id_number)
+            ucl.log_api_error(pan_plus_response)
 
             response = pan_plus_response["data"]
             response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
@@ -765,7 +745,7 @@ def aadhaar_ocr(**kwargs):
     import requests
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user()
+        user = ucl.__user("8708759004")
         partner = ucl.__partner(user.name)
 
         data = ucl.validate(
@@ -776,14 +756,25 @@ def aadhaar_ocr(**kwargs):
                 "name": "",
                 "extension": ["required"]
         })
+
+        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name="{}_aadhaar_card.{extension}".format(partner.partner_name,extension=data.get("extension")),attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_file",partner=partner)
+        if data.get("document2"):
+            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name="{}_aadhaar_card.{extension}".format(partner.partner_name,extension=data.get("extension")),attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_file_2",partner=partner)
+        else:
+            aadhaar_file_url2 = ""
+        payload = {
+            "document1": aadhaar_file_url1,
+            "document2": aadhaar_file_url2
+        }
         ucl_setting = frappe.get_single("UCL Settings")
         url = "https://production.deepvue.tech/v1/documents/extraction/ind_aadhaar" 
         
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
-        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
-        response = requests.request("POST", url, headers=headers, json=data)
-        if response.json()['data']['id_number']:
-            id_number = response.json()['data']['id_number']
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+        if response.json()['code'] == 200:
+            id_number = response.json()['data']['id_number'][-4:]
             if partner.aadhaar_linked and id_number != partner.masked_aadhaar[-4:]:
                 raise ucl.exceptions.UnauthorizedException(
                         _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
@@ -791,35 +782,7 @@ def aadhaar_ocr(**kwargs):
 
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json())
-
-    except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
-        return e.respond()
-    
-@frappe.whitelist(allow_guest=True)
-def face_match(**kwargs):
-    import requests
-    try:
-        ucl.validate_http_method("POST")
-
-        data = ucl.validate(
-            kwargs,
-            {
-            "file_1": "required",
-            "file_2": "required" 
-        })
-        api_log_doc = ucl.log_api(method = "Face Match", request_time = datetime.now(), request = str(data))
-        url = "https://production.deepvue.tech/v1/facematch"
-        headers = {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsaXZlX3N3aXRjaG15bG9hbiIsImV4cCI6MTcwNjA4NTE0MX0.nVE9IlSyxUtFaPoaZYMn-IX-0I5EKXlZDw4VhDwKtN0',
-        'x-api-key': '66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a',
-        }
-        file = {'file_a': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb'),'file_b': open('/home/dell/ucl-bench/sites/ucl_local/public/files/My_pan.jpeg','rb')}
-        response = requests.post(url, headers=headers, files=file)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.json())
- 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
