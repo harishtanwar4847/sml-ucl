@@ -629,6 +629,6 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
         ).insert(ignore_permissions=True)
     frappe.db.commit()
     file_name = file.file_url
-    file_url = "https://771cf816fbc8db.lhr.life/{file_name}".format(file_name = file_name).replace(" ", "-")
-    # pan_file_url = frappe.utils.get_url("{file_name}".format(file_name = file_name).replace(" ", "-"))
+    # file_url = "https://771cf816fbc8db.lhr.life/{file_name}".format(file_name = file_name).replace(" ", "-")
+    file_url = frappe.utils.get_url("{file_name}".format(file_name = file_name).replace(" ", "-"))
     return file_url

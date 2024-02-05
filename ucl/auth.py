@@ -682,7 +682,6 @@ def pan_plus(pan_number):
         payload={}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
-        print(api_log_doc)
         response = requests.request("GET", url, headers=headers, data=payload)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
         return response.json()
@@ -703,7 +702,6 @@ def pan_ocr(**kwargs):
             kwargs,
             {
                 "document1": ["required"],
-                "document2": "",
                 "name": "",
                 "extension" : ["required"]
         })

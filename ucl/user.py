@@ -250,7 +250,6 @@ def face_match(**kwargs):
         live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
         if partner.pan_card_file:
-            print(partner.pan_card_file)
             path = urlparse(partner.pan_card_file).path
             file_extension = os.path.splitext(path)[1]
 
@@ -258,7 +257,6 @@ def face_match(**kwargs):
             # Specify the input PDF file and output folder
                 input_pdf_path = frappe.utils.get_files_path(partner.pan_card_file)
                 # output_folder = frappe.utils.get_files_path("/files")
-                print(input_pdf_path)
                 
                 pdf_document = fitz.open(input_pdf_path)
                 for page_number in range(pdf_document.page_count):
@@ -273,8 +271,6 @@ def face_match(**kwargs):
             else:
                 image_path_2 = frappe.utils.get_files_path(partner.pan_card_file)
             
-            print(image_path_1)
-            print(image_path_2)
             image_1 = face_recognition.load_image_file(image_path_1)
             image_2 = face_recognition.load_image_file(image_path_2)
 
@@ -291,14 +287,11 @@ def face_match(**kwargs):
                 results = face_recognition.compare_faces([face_encoding_1], face_encoding_2)
 
                 if results[0]:
-                    print("Faces match!")
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
-                    print("Faces do not match.")
                     return ucl.responder.respondUnauthorized(message = "Faces do not match.")
             else:
-                print("No faces detected.")
                 return ucl.responder.respondNotFound(message = "No faces detected.")
 
     except ucl.exceptions.APIException as e:
