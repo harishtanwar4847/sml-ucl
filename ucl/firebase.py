@@ -14,7 +14,7 @@ class FirebaseAdmin:
         firebase_credentials_file_path = frappe.get_site_path("firebase.json")
 
         if not isfile(firebase_credentials_file_path):
-            raise lms.FirebaseCredentialsFileNotFoundError(
+            raise ucl.FirebaseCredentialsFileNotFoundError(
                 "Firebase Credentials not found."
             )
 
@@ -22,26 +22,26 @@ class FirebaseAdmin:
             cred = credentials.Certificate(firebase_credentials_file_path)
             self.app = firebase_admin.initialize_app(cred)
         except ValueError as e:
-            raise lms.InvalidFirebaseCredentialsError(str(e))
+            raise ucl.InvalidFirebaseCredentialsError(str(e))
 
     def send_message(self, title, body, image=None, tokens=[], data=None):
         if not tokens:
-            raise lms.FirebaseTokensNotProvidedError("Firebase tokens not provided.")
+            raise ucl.FirebaseTokensNotProvidedError("Firebase tokens not provided.")
         notification = messaging.Notification(title, body, image)
         multicast_message = messaging.MulticastMessage(tokens, data, notification)
         try:
             messaging.send_multicast(multicast_message)
         except firebase_admin.exceptions.FirebaseError as e:
-            raise lms.FirebaseError(str(e))
+            raise ucl.FirebaseError(str(e))
 
     def send_data(self, data, tokens=[]):
         if not data:
-            raise lms.FirebaseDataNotProvidedError("Firebase data not provided.")
+            raise ucl.FirebaseDataNotProvidedError("Firebase data not provided.")
         multicast_message = messaging.MulticastMessage(tokens, data)
         try:
             messaging.send_multicast(multicast_message)
         except firebase_admin.exceptions.FirebaseError as e:
-            raise lms.FirebaseError(str(e))
+            raise ucl.FirebaseError(str(e))
 
     def send_android_message(
         self,
@@ -51,12 +51,12 @@ class FirebaseAdmin:
         tokens=[],
         data=None,
         priority="normal",
-        collapse_key="com.sparktechnologies.sparkloans",
+        collapse_key="com.sml.ucl",
         channel_id="channel_ID_1",
         sound="default",
     ):
         if not tokens:
-            raise lms.FirebaseTokensNotProvidedError("Firebase tokens not provided.")
+            raise ucl.FirebaseTokensNotProvidedError("Firebase tokens not provided.")
 
         notification = messaging.Notification(title, body, image)
 
@@ -117,7 +117,7 @@ class FirebaseAdmin:
         try:
             messaging.send_multicast(multicast_message)
         except firebase_admin.exceptions.FirebaseError as e:
-            raise lms.FirebaseError(str(e))
+            raise ucl.FirebaseError(str(e))
 
     def delete_app(self):
         if self.app:

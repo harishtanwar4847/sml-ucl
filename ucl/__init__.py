@@ -1,7 +1,9 @@
+import base64
 import json
 import os
 import frappe
 from frappe import _
+from pdf2image import convert_from_path
 import ucl
 import random
 import re
@@ -631,7 +633,139 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
         ).insert(ignore_permissions=True)
     frappe.db.commit()
     file_name_url = file.file_url
-    print(file_name_url)
     # file_url = "https://723d5f534a48f5.lhr.life{}".format(file_name_url).replace(" ", "-")
     file_url = frappe.utils.get_url("{}".format(file_name_url).replace(" ", "-"))
     return file_url
+
+
+def get_firebase_tokens(entity):
+    token_list = frappe.db.get_all(
+        "User Token",
+        filters={"entity": entity, "token_type": "Firebase Token", "used": 0},
+        fields=["token"],
+    )
+
+    return [i.token for i in token_list]
+
+def send_ucl_push_notification(
+    fcm_notification={}, message="", loan="", customer=None
+):
+    try:
+        fcm_payload = {}
+        tokens = get_firebase_tokens(customer.user)
+        if fcm_notification and tokens:
+            if message:
+                message = message
+            else:
+                message = fcm_notification.message
+
+            try:
+                random_id = random.randint(1, 2147483646)
+                current_time = frappe.utils.now_datetime()
+                notification_name = (str(random_id) + " " + str(current_time)).replace(
+                    " ", "-"
+                )
+                sound = "default"
+                priority = "high"
+
+                fcm_payload = {
+                    "registration_ids": tokens,
+                    "priority": priority,
+                }
+
+                notification = {
+                    "title": fcm_notification.title,
+                    "body": message,
+                    "sound": sound,
+                }
+
+                data = {
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                    "name": notification_name,
+                    "notification_id": str(random_id),
+                    "screen": fcm_notification.screen_to_open,
+                    "loan_no": loan if loan else "",
+                    "title": fcm_notification.title,
+                    "body": message,
+                    "notification_type": fcm_notification.notification_type,
+                    "time": current_time.strftime("%d %b at %H:%M %p"),
+                }
+                android = {"priority": priority, "notification": {"sound": sound}}
+                apns = {
+                    "payload": {"aps": {"sound": sound, "contentAvailable": True}},
+                    "headers": {
+                        "apns-push-type": "background",
+                        "apns-priority": "5",
+                        "apns-topic": "io.flutter.plugins.firebase.messaging",
+                    },
+                }
+
+                fcm_payload["notification"] = notification
+                fcm_payload["data"] = data
+                fcm_payload["android"] = android
+                fcm_payload["apns"] = apns
+
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": "key=AAAAik2VgcI:APA91bGQzHdxdiU6zLleajH16w-J-oMM36vzaH6-C8y4h5IH5Vx6ubBgcaitMrK5MfkA4QjW8sMQ0UsXs8uUTvH40hl_IrTHE45fuFEBr7yE0Z3XU-DQks9EO07ZwajhEkyZEzP83arB",
+                }
+                url = "https://fcm.googleapis.com/fcm/send" 
+                res = requests.post(
+                    url=url,
+                    data=json.dumps(fcm_payload),
+                    headers=headers,
+                )
+                res_json = json.loads(res.text)
+                log = {
+                    "url": url,
+                    "headers": headers,
+                    "request": data,
+                    "response": res_json,
+                }
+
+                create_log(log, "Send_UCL_Push_Notification_Log")
+
+                # fa.send_android_message(
+                #     title=fcm_notification.title,
+                #     body=message,
+                #     data=data,
+                #     tokens=get_firebase_tokens(customer.user),
+                #     priority="high",
+                # )
+                if res.ok and res.status_code == 200:
+                    # Save log for UCL Push Notification
+                    frappe.get_doc(
+                        {
+                            "doctype": "UCL Push Notification Log",
+                            "name": notification_name,
+                            "title": data["title"],
+                            "loan_customer": customer.name,
+                            "customer_name": customer.full_name,
+                            "loan": data["loan_no"],
+                            "screen_to_open": data["screen"],
+                            "notification_id": data["notification_id"],
+                            "notification_type": data["notification_type"],
+                            "time": current_time,
+                            "click_action": data["click_action"],
+                            "message": data["body"],
+                            "is_cleared": 0,
+                            "is_read": 0,
+                        }
+                    ).insert(ignore_permissions=True)
+                    frappe.db.commit()
+            except (
+                requests.RequestException,
+                TypeError,
+                KeyError,
+                ValueError,
+                FirebaseError,
+            ):
+                # To log fcm notification Exception into Frappe Error Log
+                raise Exception
+    except Exception as e:
+        frappe.log_error(
+            message=frappe.get_traceback()
+            + "\nNotification Info:\n"
+            + json.dumps(fcm_payload if fcm_payload else customer.name),
+            title="UCL Push Notification Error",
+        )

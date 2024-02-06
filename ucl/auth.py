@@ -1,6 +1,7 @@
 import base64
 import os
 from random import randint
+import requests
 import frappe
 import json
 from frappe import _
@@ -167,7 +168,7 @@ def verify_otp(**kwargs):
                     )
 
                 invalid_login_attempts = get_login_attempt_tracker(user.name)
-                if invalid_login_attempts.login_failed_count > 0:
+                if 0 < invalid_login_attempts.login_failed_count <= 3:
                     message += " {} invalid {}.".format(
                         invalid_login_attempts.login_failed_count,
                         "attempt"
@@ -175,6 +176,11 @@ def verify_otp(**kwargs):
                         else "attempts",
                                    empty_token = {}
                 )
+                else:
+                    message = "3 invalid attempts done. Please try again after 60 seconds."
+                    ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = message)
+                    raise ucl.exceptions.ForbiddenException(message=message)
+
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Invalid OTP.")
             raise ucl.exceptions.UnauthorizedException(message)
 
@@ -212,9 +218,9 @@ def verify_otp(**kwargs):
                 app_version_platform = (
                     data.get("app_version") + " | " + data.get("platform")
                 )
-            # ucl.add_firebase_token(
-            #     data.get("firebase_token"), app_version_platform, data.get("mobile")
-            # )
+            ucl.add_firebase_token(
+                data.get("firebase_token"), app_version_platform, data.get("mobile")
+            )
             ucl.token_mark_as_used(token)
             response = "OTP Verified" + "\n" + str(data)
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
@@ -241,7 +247,9 @@ def set_pin(**kwargs):
             },
         )
 
-        api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = str(data))
+        req= data
+        req["pin"] = "****"
+        api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = str(req))
 
         try:
             user = ucl.__user()
@@ -320,7 +328,9 @@ def verify_forgot_pin_otp(**kwargs):
                 "new_pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
             },
         )
-        api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = str(data))
+        req = data
+        req["new_pin"] = "****"
+        api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = str(req))
 
         try:
             user = ucl.__user()
@@ -397,7 +407,9 @@ def login(**kwargs):
             },
         )
 
-        api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = str(data))
+        req = data
+        req["pin"] = "****"
+        api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = str(req))
         if data.get("firebase_token"):
             reg = ucl.regex_special_characters(
                 search=data.get("firebase_token"),
@@ -673,7 +685,6 @@ def terms_of_use_nd_privacy_policy():
     
 @frappe.whitelist(allow_guest=True)
 def pan_plus(pan_number):
-    import requests
     try:
         ucl_setting = frappe.get_single("UCL Settings")
 
@@ -693,7 +704,6 @@ def pan_plus(pan_number):
     
 @frappe.whitelist(allow_guest=True)
 def pan_ocr(**kwargs):
-    import requests
     try:
         ucl.validate_http_method("POST")
         user = ucl.__user()
@@ -710,7 +720,6 @@ def pan_ocr(**kwargs):
         partner.pan_card_file = "/files/{}".format(pan_file_name)
         partner.save(ignore_permissions=True)
         frappe.db.commit()
-        print(pan_file_url)
         payload = {
             "document1": pan_file_url
         }
@@ -744,7 +753,6 @@ def pan_ocr(**kwargs):
     
 @frappe.whitelist(allow_guest=True)
 def aadhaar_ocr(**kwargs):
-    import requests
     try:
         ucl.validate_http_method("POST")
         user = ucl.__user()
@@ -799,7 +807,6 @@ def aadhaar_ocr(**kwargs):
 
 @frappe.whitelist(allow_guest=True)
 def rc_advance(**kwargs):
-    import requests
     try:
         ucl.validate_http_method("POST")
 
@@ -824,7 +831,6 @@ def rc_advance(**kwargs):
 
 @frappe.whitelist(allow_guest=True)
 def penny_drop(**kwargs):
-    import requests
     import base64
     try:
         ucl.validate_http_method("POST")
