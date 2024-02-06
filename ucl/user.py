@@ -103,7 +103,7 @@ def update_pan_details(**kwargs):
                 "dob": "",
                 "aadhaar_linked": "decimal|between:0,1"
         })
-        api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
+        api_log_doc = ucl.log_api(method = "Update Pan Details", request_time = datetime.now(), request = str(data))
         partner_dict = {
             "pan_father_name": data.get("fathers_name"),
             "pan_number": data.get("pan_number"),
@@ -128,7 +128,7 @@ def update_pan_details(**kwargs):
         partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
         
-        response = {"message" : "Pan details saved successfully", "partner" : partner_doc.as_dict()}
+        response = {"message" : "Pan details updated successfully", "partner" : partner_doc.as_dict()}
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
@@ -160,7 +160,7 @@ def update_aadhaar_details(**kwargs):
             "state": "",
             "street_address": ""
         })
-        api_log_doc = ucl.log_api(method = "Save Aadhaar Details", request_time = datetime.now(), request = str(data))
+        api_log_doc = ucl.log_api(method = "Update Aadhaar Details", request_time = datetime.now(), request = str(data))
         partner_dict = {
             "aadhaar_address" : data.get("address"),
             "aadhaar_dob": data.get("date_of_birth"),
@@ -177,7 +177,7 @@ def update_aadhaar_details(**kwargs):
         partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
         
-        response = {"message" : "Aadhaar details saved successfully", "partner" : partner_doc.as_dict()}
+        response = {"message" : "Aadhaar details updated successfully", "partner" : partner_doc.as_dict()}
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
@@ -206,7 +206,7 @@ def update_current_address(**kwargs):
             "state": "",
             "country": "",
         })
-        api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
+        api_log_doc = ucl.log_api(method = "Update Pan Details", request_time = datetime.now(), request = str(data))
         if data.get("same_as_on_pan") == 1:
             address_dict = {
                 "same_as_on_pan" : data.get("same_as_on_pan"),
@@ -233,7 +233,7 @@ def update_current_address(**kwargs):
 
         partner_doc = frappe.get_doc("Partner", partner.name).update(address_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        response = "Address saved successfully"
+        response = "Address updated successfully"
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
@@ -358,7 +358,7 @@ def update_company_pan_details(**kwargs):
         
         partner_doc = frappe.get_doc("Partner", partner.name).update(company_address_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        response = "Company Pan details saved successfully"
+        response = "Company Pan details updated successfully"
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
