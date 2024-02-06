@@ -12,14 +12,15 @@ from urllib.parse import urlparse
 import os
 import face_recognition
 import numpy as np
+from random import randint
 
 
 @frappe.whitelist(allow_guest=True)
 def update_partner_type(**kwargs):
     try:
-        ucl.validate_http_method("GET")
+        ucl.validate_http_method("POST")
         user = ucl.__user()
-        partner = ucl.__partner(user)
+        partner = ucl.__partner(user.name)
 
         data = ucl.validate(
         kwargs,{
@@ -31,7 +32,7 @@ def update_partner_type(**kwargs):
         api_log_doc = ucl.log_api(method = "Update Partner Type", request_time = datetime.now(), request = str(data))
 
         if data.get("associate") == 1:
-            if not data.get("parent_partner"):
+            if not data.get("parent_partner_name"):
                 response = "Please Enter Parent Partner Name."
                 raise ucl.exceptions.RespondFailureException(_(response))
             else:
@@ -46,6 +47,7 @@ def update_partner_type(**kwargs):
                 user.save(ignore_permissions=True)
         
         else:
+            partner.associate = 0
             if not data.get("partner_type"):
                 response = "Please Enter Parent Type."
                 raise ucl.exceptions.RespondFailureException(_(response))
@@ -57,6 +59,7 @@ def update_partner_type(**kwargs):
             elif data.get("partner_type") == "Corporate" and data.get("company_type"):
                 partner.partner_type = data.get("partner_type")
                 partner.company_type = data.get("company_type")
+            user.remove_roles("Partner Associate")
             user.add_roles("Partner")
             user.save(ignore_permissions=True)
         partner.save(ignore_permissions = True)
@@ -73,55 +76,59 @@ def update_partner_type(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def update_pan_details(**kwargs):
     try:
-        ucl.validate_http_method("GET")
+        ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
 
         data = ucl.validate(
-        kwargs,{
-            "fathers_name": "",
-            "pan_number": ["required"],
-            "pan_type": "",
-            "full_name": ["required"],
-            "masked_aadhaar": "",
-            "address_line_1": "",
-            "address_line_2": "",
-            "address_street_name": "",
-            "zip": "",
-            "city": "",
-            "state": "",
-            "country": "",
-            "full_address": "",
-            "email": "",
-            "phone_number": "",
-            "gender": "",
-            "dob": "",
-            "aadhaar_linked": ["required", "decimal|between:0,1"],
+            kwargs,
+            {
+                "fathers_name": "",
+                "pan_number": ["required"],
+                "pan_type": "",
+                "full_name": ["required"],
+                "masked_aadhaar": "",
+                "address_line_1": "",
+                "address_line_2": "",
+                "address_street_name": "",
+                "zip": "",
+                "city": "",
+                "state": "",
+                "country": "",
+                "full_address": "",
+                "email": "",
+                "phone_number": "",
+                "gender": "",
+                "dob": "",
+                "aadhaar_linked": "decimal|between:0,1"
         })
         api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
-        partner = {
-            "fathers_name": data.get("pan_father_name"),
+        partner_dict = {
+            "pan_father_name": data.get("fathers_name"),
             "pan_number": data.get("pan_number"),
             "pan_type": data.get("pan_type"),
-            "full_name": data.get("pan_full_name"),
+            "pan_full_name": data.get("full_name"),
             "masked_aadhaar": data.get("masked_aadhaar"),
-            "address_line_1": data.get("line_1"),
-            "address_line_2": data.get("line_2"),
-            "address_street_name": data.get("street_name"),
+            "line_1": data.get("address_line_1"),
+            "line_2": data.get("address_line_2"),
+            "street_name": data.get("address_street_name"),
             "zip": data.get("zip"),
-            "city": data.get("pan_city"),
-            "state": data.get("pan_state"),
-            "country": data.get("pan_country"),
-            "full_address": data.get("pan_full_address"),
-            "email": data.get("email_id"),
-            "phone_number": data.get("pan_phone_number"),
-            "gender": data.get("pan_gender"),
-            "dob": data.get("pan_dob"),
+            "pan_city": data.get("city"),
+            "pan_state": data.get("state"),
+            "pan_country": data.get("country"),
+            "pan_full_address": data.get("full_address"),
+            "email_id": data.get("email"),
+            "pan_phone_number": data.get("phone_number"),
+            "pan_gender": data.get("gender"),
+            "pan_dob": data.get("dob"),
             "aadhaar_linked": data.get("aadhaar_linked"),
         }
         
-        response = "Pan details saved successfully"
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+        partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
+        frappe.db.commit()
+        
+        response = {"message" : "Pan details saved successfully", "partner" : partner_doc.as_dict()}
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
@@ -133,7 +140,7 @@ def update_pan_details(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def update_aadhaar_details(**kwargs):
     try:
-        ucl.validate_http_method("GET")
+        ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
 
@@ -150,9 +157,9 @@ def update_aadhaar_details(**kwargs):
             "name_on_card": "",
             "pincode": "",
             "state": "",
-            "street_address": "",
+            "street_address": ""
         })
-        api_log_doc = ucl.log_api(method = "Save Pan Details", request_time = datetime.now(), request = str(data))
+        api_log_doc = ucl.log_api(method = "Save Aadhaar Details", request_time = datetime.now(), request = str(data))
         partner_dict = {
             "aadhaar_address" : data.get("address"),
             "aadhaar_dob": data.get("date_of_birth"),
@@ -169,8 +176,8 @@ def update_aadhaar_details(**kwargs):
         partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
         
-        response = {"message" : "Pan details saved successfully", "partner" : partner_doc.as_dict()}
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+        response = {"message" : "Aadhaar details saved successfully", "partner" : partner_doc.as_dict()}
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
@@ -230,7 +237,7 @@ def update_current_address(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def face_match(**kwargs):
     try:
-        user = ucl.__user("8708759004")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
 
         ucl.validate_http_method("POST")
@@ -243,21 +250,25 @@ def face_match(**kwargs):
             },
         )
 
-        live_picture_file = "{}_live_image.{}".format(
-            partner.partner_name,data.get("extension")
+        live_picture_file = "{}_live_image_{}.{}".format(
+            partner.partner_name,randint(1,9),data.get("extension")
         ).replace(" ", "-")
 
         live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
+        print(image_path_1)
+        partner.live_image = "/files/{}".format(live_picture_file)
+        partner.save(ignore_permissions=True)
+        frappe.db.commit()
         if partner.pan_card_file:
             path = urlparse(partner.pan_card_file).path
             file_extension = os.path.splitext(path)[1]
-
+            filename = os.path.basename(partner.pan_card_file)
+            print(filename)
             if file_extension ==".pdf":
             # Specify the input PDF file and output folder
-                input_pdf_path = frappe.utils.get_files_path(partner.pan_card_file)
-                # output_folder = frappe.utils.get_files_path("/files")
-                
+                input_pdf_path = frappe.utils.get_files_path(filename)
+                print(input_pdf_path)
                 pdf_document = fitz.open(input_pdf_path)
                 for page_number in range(pdf_document.page_count):
                     page = pdf_document[page_number]
@@ -269,7 +280,7 @@ def face_match(**kwargs):
                 pdf_document.close()
             
             else:
-                image_path_2 = frappe.utils.get_files_path(partner.pan_card_file)
+                image_path_2 = frappe.utils.get_files_path(filename)
             
             image_1 = face_recognition.load_image_file(image_path_1)
             image_2 = face_recognition.load_image_file(image_path_2)

@@ -24,7 +24,6 @@
   "pan_father_name",
   "pan_gender",
   "pan_dob",
-  "age",
   "pan_phone_number",
   "email_id",
   "pan_type",
@@ -40,8 +39,8 @@
   "pan_full_address",
   "aadhaar_linked",
   "aadhaar_details_section",
-  "aadhaar_file",
-  "aadhaar_file_2",
+  "aadhaar_front",
+  "aadhaar_back",
   "id_number",
   "name_on_card",
   "aadhaar_father_name",
@@ -253,11 +252,6 @@
    "label": "Full Name"
   },
   {
-   "fieldname": "age",
-   "fieldtype": "Int",
-   "label": "Age"
-  },
-  {
    "fieldname": "pan_full_address",
    "fieldtype": "Small Text",
    "label": "Full Address"
@@ -463,11 +457,6 @@
    "label": "PAN Card File"
   },
   {
-   "fieldname": "aadhaar_file",
-   "fieldtype": "Attach",
-   "label": "Aadhaar File"
-  },
-  {
    "fieldname": "company_pan_file",
    "fieldtype": "Attach",
    "label": "Company PAN File"
@@ -477,14 +466,19 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "aadhaar_file_2",
+   "fieldname": "aadhaar_front",
    "fieldtype": "Attach",
-   "label": "Aadhaar File 2"
+   "label": "Aadhaar Front"
+  },
+  {
+   "fieldname": "aadhaar_back",
+   "fieldtype": "Attach",
+   "label": "Aadhaar Back"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-05 16:41:23.723198",
+ "modified": "2024-02-06 15:02:22.199664",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

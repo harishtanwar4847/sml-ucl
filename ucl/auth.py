@@ -696,7 +696,7 @@ def pan_ocr(**kwargs):
     import requests
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("8708759004")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
         data = ucl.validate(
             kwargs,
@@ -705,8 +705,12 @@ def pan_ocr(**kwargs):
                 "name": "",
                 "extension" : ["required"]
         })
-
-        pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name="{}_pan_card.{extension}".format(partner.partner_name,extension=data.get("extension")),attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
+        pan_file_name = "{}_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+        pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
+        partner.pan_card_file = "/files/{}".format(pan_file_name)
+        partner.save(ignore_permissions=True)
+        frappe.db.commit()
+        print(pan_file_url)
         payload = {
             "document1": pan_file_url
         }
@@ -727,8 +731,8 @@ def pan_ocr(**kwargs):
             response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
             response["pan_type"] = ocr_response.json()['data']["pan_type"]
         else:
-            ucl.log_api_error(mess = response)
             response = ocr_response
+            ucl.log_api_error(mess = response)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
     
         return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
@@ -743,7 +747,7 @@ def aadhaar_ocr(**kwargs):
     import requests
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("8708759004")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
 
         data = ucl.validate(
@@ -754,12 +758,18 @@ def aadhaar_ocr(**kwargs):
                 "name": "",
                 "extension": ["required"]
         })
+        aadhaar_front_file_name = "{}_aadhaar_card_front_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+        aadhaar_back_file_name = "{}_aadhaar_card_back_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
 
-        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name="{}_aadhaar_card.{extension}".format(partner.partner_name,extension=data.get("extension")),attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_file",partner=partner)
+        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=aadhaar_front_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_front",partner=partner)
+        partner.aadhaar_front = "/files/{}".format(aadhaar_front_file_name)
         if data.get("document2"):
-            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name="{}_aadhaar_card.{extension}".format(partner.partner_name,extension=data.get("extension")),attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_file_2",partner=partner)
+            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name=aadhaar_back_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_back",partner=partner)
+            partner.aadhaar_back = "/files/{}".format(aadhaar_back_file_name)
         else:
             aadhaar_file_url2 = ""
+        partner.save(ignore_permissions=True)
+        frappe.db.commit()
         payload = {
             "document1": aadhaar_file_url1,
             "document2": aadhaar_file_url2
@@ -780,7 +790,7 @@ def aadhaar_ocr(**kwargs):
 
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.text)
+        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -806,7 +816,7 @@ def rc_advance(**kwargs):
         response = requests.request("GET",url, headers=headers, json = payload)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+        return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json()['data'])
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()

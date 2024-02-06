@@ -13,6 +13,8 @@ from traceback import format_exc
 from .exceptions import *
 import requests
 import base64
+from random import randint
+
 
 __version__ = "0.0.1"
 
@@ -628,7 +630,8 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
             }
         ).insert(ignore_permissions=True)
     frappe.db.commit()
-    file_name = file.file_url
-    # file_url = "https://771cf816fbc8db.lhr.life/{file_name}".format(file_name = file_name).replace(" ", "-")
-    file_url = frappe.utils.get_url("{file_name}".format(file_name = file_name).replace(" ", "-"))
+    file_name_url = file.file_url
+    print(file_name_url)
+    file_url = "https://3866e50b2d237f.lhr.life{}".format(file_name_url).replace(" ", "-")
+    # file_url = frappe.utils.get_url("{}".format(file_name_url).replace(" ", "-"))
     return file_url
