@@ -489,11 +489,81 @@
    "fieldname": "aadhaar_back",
    "fieldtype": "Attach",
    "label": "Aadhaar Back"
+  },
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "label": "Company Name"
+  },
+  {
+   "fieldname": "company_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "company_dob",
+   "fieldtype": "Data",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "company_phone_no",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "company_pan_type",
+   "fieldtype": "Data",
+   "label": "Pan Type"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Heading",
+   "label": "Address"
+  },
+  {
+   "fieldname": "company_address_line1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "fieldname": "company_address_line2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "fieldname": "company_address_street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "company_address_zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "company_address_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "company_address_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "company_address_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "company_full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-06 15:02:22.199664",
+ "modified": "2024-02-06 16:25:56.198945",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

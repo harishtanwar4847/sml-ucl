@@ -230,6 +230,7 @@ def update_current_address(**kwargs):
                 "ca_country": data.get("country"),
                 }
         
+        print(str(address_dict))
 
         partner_doc = frappe.get_doc("Partner", partner.name).update(address_dict).save(ignore_permissions = True)
         frappe.db.commit()
