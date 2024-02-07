@@ -383,7 +383,7 @@ def update_business_proof(**kwargs):
                 "business_proof_type" : ["required"]
         })
         file_name = "{}_{}_{}.{}".format(partner.partner_name, data.get("business_proof_type"), randint(1,9),data.get("extension")).replace(" ", "-")
-        pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="business_proof",partner=partner)
+        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="business_proof",partner=partner)
         partner.business_proof = "/files/{}".format(file_name)
         partner.save(ignore_permissions=True)
         frappe.db.commit()
@@ -407,11 +407,45 @@ def update_gst_certificate(**kwargs):
                 "extension" : ["required"]
         })
         file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
-        pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
+        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
         partner.company_gst_certificate = "/files/{}".format(file_name)
         partner.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def update_bank_details(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        data = ucl.validate(
+            kwargs,
+            {
+                "document1": ["required"],
+                "bank_name": ["required"],
+                "bank_address": ["required"],
+                "ifsc_code": ["required"],
+                "beneficiary_name": ["required"],
+                "extension" : ["required"]
+        })
+        file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
+        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="cancelled_cheque",partner=partner)
+        bank_details_dict = {
+            "cancelled_cheque": "/files/{}".format(file_name),
+            "bank_name": data.get("bank_name"),
+            "bank_address": data.get("bank_address"),
+            "ifsc_code": data.get("ifsc_code"),
+            "beneficiary_name": data.get("beneficiary_name")
+        }
+        partner_doc = frappe.get_doc("Partner", partner.name).update(bank_details_dict).save(ignore_permissions = True)
+        frappe.db.commit()
+        return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()

@@ -246,9 +246,7 @@ def set_pin(**kwargs):
                 "pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
             },
         )
-
-        req= data
-        req["pin"] = "****"
+        req = {"otp" : data.get('otp'), "new_pin" : '*****'}
         api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = str(req))
 
         try:
@@ -328,8 +326,7 @@ def verify_forgot_pin_otp(**kwargs):
                 "new_pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
             },
         )
-        req = data
-        req["new_pin"] = "****"
+        req = {"otp" : data.get('otp'), "new_pin" : '*****'}
         api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = str(req))
 
         try:
@@ -407,8 +404,7 @@ def login(**kwargs):
             },
         )
 
-        req = data
-        req["pin"] = "****"
+        req = {"otp" : data.get('otp'), "new_pin" : '*****'}
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = str(req))
         if data.get("firebase_token"):
             reg = ucl.regex_special_characters(
@@ -461,6 +457,9 @@ def login(**kwargs):
                 app_version_platform = (
                     data.get("app_version") + " | " + data.get("platform")
                 )
+            ucl.add_firebase_token(
+                data.get("firebase_token"), app_version_platform, user.mobile_no
+            )
             response = "Logged in Successfully"
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
             return ucl.responder.respondWithSuccess(
@@ -713,13 +712,21 @@ def pan_ocr(**kwargs):
             {
                 "document1": ["required"],
                 "name": "",
+                "company_pan": "decimal|between:0,1",
                 "extension" : ["required"]
         })
-        pan_file_name = "{}_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
-        pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
-        partner.pan_card_file = "/files/{}".format(pan_file_name)
-        partner.save(ignore_permissions=True)
-        frappe.db.commit()
+        if data.get("company_pan") == 0:
+            pan_file_name = "{}_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+            pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
+            partner.pan_card_file = "/files/{}".format(pan_file_name)
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
+        else:
+            pan_file_name = "{}_company_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+            pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_pan_file",partner=partner)
+            partner.company_pan_file = "/files/{}".format(pan_file_name)
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
         payload = {
             "document1": pan_file_url
         }

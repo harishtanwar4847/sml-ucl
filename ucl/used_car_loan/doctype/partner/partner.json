@@ -405,6 +405,7 @@
    "label": "Company GST Certificate"
   },
   {
+   "collapsible": 1,
    "fieldname": "current_address_section",
    "fieldtype": "Section Break",
    "label": "Current Address"
@@ -563,7 +564,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-06 16:25:56.198945",
+ "modified": "2024-02-07 11:38:31.423329",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
