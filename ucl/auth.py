@@ -70,7 +70,7 @@ def verify_email(**kwargs):
             else:
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "User already exists")
                 return ucl.responder.respondForbidden(
-                    message=frappe._("User already exists"), data = {}
+                    message=frappe._("This email id already exists"), data = {}
                 )
         
         else:
@@ -166,20 +166,6 @@ def verify_otp(**kwargs):
                     raise ucl.exceptions.UnauthorizedException(
                         _("User disabled or missing")
                     )
-
-                invalid_login_attempts = get_login_attempt_tracker(user.name)
-                if 0 < invalid_login_attempts.login_failed_count <= 3:
-                    message += " {} invalid {}.".format(
-                        invalid_login_attempts.login_failed_count,
-                        "attempt"
-                        if invalid_login_attempts.login_failed_count == 1
-                        else "attempts",
-                                   empty_token = {}
-                )
-                else:
-                    message = "3 invalid attempts done. Please try again after 60 seconds."
-                    ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = message)
-                    raise ucl.exceptions.ForbiddenException(message=message)
 
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Invalid OTP.")
             raise ucl.exceptions.UnauthorizedException(message)
@@ -440,13 +426,18 @@ def login(**kwargs):
                 message = frappe._(response)
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
                 invalid_login_attempts = get_login_attempt_tracker(user.name)
-                if invalid_login_attempts.login_failed_count > 0:
+                if 0 < invalid_login_attempts.login_failed_count <= 3:
                     message += " {} invalid {}.".format(
                         invalid_login_attempts.login_failed_count,
                         "attempt"
                         if invalid_login_attempts.login_failed_count == 1
                         else "attempts",
-                    )
+                                   empty_token = {}
+                )
+                else:
+                    message = "3 invalid attempts done. Please try again after 60 seconds."
+                    ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = message)
+                    raise ucl.exceptions.ForbiddenException(message=message)
                 raise ucl.exceptions.UnauthorizedException(message)
 
             token = dict(

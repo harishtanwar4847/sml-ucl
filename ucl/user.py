@@ -129,9 +129,9 @@ def update_pan_details(**kwargs):
         frappe.db.commit()
         
         response = {"message" : "Pan details updated successfully", "partner" : partner_doc.as_dict()}
+
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
-            
-        return ucl.responder.respondWithSuccess(message=frappe._(response))
+        return ucl.responder.respondWithSuccess(message=frappe._("Pan details updated successfully"), data = partner_doc.as_dict())    
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -179,8 +179,7 @@ def update_aadhaar_details(**kwargs):
         
         response = {"message" : "Aadhaar details updated successfully", "partner" : partner_doc.as_dict()}
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
-            
-        return ucl.responder.respondWithSuccess(message=frappe._(response))
+        return ucl.responder.respondWithSuccess(message=frappe._("Aadhaar details updated successfully"), data = partner_doc.as_dict())    
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
