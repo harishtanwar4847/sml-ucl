@@ -589,11 +589,11 @@ def employer_list():
     return list(i['name'] for i in res)
 
 def partner_list():
-    res = frappe.get_all("Partner", fields = ["partner_name"])
+    res = frappe.get_all("Partner", fields = ["name","partner_name"])
     if len(res) == 0:
         raise NotFoundException
-
-    return list(i['partner_name'] for i in res)
+    res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
+    return res
 
 @frappe.whitelist()
 def authorize_deepvue():

@@ -1,0 +1,271 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-02-09 16:05:58.849098",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "product_details_section",
+  "product",
+  "column_break_dbha",
+  "occupation_type",
+  "mobile_verification_section",
+  "mobile_no",
+  "basic_details_section",
+  "pan",
+  "first_name",
+  "last_name",
+  "gender",
+  "dob",
+  "address",
+  "pan_mobile_no",
+  "column_break_fgtz",
+  "requested_loan_amount",
+  "monthly_salary",
+  "monthly_gross_income",
+  "running_loan",
+  "lender_name",
+  "pos",
+  "sanctioned_loan_amount",
+  "emi",
+  "total_emis_paid",
+  "car_details_section",
+  "brand",
+  "registration_number",
+  "model",
+  "variant",
+  "on_road_price",
+  "bank_statement",
+  "salary_slip",
+  "column_break_eqry",
+  "manufacturing_year",
+  "month",
+  "city",
+  "car_owner",
+  "colour",
+  "kms_driven"
+ ],
+ "fields": [
+  {
+   "fieldname": "product_details_section",
+   "fieldtype": "Section Break",
+   "label": "Product Details"
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Select",
+   "label": "Product",
+   "options": "\nNew Car Purchase\nUsed Car Purchase\nLoan Against Car"
+  },
+  {
+   "fieldname": "mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No"
+  },
+  {
+   "fieldname": "mobile_verification_section",
+   "fieldtype": "Section Break",
+   "label": "Mobile Verification"
+  },
+  {
+   "fieldname": "basic_details_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Details"
+  },
+  {
+   "fieldname": "pan",
+   "fieldtype": "Data",
+   "label": "PAN"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "dob",
+   "fieldtype": "Date",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "pan_mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No"
+  },
+  {
+   "fieldname": "column_break_fgtz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "requested_loan_amount",
+   "fieldtype": "Currency",
+   "label": "Requested Loan Amount"
+  },
+  {
+   "fieldname": "occupation_type",
+   "fieldtype": "Select",
+   "label": "Occupation Type",
+   "options": "\nSalaried\nSelf Employed"
+  },
+  {
+   "fieldname": "monthly_salary",
+   "fieldtype": "Currency",
+   "label": "Monthly Salary"
+  },
+  {
+   "fieldname": "monthly_gross_income",
+   "fieldtype": "Currency",
+   "label": "Monthly Gross Income"
+  },
+  {
+   "fieldname": "car_details_section",
+   "fieldtype": "Section Break",
+   "label": "Car Details"
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Data",
+   "label": "Brand"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "variant",
+   "fieldtype": "Data",
+   "label": "Variant"
+  },
+  {
+   "fieldname": "on_road_price",
+   "fieldtype": "Currency",
+   "label": "On Road Price"
+  },
+  {
+   "fieldname": "bank_statement",
+   "fieldtype": "Attach",
+   "label": "Bank Statement"
+  },
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Attach",
+   "label": "Salary Slip"
+  },
+  {
+   "fieldname": "column_break_eqry",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manufacturing_year",
+   "fieldtype": "Data",
+   "label": "Manufacturing Year"
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Data",
+   "label": "Month"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Link",
+   "label": "City",
+   "options": "City"
+  },
+  {
+   "fieldname": "car_owner",
+   "fieldtype": "Data",
+   "label": "Owner"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Data",
+   "label": "Colour"
+  },
+  {
+   "fieldname": "kms_driven",
+   "fieldtype": "Data",
+   "label": "Kms Driven"
+  },
+  {
+   "fieldname": "column_break_dbha",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "registration_number",
+   "fieldtype": "Data",
+   "label": "Registration Number"
+  },
+  {
+   "fieldname": "running_loan",
+   "fieldtype": "Select",
+   "label": "Does you have a running car loan?",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "lender_name",
+   "fieldtype": "Select",
+   "label": "Lender Name"
+  },
+  {
+   "fieldname": "pos",
+   "fieldtype": "Data",
+   "label": "POS"
+  },
+  {
+   "fieldname": "sanctioned_loan_amount",
+   "fieldtype": "Currency",
+   "label": "Sanctioned Loan Amount"
+  },
+  {
+   "fieldname": "emi",
+   "fieldtype": "Data",
+   "label": "EMI"
+  },
+  {
+   "fieldname": "total_emis_paid",
+   "fieldtype": "Data",
+   "label": "Total EMI's Paid"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-09 16:33:40.675818",
+ "modified_by": "Administrator",
+ "module": "Used Car Loan",
+ "name": "Eligibility Check",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
