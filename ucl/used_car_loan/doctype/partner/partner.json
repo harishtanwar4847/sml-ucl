@@ -17,6 +17,8 @@
   "status",
   "live_image",
   "digital_agreement",
+  "kyc_live_image_linked",
+  "kyc_digital_agreement_linked",
   "pan_details_section",
   "pan_card_file",
   "pan_number",
@@ -38,6 +40,7 @@
   "pan_country",
   "pan_full_address",
   "aadhaar_linked",
+  "kyc_pan_linked",
   "aadhaar_details_section",
   "aadhaar_front",
   "aadhaar_back",
@@ -54,6 +57,7 @@
   "district",
   "aadhaar_state",
   "aadhaar_address",
+  "kyc_aadhaar_linked",
   "company_pan_details_section",
   "company_pan_file",
   "company_pan_number",
@@ -72,10 +76,12 @@
   "company_address_city",
   "company_address_state",
   "company_address_country",
+  "kyc_company_pan_linked",
   "company_documents_section",
   "business_proof",
   "column_break_nxdy",
   "company_gst_certificate",
+  "kyc_company_documents_linked",
   "current_address_section",
   "same_as_on_pan",
   "ca_line1",
@@ -86,13 +92,15 @@
   "ca_city",
   "ca_state",
   "ca_country",
+  "kyc_current_address_linked",
   "bank_details_section",
   "cancelled_cheque",
   "bank_name",
   "bank_address",
   "column_break_uvju",
   "ifsc_code",
-  "beneficiary_name"
+  "beneficiary_name",
+  "kyc_bank_details_linked"
  ],
  "fields": [
   {
@@ -560,11 +568,67 @@
    "fieldname": "company_full_address",
    "fieldtype": "Small Text",
    "label": "Full Address"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_live_image_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Live Image Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_digital_agreement_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Digital Agreement Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_pan_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Pan Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_aadhaar_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Aadhaar Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_company_pan_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company Pan Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_company_documents_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company Documents Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_current_address_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Current Address Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_bank_details_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Bank Details Linked"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-07 11:38:31.423329",
+ "modified": "2024-02-08 12:05:06.165076",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

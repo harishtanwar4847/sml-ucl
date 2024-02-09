@@ -123,6 +123,7 @@ def update_pan_details(**kwargs):
             "pan_gender": data.get("gender"),
             "pan_dob": data.get("dob"),
             "aadhaar_linked": data.get("aadhaar_linked"),
+            "kyc_pan_linked": 1
         }
         
         partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
@@ -173,6 +174,7 @@ def update_aadhaar_details(**kwargs):
             "aadhaar_pin_code": data.get("pincode"),
             "aadhaar_state": data.get("state"),
             "street_address": data.get("street_address"),
+            "kyc_aadhaar_linked": 1
         }
         partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
@@ -216,6 +218,7 @@ def update_current_address(**kwargs):
                 "ca_city": "",
                 "ca_state": "",
                 "ca_country": "",
+                "kyc_current_address_linked": 1
             }
         else:
             address_dict = {
@@ -227,6 +230,8 @@ def update_current_address(**kwargs):
                 "ca_city": data.get("city"),
                 "ca_state": data.get("state"),
                 "ca_country": data.get("country"),
+                "kyc_current_address_linked": 1
+
                 }
         
         print(str(address_dict))
@@ -265,6 +270,7 @@ def face_match(**kwargs):
         live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
         partner.live_image = "/files/{}".format(live_picture_file)
+        partner.kyc_live_image_linked = 1
         partner.save(ignore_permissions=True)
         frappe.db.commit()
         if partner.pan_card_file:
@@ -354,6 +360,7 @@ def update_company_pan_details(**kwargs):
             "company_email": data.get("email"),
             "company_phone_no": data.get("phone_number"),
             "company_dob": data.get("dob"),
+            "kyc_company_pan_linked": 1
         }
         
         partner_doc = frappe.get_doc("Partner", partner.name).update(company_address_dict).save(ignore_permissions = True)
@@ -408,6 +415,7 @@ def update_gst_certificate(**kwargs):
         file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
         file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
         partner.company_gst_certificate = "/files/{}".format(file_name)
+        partner.kyc_company_documents_linked = 1
         partner.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
@@ -440,7 +448,8 @@ def update_bank_details(**kwargs):
             "bank_name": data.get("bank_name"),
             "bank_address": data.get("bank_address"),
             "ifsc_code": data.get("ifsc_code"),
-            "beneficiary_name": data.get("beneficiary_name")
+            "beneficiary_name": data.get("beneficiary_name"),
+            "kyc_bank_details_linked": 1
         }
         partner_doc = frappe.get_doc("Partner", partner.name).update(bank_details_dict).save(ignore_permissions = True)
         frappe.db.commit()
