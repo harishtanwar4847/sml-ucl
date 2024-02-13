@@ -829,7 +829,6 @@ def rc_advance(**kwargs):
 
 @frappe.whitelist(allow_guest=True)
 def penny_drop(**kwargs):
-    import base64
     try:
         ucl.validate_http_method("POST")
 

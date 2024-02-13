@@ -770,3 +770,10 @@ def send_ucl_push_notification(
             + json.dumps(fcm_payload if fcm_payload else customer.name),
             title="UCL Push Notification Error",
         )
+
+
+@frappe.whitelist(allow_guest=True)
+def digio_webhook_doc_signed(**kwargs):
+    data = frappe.local.form_dict
+    log = {"digio_doc_esign_log": data}
+    create_log(log, "digio_doc_esign_log")
