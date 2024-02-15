@@ -785,26 +785,21 @@ def digio_webhook_doc_signed(**kwargs):
         api_log_doc = ucl.log_api(method = "Digio Webhook doc signed", request_time = datetime.now(), request = partner.document_id)
         log_data = response.json()
         if response.status_code == 200:
-            sorted_log_data = sorted(log_data, key=lambda x: x['digio_doc_esign_log']['created_at'], reverse=True)
-            print(sorted_log_data)
+            sorted_log_data = sorted(log_data, key=lambda x: x.get('digio_doc_esign_log', {}).get('created_at', 0), reverse=True)
+
             for i in sorted_log_data:
-                if i["digio_doc_esign_log"]["payload"]["document"]["id"] == partner.document_id:
+                if "payload" in i["digio_doc_esign_log"] and "document" in i["digio_doc_esign_log"]["payload"] and "id" in  i["digio_doc_esign_log"]["payload"]["document"] and i["digio_doc_esign_log"]["payload"]["document"]["id"] == partner.document_id:
                     if "agreement_status" in i["digio_doc_esign_log"]["payload"]["document"]:          
-                        print("Agreement status found")
                         if i["digio_doc_esign_log"]["payload"]["document"]["agreement_status"] == "completed":
-                            print("Agreement status completed")
                             ucl.user.download_esign_document(partner.document_id)
                             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "success")
                             return ucl.responder.respondWithSuccess(status=200, message='Digital agreement stored')
                         else:
-                            print("Agreement status not completed")
                             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Agreement status not completed")
                             return ucl.responder.respondNotFound(status=404, message='Agreement status not completed')
                     else:
-                        print("Agreement status not found")
                         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Agreement status not found")
                         return ucl.responder.respondNotFound(status=404, message='Agreement status not found')
-            print("Document ID not found")
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Document ID not found")
             return ucl.responder.respondNotFound(status=404, message='Document ID not found')
         else:
