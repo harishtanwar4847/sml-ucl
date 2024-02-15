@@ -16,6 +16,7 @@ from .exceptions import *
 import requests
 import base64
 from random import randint
+from ucl import user
 
 
 __version__ = "0.0.1"
@@ -774,6 +775,41 @@ def send_ucl_push_notification(
 
 @frappe.whitelist(allow_guest=True)
 def digio_webhook_doc_signed(**kwargs):
-    data = frappe.local.form_dict
-    log = {"digio_doc_esign_log": data}
-    create_log(log, "digio_doc_esign_log")
+    try:
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        data = frappe.local.form_dict
+        log = {"digio_doc_esign_log": data}
+        create_log(log, "digio_doc_esign_log")
+        response = requests.get(frappe.utils.get_url("/files/digio_doc_esign_log.json"))
+        api_log_doc = ucl.log_api(method = "Digio Webhook doc signed", request_time = datetime.now(), request = partner.document_id)
+        log_data = response.json()
+        if response.status_code == 200:
+            sorted_log_data = sorted(log_data, key=lambda x: x['digio_doc_esign_log']['created_at'], reverse=True)
+            print(sorted_log_data)
+            for i in sorted_log_data:
+                if i["digio_doc_esign_log"]["payload"]["document"]["id"] == partner.document_id:
+                    if "agreement_status" in i["digio_doc_esign_log"]["payload"]["document"]:          
+                        print("Agreement status found")
+                        if i["digio_doc_esign_log"]["payload"]["document"]["agreement_status"] == "completed":
+                            print("Agreement status completed")
+                            ucl.user.download_esign_document(partner.document_id)
+                            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "success")
+                            return ucl.responder.respondWithSuccess(status=200, message='Digital agreement stored')
+                        else:
+                            print("Agreement status not completed")
+                            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Agreement status not completed")
+                            return ucl.responder.respondNotFound(status=404, message='Agreement status not completed')
+                    else:
+                        print("Agreement status not found")
+                        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Agreement status not found")
+                        return ucl.responder.respondNotFound(status=404, message='Agreement status not found')
+            print("Document ID not found")
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Document ID not found")
+            return ucl.responder.respondNotFound(status=404, message='Document ID not found')
+        else:
+            return ucl.responder.respondWithFailure(status=500, message='Something went wrong', data={}, errors={})
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()

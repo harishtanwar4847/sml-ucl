@@ -16,6 +16,7 @@
   "is_pin_set",
   "status",
   "live_image",
+  "document_id",
   "digital_agreement",
   "kyc_live_image_linked",
   "kyc_digital_agreement_linked",
@@ -624,11 +625,17 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "KYC Bank Details Linked"
+  },
+  {
+   "fieldname": "document_id",
+   "fieldtype": "Data",
+   "label": "Document ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-08 12:05:06.165076",
+ "modified": "2024-02-14 12:35:02.512665",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

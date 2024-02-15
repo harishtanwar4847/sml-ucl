@@ -461,103 +461,118 @@ def update_bank_details(**kwargs):
         return e.respond()
     
 
-# @frappe.whitelist(allow_guest=True)
-# def esign_request(**kwargs):
-#     try:
-#         user = ucl.__user()
-#         partner = ucl.__partner(user.name)
-#     #     ucl.validate_http_method("POST")
+@frappe.whitelist(allow_guest=True)
+def esign_request(**kwargs):
+    try:
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        ucl.validate_http_method("POST")
 
-#     #     data = ucl.validate(
-#     #         kwargs,
-#     #         {
-#     #         "file": "",
-#     #         "request": ({
-#     #             "signers": [
-#     #             {            
-#     #                 "identifier": "required",            
-#     #                 "name": "required",            
-#     #                 "sign_type": "required",            
-#     #                 "reason": "required"        
-#     #             }   
-#     #         ],    
-#     #         "comment": "required",    
-#     #         "expire_in_days": ["required", "decimal", ucl.validator.rules.LengthRule(2)],    
-#     #         "sequential": "decimal|between:0,1",    
-#     #         "display_on_page": "required",    
-#     #         "notify_signers": "decimal|between:0,1",    
-#     #         "send_sign_link": "decimal|between:0,1"
-#     # }, "text/plain")
-#     #         })
+        data = ucl.validate(
+            kwargs,
+            {
+                "identifier": ["required"],
+                "name": ["required"]
+            },
+        )
         
-#     #    print(data)
-#         url = "https://api.digio.in/v2/client/document/upload"
-#         ucl_setting = frappe.get_single("UCL Settings")
+        url = "https://api.digio.in/v2/client/document/upload"
+        ucl_setting = frappe.get_single("UCL Settings")
 
-#         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
-#         base64_credentials = base64.b64encode(credentials.encode()).decode()
-#         headers = {
-#             "authorization": f"Basic {base64_credentials}",
-#         }
-#         print(headers, "headers")
+        credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
+        base64_credentials = base64.b64encode(credentials.encode()).decode()
+        headers = {
+            "authorization": f"Basic {base64_credentials}",
+        }
 
-#         files = {
-#             'file': ('digio_esign.pdf', open('/home/dell/Downloads/digio_esign.pdf', 'rb'), 'application/pdf'),
-#             'request': (None, '{"signers":[{"identifier":"harish.tanwar@atriina.com","name":"Harish Tanwar","sign_type":"aadhaar","reason":"Digio esign test-atriina team"}],"comment":"Testing","expire_in_days":10,"sequential":true,"display_on_page":"last","notify_signers":true,"send_sign_link":true}', 'text/plain')
-#         }
-#         response = requests.post(url, headers=headers, files=files)
+        signers_data = {
+            "signers": [
+                {
+                    "identifier": data.get("identifier"),
+                    "name": data.get("name"),
+                    "sign_type": "aadhaar",
+                    "reason": "Digio esign test-atriina team"
+                }
+            ],
+            "comment": "Testing",
+            "expire_in_days": 10,
+            "sequential": True,
+            "display_on_page": "last",
+            "notify_signers": True,
+            "send_sign_link": True
+        }
+        ucl_settings = frappe.get_doc("UCL Settings")
+        esign_file = ucl_settings.digital_agreement.split("/files/")[1]
+        files = {
+            'file': (esign_file, open(frappe.utils.get_files_path(esign_file), 'rb'), 'application/pdf'),
+            'request': (
+                None,
+                json.dumps(signers_data),
+                'text/plain'
+            )
+        }
+        response = requests.post(url, headers=headers, files=files)
        
-#         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         
-#         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-#         print(response.json()['id'])
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
-#         id = response.json()['id']
-#         # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+        id = response.json()['id']
+        partner.document_id = id
+        partner.save(ignore_permissions = True)
+        # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
-#         return ucl.responder.respondWithSuccess(message=frappe._("success"), data="https://app.digio.in/#/gateway/login/{}/vI3atY/{}".format(id,"harish.tanwar@atriina.com"))
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data="https://app.digio.in/#/gateway/login/{}/vI3atY/{}".format(id,"harish.tanwar@atriina.com"))
 
-#     except ucl.exceptions.APIException as e:
-#         ucl.log_api_error()
-#         return e.respond()
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
     
 
-# @frappe.whitelist(allow_guest=True)
-# def get_esign_details(**kwargs):
-#     try:
-#         user = ucl.__user()
-#         partner = ucl.__partner(user.name)
-#         ucl.validate_http_method("GET")
+def download_esign_document(document_id):
+    try:
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+            
+        url = "https://api.digio.in/v2/client/document/download?document_id={}".format(document_id)
+        ucl_setting = frappe.get_single("UCL Settings")
 
-#         data = ucl.validate(
-#             kwargs,
-#             {
-#             "document_id" : "required"
-#             })
+        credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
+        base64_credentials = base64.b64encode(credentials.encode()).decode()
+        headers = {
+            "authorization": f"Basic {base64_credentials}",
+            "Content-Type": "application/json"
+        }
+        payload = {}
+        save_path = "/home/dell/Downloads/output.pdf"
+        response = requests.get(url, headers=headers)
+
+        file_name = "{}_signed_agreement_{}.pdf".format(partner.partner_name, randint(1,9)).replace(" ", "-")
+        file = frappe.get_doc(
+            {
+                "doctype": "File",
+                "file_name": file_name,
+                "attached_to_doctype": "Partner",
+                "attached_to_name": partner.name,
+                "attached_to_field" : "digital_agreement",
+                "content" : response.content,
+                "is_private": False,
+            }
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
+        partner.digital_agreement = "/files/{}".format(file_name)
+        partner.save(ignore_permissions = True)
+        api_log_doc = ucl.log_api(method = "Download Esign document", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + document_id))
         
-#         url = "https://api.digio.in/v2/client/document/{}".format(data.get("document_id"))
-#         ucl_setting = frappe.get_single("UCL Settings")
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "success")
 
-#         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
-#         base64_credentials = base64.b64encode(credentials.encode()).decode()
-#         headers = {
-#             "authorization": f"Basic {base64_credentials}",
-#             "Content-Type": "application/json"
-#         }
-#         print(headers, "headers")
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.content)
 
-#         response = requests.get(url, headers=headers, data=data)
-       
-#         api_log_doc = ucl.log_api(method = "Get Esign details", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
-        
-#         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-
-#         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
-
-#     except ucl.exceptions.APIException as e:
-#         ucl.log_api_error()
-#         return e.respond()
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
     
+
 
 
     

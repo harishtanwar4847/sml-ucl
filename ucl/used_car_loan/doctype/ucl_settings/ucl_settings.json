@@ -18,7 +18,9 @@
   "terms_and_policy_section",
   "terms_of_use",
   "column_break_nejm",
-  "privacy_policy"
+  "privacy_policy",
+  "digital_agreement_section",
+  "digital_agreement"
  ],
  "fields": [
   {
@@ -86,12 +88,22 @@
    "fieldname": "digio_client_secret",
    "fieldtype": "Data",
    "label": "Digio Client Secret"
+  },
+  {
+   "fieldname": "digital_agreement_section",
+   "fieldtype": "Section Break",
+   "label": "Digital Agreement"
+  },
+  {
+   "fieldname": "digital_agreement",
+   "fieldtype": "Attach",
+   "label": "Digital Agreement"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-28 21:14:12.128077",
+ "modified": "2024-02-13 15:58:12.715192",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Settings",
