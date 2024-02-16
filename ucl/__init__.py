@@ -85,27 +85,30 @@ def send_otp(**kwargs):
                 "token_type": "required",
             },
         )
-        if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
-            user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
-            token_mark_as_used(user_token)
-        api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
-        create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
-        login_consent_doc = frappe.get_doc(
-                {
-                    "doctype": "User Consent",
-                    "mobile": data.get("mobile"),
-                    "consent": "Login",
-                }
-            ).insert(ignore_permissions=True)
-        log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
-        # api_log_doc.response_time = datetime.now()
-        # api_log_doc.api_type = "Internal"
-        # api_log_doc.response = "OTP Sent"
-        # api_log_doc.save(ignore_permissions=True)
-        # frappe.db.commit()
-        return ucl.responder.respondWithSuccess(
-                message=frappe._("OTP Sent"),
-            )
+        if int(data.get("mobile")[0]) < 5:
+            return ucl.responder.respondUnauthorized(message=frappe._("Please Enter Valid Mobile Number"),)
+        else:
+            if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
+                user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
+                token_mark_as_used(user_token)
+            api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
+            create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
+            login_consent_doc = frappe.get_doc(
+                    {
+                        "doctype": "User Consent",
+                        "mobile": data.get("mobile"),
+                        "consent": "Login",
+                    }
+                ).insert(ignore_permissions=True)
+            log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
+            # api_log_doc.response_time = datetime.now()
+            # api_log_doc.api_type = "Internal"
+            # api_log_doc.response = "OTP Sent"
+            # api_log_doc.save(ignore_permissions=True)
+            # frappe.db.commit()
+            return ucl.responder.respondWithSuccess(
+                    message=frappe._("OTP Sent"),
+                )
     except Exception as e:
         log_api_error()
         generateResponse(is_success=False, error=e)
@@ -590,7 +593,7 @@ def employer_list():
     return list(i['name'] for i in res)
 
 def partner_list():
-    res = frappe.get_all("Partner", fields = ["name","partner_name"])
+    res = frappe.get_all("Partner", filters = {"status" : "Approved by SML"}, fields = ["name","partner_name"])
     if len(res) == 0:
         raise NotFoundException
     res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]

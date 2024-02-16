@@ -3,6 +3,7 @@ import frappe
 import json
 from frappe import _
 from datetime import datetime, timedelta
+from frappe.utils.password import check_password, update_password
 import ucl
 import re
 from .exceptions import *
@@ -199,6 +200,8 @@ def update_current_address(**kwargs):
         data = ucl.validate(
             kwargs, 
             {
+            "address_proof":"required",
+            "extension":"required",
             "same_as_on_pan":"decimal|between:0,1",
             "line1": "",
             "line2": "",
@@ -208,10 +211,18 @@ def update_current_address(**kwargs):
             "state": "",
             "country": "",
         })
-        api_log_doc = ucl.log_api(method = "Update Pan Details", request_time = datetime.now(), request = str(data))
+        address_file_name = "{}_address_proof_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+
+        address_proof_url = ucl.attach_files(image_bytes=data.get("address_proof"),file_name=address_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="address_proof",partner=partner)
+        # partner.address_proof = "/files/{}".format(address_file_name)
+        # partner.save(ignore_permissions=True)
+        # frappe.db.commit()
+
+        api_log_doc = ucl.log_api(method = "Update Current Address", request_time = datetime.now(), request = str(data))
         if data.get("same_as_on_pan") == 1:
             address_dict = {
                 "same_as_on_pan" : data.get("same_as_on_pan"),
+                "address_proof" : "/files/{}".format(address_file_name),
                 "ca_line1" : "",
                 "ca_line2": "",
                 "ca_street_name": "",
@@ -224,6 +235,7 @@ def update_current_address(**kwargs):
         else:
             address_dict = {
                 "same_as_on_pan" : data.get("same_as_on_pan"),
+                "address_proof" : "/files/{}".format(address_file_name),
                 "ca_line1" : data.get("line1"),
                 "ca_line2": data.get("line2"),
                 "ca_street_name": data.get("street_name"),
@@ -235,7 +247,6 @@ def update_current_address(**kwargs):
 
                 }
         
-        print(str(address_dict))
 
         partner_doc = frappe.get_doc("Partner", partner.name).update(address_dict).save(ignore_permissions = True)
         frappe.db.commit()
@@ -251,7 +262,7 @@ def update_current_address(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def face_match(**kwargs):
     try:
-        user = ucl.__user()
+        user = ucl.__user("8888888888")
         partner = ucl.__partner(user.name)
 
         ucl.validate_http_method("POST")
@@ -271,9 +282,6 @@ def face_match(**kwargs):
         live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
         partner.live_image = "/files/{}".format(live_picture_file)
-        partner.kyc_live_image_linked = 1
-        partner.save(ignore_permissions=True)
-        frappe.db.commit()
         if partner.pan_card_file:
             path = urlparse(partner.pan_card_file).path
             file_extension = os.path.splitext(path)[1]
@@ -310,12 +318,19 @@ def face_match(**kwargs):
                 results = face_recognition.compare_faces([face_encoding_1], face_encoding_2)
 
                 if results[0]:
+                    partner.kyc_live_image_linked = 1
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
+                    partner.live_image =""
+                    partner.kyc_live_image_linked = 0
                     return ucl.responder.respondUnauthorized(message = "Faces do not match.")
             else:
+                partner.live_image =""
+                partner.kyc_live_image_linked = 0
                 return ucl.responder.respondNotFound(message = "No faces detected.")
+        partner.save(ignore_permissions=True)                    
+        frappe.db.commit()
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -476,6 +491,7 @@ def esign_request(**kwargs):
             },
         )
         
+<<<<<<< Updated upstream
         url = "https://api.digio.in/v2/client/document/upload"
         ucl_setting = frappe.get_single("UCL Settings")
 
@@ -484,6 +500,16 @@ def esign_request(**kwargs):
         headers = {
             "authorization": f"Basic {base64_credentials}",
         }
+=======
+#         url = "https://api.digio.in/v2/client/document/upload"
+#         ucl_setting = frappe.get_single("UCL Settings")
+
+#         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
+#         base64_credentials = base64.b64encode(credentials.encode()).decode()
+#         headers = {
+#             "authorization": f"Basic {base64_credentials}",
+#         }
+>>>>>>> Stashed changes
 
         signers_data = {
             "signers": [
@@ -515,7 +541,11 @@ def esign_request(**kwargs):
        
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         
+<<<<<<< Updated upstream
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+=======
+#         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+>>>>>>> Stashed changes
 
         id = response.json()['id']
         partner.document_id = id
@@ -566,14 +596,87 @@ def download_esign_document(document_id):
         
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "success")
 
+<<<<<<< Updated upstream
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.content)
+=======
+#         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
+#         base64_credentials = base64.b64encode(credentials.encode()).decode()
+#         headers = {
+#             "authorization": f"Basic {base64_credentials}",
+#             "Content-Type": "application/json"
+#         }
+>>>>>>> Stashed changes
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
     
 
+@frappe.whitelist(allow_guest=True)
+def reset_pin(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,
+            {
+                "old_pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
+                "new_pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
+                "retype_pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
+            },
+        )
 
+<<<<<<< Updated upstream
 
+=======
+        req = {"old_pin": "****","new_pin": "****","retype_new_pin": "****"}
+        api_log_doc = ucl.log_api(method = "Reset Pin", request_time = datetime.now(), request = str(req))
+        try:
+            user = ucl.__user()
+        except UserNotFoundException:
+            user = None
+            raise ucl.exceptions.UserNotFoundException()
+            
+        try:
+            # returns user in correct case
+            old_pass_check = check_password(
+                frappe.session.user, data.get("old_pin")
+            )
+        except frappe.AuthenticationError:
+            raise ucl.exceptions.RespondFailureException(_("Invalid current pin."))
+        
+        if old_pass_check:
+            if data.get("retype_pin") == data.get("new_pin") and data.get(
+                "old_pin"
+            ) != data.get("new_pin"):
+                # update pin
+                update_password(frappe.session.user, data.get("retype_pin"))
+                frappe.db.commit()
+                response = "Your pin has been changed successfully!"
+
+            elif data.get("old_pin") == data.get("new_pin"):
+                response = "New pin cannot be same as old pin."
+                raise ucl.exceptions.RespondFailureException(
+                    _(response)
+                )
+            
+            else:
+                response = "Retyped pin does not match with new pin"
+                raise ucl.exceptions.RespondFailureException(
+                    _(response)
+                )
+            return ucl.responder.respondWithSuccess(
+                message=frappe._(response)
+            )
+
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return ucl.responder.respondUnauthorized(message=str(e))
+>>>>>>> Stashed changes
     
 

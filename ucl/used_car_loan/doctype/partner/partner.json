@@ -84,6 +84,7 @@
   "company_gst_certificate",
   "kyc_company_documents_linked",
   "current_address_section",
+  "address_proof",
   "same_as_on_pan",
   "ca_line1",
   "ca_line2",
@@ -627,15 +628,25 @@
    "label": "KYC Bank Details Linked"
   },
   {
+<<<<<<< Updated upstream
    "fieldname": "document_id",
    "fieldtype": "Data",
    "label": "Document ID",
    "read_only": 1
+=======
+   "fieldname": "address_proof",
+   "fieldtype": "Attach",
+   "label": "Address Proof"
+>>>>>>> Stashed changes
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
+<<<<<<< Updated upstream
  "modified": "2024-02-14 12:35:02.512665",
+=======
+ "modified": "2024-02-14 15:40:26.978806",
+>>>>>>> Stashed changes
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

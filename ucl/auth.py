@@ -25,7 +25,7 @@ def verify_email(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "mobile": ["required"],
+                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
                 "email": ["required"],
                 # "resend": ["required"],
                 "first_name": ["required"],
@@ -382,7 +382,7 @@ def login(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "pin": [ucl.validator.rules.LengthRule(4)],
+                "pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
                 "firebase_token": [ucl.validator.rules.RequiredIfPresent("pin")],
                 # "accept_terms": "decimal|between:0,1",
                 "platform": "",
@@ -738,6 +738,9 @@ def pan_ocr(**kwargs):
             response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
             response["pan_type"] = ocr_response.json()['data']["pan_type"]
         else:
+            partner.company_pan_file = ""
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
             response = ocr_response
             ucl.log_api_error(mess = response)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
@@ -793,6 +796,11 @@ def aadhaar_ocr(**kwargs):
                 raise ucl.exceptions.UnauthorizedException(
                         _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
                     )
+        else:
+            partner.aadhaar_front = ""
+            partner.aadhaar_back  = ""
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
 
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
     
