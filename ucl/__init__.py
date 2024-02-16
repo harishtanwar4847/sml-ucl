@@ -772,9 +772,14 @@ def send_ucl_push_notification(
             title="UCL Push Notification Error",
         )
 
-
 @frappe.whitelist(allow_guest=True)
 def digio_webhook_doc_signed(**kwargs):
+    data = frappe.local.form_dict
+    log = {"digio_doc_esign_log": data}
+    create_log(log, "digio_doc_esign_log")
+
+@frappe.whitelist(allow_guest=True)
+def digio_webhook_doc_signed_(**kwargs):
     try:
         user = ucl.__user()
         partner = ucl.__partner(user.name)
