@@ -491,7 +491,6 @@ def esign_request(**kwargs):
             },
         )
         
-<<<<<<< Updated upstream
         url = "https://api.digio.in/v2/client/document/upload"
         ucl_setting = frappe.get_single("UCL Settings")
 
@@ -500,16 +499,6 @@ def esign_request(**kwargs):
         headers = {
             "authorization": f"Basic {base64_credentials}",
         }
-=======
-#         url = "https://api.digio.in/v2/client/document/upload"
-#         ucl_setting = frappe.get_single("UCL Settings")
-
-#         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
-#         base64_credentials = base64.b64encode(credentials.encode()).decode()
-#         headers = {
-#             "authorization": f"Basic {base64_credentials}",
-#         }
->>>>>>> Stashed changes
 
         signers_data = {
             "signers": [
@@ -541,11 +530,7 @@ def esign_request(**kwargs):
        
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         
-<<<<<<< Updated upstream
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-=======
-#         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
->>>>>>> Stashed changes
 
         id = response.json()['id']
         partner.document_id = id
@@ -596,16 +581,7 @@ def download_esign_document(document_id):
         
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "success")
 
-<<<<<<< Updated upstream
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.content)
-=======
-#         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
-#         base64_credentials = base64.b64encode(credentials.encode()).decode()
-#         headers = {
-#             "authorization": f"Basic {base64_credentials}",
-#             "Content-Type": "application/json"
-#         }
->>>>>>> Stashed changes
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -625,9 +601,6 @@ def reset_pin(**kwargs):
             },
         )
 
-<<<<<<< Updated upstream
-
-=======
         req = {"old_pin": "****","new_pin": "****","retype_new_pin": "****"}
         api_log_doc = ucl.log_api(method = "Reset Pin", request_time = datetime.now(), request = str(req))
         try:
@@ -677,6 +650,5 @@ def reset_pin(**kwargs):
         frappe.db.rollback()
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))
->>>>>>> Stashed changes
     
 

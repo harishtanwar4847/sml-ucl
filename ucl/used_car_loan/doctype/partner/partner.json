@@ -5,7 +5,6 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "personal_details_section",
   "partner_name",
   "associate",
   "parent_partner_code",
@@ -20,7 +19,7 @@
   "digital_agreement",
   "kyc_live_image_linked",
   "kyc_digital_agreement_linked",
-  "pan_details_section",
+  "pan_details_tab",
   "pan_card_file",
   "pan_number",
   "pan_full_name",
@@ -42,7 +41,7 @@
   "pan_full_address",
   "aadhaar_linked",
   "kyc_pan_linked",
-  "aadhaar_details_section",
+  "aadhaar_details_tab",
   "aadhaar_front",
   "aadhaar_back",
   "id_number",
@@ -59,7 +58,7 @@
   "aadhaar_state",
   "aadhaar_address",
   "kyc_aadhaar_linked",
-  "company_pan_details_section",
+  "company_pan_details_tab",
   "company_pan_file",
   "company_pan_number",
   "company_name",
@@ -78,13 +77,12 @@
   "company_address_state",
   "company_address_country",
   "kyc_company_pan_linked",
-  "company_documents_section",
+  "company_documents_tab",
   "business_proof",
   "column_break_nxdy",
   "company_gst_certificate",
   "kyc_company_documents_linked",
-  "current_address_section",
-  "address_proof",
+  "current_address_tab",
   "same_as_on_pan",
   "ca_line1",
   "ca_line2",
@@ -95,7 +93,7 @@
   "ca_state",
   "ca_country",
   "kyc_current_address_linked",
-  "bank_details_section",
+  "bank_details_tab",
   "cancelled_cheque",
   "bank_name",
   "bank_address",
@@ -114,62 +112,17 @@
    "reqd": 1
   },
   {
-   "fieldname": "user_id",
+   "default": "0",
+   "fieldname": "associate",
+   "fieldtype": "Check",
+   "label": "Associate?"
+  },
+  {
+   "depends_on": "eval:doc.associate == 1;",
+   "fieldname": "parent_partner_code",
    "fieldtype": "Link",
-   "label": "User ID",
-   "options": "User",
-   "reqd": 1
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Draft\nApproved by Partner\nApproved by SML\nRejected by Partner\nRejected by SML"
-  },
-  {
-   "fieldname": "pan_number",
-   "fieldtype": "Data",
-   "label": "PAN Number"
-  },
-  {
-   "fieldname": "email_id",
-   "fieldtype": "Data",
-   "label": "Email ID"
-  },
-  {
-   "fieldname": "column_break_ufuf",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "bank_name",
-   "fieldtype": "Link",
-   "label": "Bank Name",
-   "options": "Bank"
-  },
-  {
-   "fieldname": "ifsc_code",
-   "fieldtype": "Data",
-   "label": "IFSC Code"
-  },
-  {
-   "fieldname": "bank_address",
-   "fieldtype": "Data",
-   "label": "Bank Address"
-  },
-  {
-   "fieldname": "cancelled_cheque",
-   "fieldtype": "Attach",
-   "label": "Cancelled Cheque"
-  },
-  {
-   "fieldname": "live_image",
-   "fieldtype": "Attach",
-   "label": "Live Image"
-  },
-  {
-   "fieldname": "digital_agreement",
-   "fieldtype": "Attach",
-   "label": "Digital Agreement"
+   "label": "Parent Partner Code",
+   "options": "Partner"
   },
   {
    "fieldname": "partner_type",
@@ -178,51 +131,123 @@
    "options": "\nIndividual\nCorporate"
   },
   {
+   "depends_on": "eval:doc.partner_type == \"Corporate\";",
+   "fieldname": "company_type",
+   "fieldtype": "Select",
+   "label": "Company Type",
+   "options": "\nProprietary Firm\nPartnership Firm\nLLP Firm\nPvt Ltd Firm\nPublic Ltd Firm\nHUF\nTrust"
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Link",
+   "label": "User ID",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ufuf",
+   "fieldtype": "Column Break"
+  },
+  {
    "default": "0",
    "fieldname": "is_pin_set",
    "fieldtype": "Check",
    "label": "Is Pin Set?"
   },
   {
-   "collapsible": 1,
-   "fieldname": "personal_details_section",
-   "fieldtype": "Section Break",
-   "label": "Personal Details"
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nPending\nApproved by Partner\nApproved by SML\nRejected by Partner\nRejected by SML"
   },
   {
-   "collapsible": 1,
-   "fieldname": "pan_details_section",
-   "fieldtype": "Section Break",
+   "fieldname": "live_image",
+   "fieldtype": "Attach",
+   "label": "Live Image"
+  },
+  {
+   "fieldname": "document_id",
+   "fieldtype": "Data",
+   "label": "Document ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "digital_agreement",
+   "fieldtype": "Attach",
+   "label": "Digital Agreement"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_live_image_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Live Image Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_digital_agreement_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Digital Agreement Linked"
+  },
+  {
+   "fieldname": "pan_details_tab",
+   "fieldtype": "Tab Break",
    "label": "PAN Details"
   },
   {
-   "collapsible": 1,
-   "fieldname": "aadhaar_details_section",
-   "fieldtype": "Section Break",
-   "label": "Aadhaar Details"
+   "fieldname": "pan_card_file",
+   "fieldtype": "Attach",
+   "label": "PAN Card File"
   },
   {
-   "collapsible": 1,
-   "fieldname": "bank_details_section",
-   "fieldtype": "Section Break",
-   "label": "Bank Details"
+   "fieldname": "pan_number",
+   "fieldtype": "Data",
+   "label": "PAN Number"
   },
   {
-   "fieldname": "column_break_uvju",
-   "fieldtype": "Column Break"
+   "fieldname": "pan_full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
   },
   {
-   "fieldname": "column_break_exzu",
-   "fieldtype": "Column Break"
+   "fieldname": "pan_father_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
   },
   {
-   "fieldname": "column_break_pmrt",
-   "fieldtype": "Column Break"
+   "fieldname": "pan_gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "pan_dob",
+   "fieldtype": "Date",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "pan_phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email ID"
+  },
+  {
+   "fieldname": "pan_type",
+   "fieldtype": "Data",
+   "label": "PAN Type"
   },
   {
    "fieldname": "masked_aadhaar",
    "fieldtype": "Data",
    "label": "Masked Aadhaar"
+  },
+  {
+   "fieldname": "column_break_exzu",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "line_1",
@@ -260,9 +285,9 @@
    "label": "Country"
   },
   {
-   "fieldname": "pan_phone_number",
-   "fieldtype": "Data",
-   "label": "Phone Number"
+   "fieldname": "pan_full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
   },
   {
    "default": "0",
@@ -271,60 +296,26 @@
    "label": "Aadhaar Linked"
   },
   {
-   "fieldname": "pan_full_name",
-   "fieldtype": "Data",
-   "label": "Full Name"
+   "default": "0",
+   "fieldname": "kyc_pan_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Pan Linked"
   },
   {
-   "fieldname": "pan_full_address",
-   "fieldtype": "Small Text",
-   "label": "Full Address"
+   "fieldname": "aadhaar_details_tab",
+   "fieldtype": "Tab Break",
+   "label": " Aadhaar Details"
   },
   {
-   "fieldname": "pan_dob",
-   "fieldtype": "Date",
-   "label": "DOB"
+   "fieldname": "aadhaar_front",
+   "fieldtype": "Attach",
+   "label": "Aadhaar Front"
   },
   {
-   "fieldname": "pan_father_name",
-   "fieldtype": "Data",
-   "label": "Father's Name"
-  },
-  {
-   "fieldname": "pan_gender",
-   "fieldtype": "Data",
-   "label": "Gender"
-  },
-  {
-   "fieldname": "aadhaar_address",
-   "fieldtype": "Small Text",
-   "label": "Address",
-   "options": "Pin Code"
-  },
-  {
-   "fieldname": "aadhaar_dob",
-   "fieldtype": "Date",
-   "label": "DOB"
-  },
-  {
-   "fieldname": "district",
-   "fieldtype": "Data",
-   "label": "District"
-  },
-  {
-   "fieldname": "aadhaar_father_name",
-   "fieldtype": "Data",
-   "label": "Father's Name"
-  },
-  {
-   "fieldname": "aadhaar_gender",
-   "fieldtype": "Data",
-   "label": "Gender"
-  },
-  {
-   "fieldname": "house_number",
-   "fieldtype": "Data",
-   "label": "House Number"
+   "fieldname": "aadhaar_back",
+   "fieldtype": "Attach",
+   "label": "Aadhaar Back"
   },
   {
    "fieldname": "id_number",
@@ -337,19 +328,19 @@
    "label": "Name on Card"
   },
   {
-   "fieldname": "aadhaar_pin_code",
+   "fieldname": "aadhaar_father_name",
    "fieldtype": "Data",
-   "label": "Pin Code"
+   "label": "Father's Name"
   },
   {
-   "fieldname": "aadhaar_state",
-   "fieldtype": "Data",
-   "label": "State"
+   "fieldname": "aadhaar_dob",
+   "fieldtype": "Date",
+   "label": "DOB"
   },
   {
-   "fieldname": "street_address",
+   "fieldname": "aadhaar_gender",
    "fieldtype": "Data",
-   "label": "Street Address"
+   "label": "Gender"
   },
   {
    "fieldname": "year_of_birth",
@@ -357,36 +348,56 @@
    "label": "Year of Birth"
   },
   {
-   "fieldname": "beneficiary_name",
+   "fieldname": "column_break_pmrt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "house_number",
    "fieldtype": "Data",
-   "label": "Beneficiary Name With Bank"
+   "label": "House Number"
+  },
+  {
+   "fieldname": "street_address",
+   "fieldtype": "Data",
+   "label": "Street Address"
+  },
+  {
+   "fieldname": "aadhaar_pin_code",
+   "fieldtype": "Data",
+   "label": "Pin Code"
+  },
+  {
+   "fieldname": "district",
+   "fieldtype": "Data",
+   "label": "District"
+  },
+  {
+   "fieldname": "aadhaar_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "aadhaar_address",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "options": "Pin Code"
   },
   {
    "default": "0",
-   "fieldname": "associate",
+   "fieldname": "kyc_aadhaar_linked",
    "fieldtype": "Check",
-   "label": "Associate?"
+   "hidden": 1,
+   "label": "KYC Aadhaar Linked"
   },
   {
-   "depends_on": "eval:doc.associate == 1;",
-   "fieldname": "parent_partner_code",
-   "fieldtype": "Link",
-   "label": "Parent Partner Code",
-   "options": "Partner"
-  },
-  {
-   "depends_on": "eval:doc.partner_type == \"Corporate\";",
-   "fieldname": "company_type",
-   "fieldtype": "Select",
-   "label": "Company Type",
-   "options": "\nProprietary Firm\nPartnership Firm\nLLP Firm\nPvt Ltd Firm\nPublic Ltd Firm\nHUF\nTrust"
-  },
-  {
-   "collapsible": 1,
-   "depends_on": "eval:doc.partner_type == \"Corporate\";",
-   "fieldname": "company_pan_details_section",
-   "fieldtype": "Section Break",
+   "fieldname": "company_pan_details_tab",
+   "fieldtype": "Tab Break",
    "label": "Company PAN Details"
+  },
+  {
+   "fieldname": "company_pan_file",
+   "fieldtype": "Attach",
+   "label": "Company PAN File"
   },
   {
    "fieldname": "company_pan_number",
@@ -394,10 +405,89 @@
    "label": "Company PAN Number"
   },
   {
-   "collapsible": 1,
-   "depends_on": "eval:doc.partner_type == \"Corporate\";",
-   "fieldname": "company_documents_section",
-   "fieldtype": "Section Break",
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "label": "Company Name"
+  },
+  {
+   "fieldname": "company_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "company_dob",
+   "fieldtype": "Data",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "company_phone_no",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "company_pan_type",
+   "fieldtype": "Data",
+   "label": "Pan Type"
+  },
+  {
+   "fieldname": "company_full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
+  },
+  {
+   "fieldname": "column_break_tclh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Heading",
+   "label": "Address"
+  },
+  {
+   "fieldname": "company_address_line1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "fieldname": "company_address_line2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "fieldname": "company_address_street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "company_address_zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "company_address_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "company_address_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "company_address_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_company_pan_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company Pan Linked"
+  },
+  {
+   "fieldname": "company_documents_tab",
+   "fieldtype": "Tab Break",
    "label": "Company Documents"
   },
   {
@@ -415,9 +505,15 @@
    "label": "Company GST Certificate"
   },
   {
-   "collapsible": 1,
-   "fieldname": "current_address_section",
-   "fieldtype": "Section Break",
+   "default": "0",
+   "fieldname": "kyc_company_documents_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company Documents Linked"
+  },
+  {
+   "fieldname": "current_address_tab",
+   "fieldtype": "Tab Break",
    "label": "Current Address"
   },
   {
@@ -473,147 +569,6 @@
    "label": "Country"
   },
   {
-   "fieldname": "pan_type",
-   "fieldtype": "Data",
-   "label": "PAN Type"
-  },
-  {
-   "fieldname": "pan_card_file",
-   "fieldtype": "Attach",
-   "label": "PAN Card File"
-  },
-  {
-   "fieldname": "company_pan_file",
-   "fieldtype": "Attach",
-   "label": "Company PAN File"
-  },
-  {
-   "fieldname": "column_break_tclh",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "aadhaar_front",
-   "fieldtype": "Attach",
-   "label": "Aadhaar Front"
-  },
-  {
-   "fieldname": "aadhaar_back",
-   "fieldtype": "Attach",
-   "label": "Aadhaar Back"
-  },
-  {
-   "fieldname": "company_name",
-   "fieldtype": "Data",
-   "label": "Company Name"
-  },
-  {
-   "fieldname": "company_email",
-   "fieldtype": "Data",
-   "label": "Email"
-  },
-  {
-   "fieldname": "company_dob",
-   "fieldtype": "Data",
-   "label": "DOB"
-  },
-  {
-   "fieldname": "company_phone_no",
-   "fieldtype": "Data",
-   "label": "Phone Number"
-  },
-  {
-   "fieldname": "company_pan_type",
-   "fieldtype": "Data",
-   "label": "Pan Type"
-  },
-  {
-   "fieldname": "address",
-   "fieldtype": "Heading",
-   "label": "Address"
-  },
-  {
-   "fieldname": "company_address_line1",
-   "fieldtype": "Data",
-   "label": "Line 1"
-  },
-  {
-   "fieldname": "company_address_line2",
-   "fieldtype": "Data",
-   "label": "Line 2"
-  },
-  {
-   "fieldname": "company_address_street_name",
-   "fieldtype": "Data",
-   "label": "Street Name"
-  },
-  {
-   "fieldname": "company_address_zip",
-   "fieldtype": "Data",
-   "label": "Zip"
-  },
-  {
-   "fieldname": "company_address_city",
-   "fieldtype": "Data",
-   "label": "City"
-  },
-  {
-   "fieldname": "company_address_state",
-   "fieldtype": "Data",
-   "label": "State"
-  },
-  {
-   "fieldname": "company_address_country",
-   "fieldtype": "Data",
-   "label": "Country"
-  },
-  {
-   "fieldname": "company_full_address",
-   "fieldtype": "Small Text",
-   "label": "Full Address"
-  },
-  {
-   "default": "0",
-   "fieldname": "kyc_live_image_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Live Image Linked"
-  },
-  {
-   "default": "0",
-   "fieldname": "kyc_digital_agreement_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Digital Agreement Linked"
-  },
-  {
-   "default": "0",
-   "fieldname": "kyc_pan_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Pan Linked"
-  },
-  {
-   "default": "0",
-   "fieldname": "kyc_aadhaar_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Aadhaar Linked"
-  },
-  {
-   "default": "0",
-   "fieldname": "kyc_company_pan_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Company Pan Linked"
-  },
-  {
-   "default": "0",
-   "fieldname": "kyc_company_documents_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Company Documents Linked"
-  },
-  {
    "default": "0",
    "fieldname": "kyc_current_address_linked",
    "fieldtype": "Check",
@@ -621,32 +576,51 @@
    "label": "KYC Current Address Linked"
   },
   {
+   "fieldname": "bank_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Bank Details"
+  },
+  {
+   "fieldname": "cancelled_cheque",
+   "fieldtype": "Attach",
+   "label": "Cancelled Cheque"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Link",
+   "label": "Bank Name",
+   "options": "Bank"
+  },
+  {
+   "fieldname": "bank_address",
+   "fieldtype": "Data",
+   "label": "Bank Address"
+  },
+  {
+   "fieldname": "column_break_uvju",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ifsc_code",
+   "fieldtype": "Data",
+   "label": "IFSC Code"
+  },
+  {
+   "fieldname": "beneficiary_name",
+   "fieldtype": "Data",
+   "label": "Beneficiary Name With Bank"
+  },
+  {
    "default": "0",
    "fieldname": "kyc_bank_details_linked",
    "fieldtype": "Check",
    "hidden": 1,
    "label": "KYC Bank Details Linked"
-  },
-  {
-<<<<<<< Updated upstream
-   "fieldname": "document_id",
-   "fieldtype": "Data",
-   "label": "Document ID",
-   "read_only": 1
-=======
-   "fieldname": "address_proof",
-   "fieldtype": "Attach",
-   "label": "Address Proof"
->>>>>>> Stashed changes
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
-<<<<<<< Updated upstream
- "modified": "2024-02-14 12:35:02.512665",
-=======
- "modified": "2024-02-14 15:40:26.978806",
->>>>>>> Stashed changes
+ "modified": "2024-02-16 12:48:29.613828",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
