@@ -262,7 +262,7 @@ def update_current_address(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def face_match(**kwargs):
     try:
-        user = ucl.__user("8888888888")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
 
         ucl.validate_http_method("POST")
@@ -319,18 +319,22 @@ def face_match(**kwargs):
 
                 if results[0]:
                     partner.kyc_live_image_linked = 1
+                    partner.save(ignore_permissions=True)                    
+                    frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
                     partner.live_image =""
                     partner.kyc_live_image_linked = 0
+                    partner.save(ignore_permissions=True)                    
+                    frappe.db.commit()
                     return ucl.responder.respondUnauthorized(message = "Faces do not match.")
             else:
                 partner.live_image =""
                 partner.kyc_live_image_linked = 0
+                partner.save(ignore_permissions=True)                    
+                frappe.db.commit()
                 return ucl.responder.respondNotFound(message = "No faces detected.")
-        partner.save(ignore_permissions=True)                    
-        frappe.db.commit()
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
