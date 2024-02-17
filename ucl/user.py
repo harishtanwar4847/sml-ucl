@@ -481,20 +481,10 @@ def update_bank_details(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def esign_request(**kwargs):
+def esign_request():
     try:
         user = ucl.__user()
         partner = ucl.__partner(user.name)
-        ucl.validate_http_method("POST")
-
-        data = ucl.validate(
-            kwargs,
-            {
-                "identifier": ["required"],
-                "name": ["required"]
-            },
-        )
-        
         url = "https://api.digio.in/v2/client/document/upload"
         ucl_setting = frappe.get_single("UCL Settings")
 
@@ -507,8 +497,8 @@ def esign_request(**kwargs):
         signers_data = {
             "signers": [
                 {
-                    "identifier": data.get("identifier"),
-                    "name": data.get("name"),
+                    "identifier": user.name,
+                    "name": partner.partner_name,
                     "sign_type": "aadhaar",
                     "reason": "Digio esign test-atriina team"
                 }
@@ -520,6 +510,7 @@ def esign_request(**kwargs):
             "notify_signers": True,
             "send_sign_link": True
         }
+        print(signers_data)
         ucl_settings = frappe.get_doc("UCL Settings")
         esign_file = ucl_settings.digital_agreement.split("/files/")[1]
         files = {
@@ -530,6 +521,7 @@ def esign_request(**kwargs):
                 'text/plain'
             )
         }
+        print(files)
         response = requests.post(url, headers=headers, files=files)
        
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
@@ -541,12 +533,49 @@ def esign_request(**kwargs):
         partner.save(ignore_permissions = True)
         # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data="https://app.digio.in/#/gateway/login/{}/vI3atY/{}".format(id,"harish.tanwar@atriina.com"))
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}".format(id,user.name), "redirect_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://my_redirection_url".format(id,user.name)})
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
-    
+
+@frappe.whitelist(allow_guest=True)
+def get_esign_details(**kwargs):
+    try:
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        ucl.validate_http_method("GET")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "document_id" : "required"
+            })
+        
+        url = "https://api.digio.in/v2/client/document/{}".format(data.get("document_id"))
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
+        base64_credentials = base64.b64encode(credentials.encode()).decode()
+        headers = {
+            "authorization": f"Basic {base64_credentials}",
+            "Content-Type": "application/json"
+        }
+        print(headers, "headers")
+
+        response = requests.get(url, headers=headers, data=data)
+       
+        api_log_doc = ucl.log_api(method = "Get Esign details", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        if response.status_code == 200:
+            if json.loads(response.text)["agreement_status"] == "completed":
+                download_esign_document(data.get("document_id"))
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond() 
 
 def download_esign_document(document_id):
     try:
@@ -655,4 +684,35 @@ def reset_pin(**kwargs):
         ucl.log_api_error()
         return ucl.responder.respondUnauthorized(message=str(e))
     
+
+@frappe.whitelist(allow_guest=True)
+def kyc_submit():
+    try:
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        ucl.validate_http_method("POST")
+        if (partner.partner_type == "Corporate" and partner.kyc_digital_agreement_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner.kyc_company_pan_linked and partner.kyc_company_documents_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner.kyc_live_image_linked and partner.kyc_digital_agreement_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.associate and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked):
+            response = "KYC Successful"
+            partner.status = "Pending"
+            partner.workflow_state = "Pending"
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
+        else:
+            response = "Please complete the KYC process"
+            raise ucl.exceptions.RespondFailureException(
+                _(response)
+            )
+        
+        return ucl.responder.respondWithSuccess(
+            message=frappe._(response)
+        )
+
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return ucl.responder.respondUnauthorized(message=str(e))
 

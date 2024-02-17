@@ -232,7 +232,7 @@ def set_pin(**kwargs):
                 "pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
             },
         )
-        req = {"otp" : data.get('otp'), "new_pin" : '*****'}
+        req = {"pin" : '****'}
         api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = str(req))
 
         try:
@@ -278,7 +278,7 @@ def set_pin(**kwargs):
                     partner = ucl.__partner(user.name)
                     partner.is_pin_set = 1
                     partner.save(ignore_permissions=True)
-                response = "User PIN has been updated."
+                response = "User PIN has been set."
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
 
                 return ucl.responder.respondWithSuccess(
@@ -340,7 +340,7 @@ def verify_forgot_pin_otp(**kwargs):
             #         user.username, data.get("otp"), token_type="Forgot Pin OTP"
             #     )
         except InvalidUserTokenException:
-            response = "Invalid Forgot Pin OTP"
+            response = "Invalid OTP"
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
             raise ucl.exceptions.ForbiddenException(_(response))
 
@@ -644,7 +644,7 @@ def get_partner_list():
                 )
             
         except NotFoundException:
-            raise ucl.exceptions.NotFoundException()
+            raise ucl.exceptions.PartnerNotFoundException()
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         ucl.log_api_error()
