@@ -731,18 +731,30 @@ def pan_ocr(**kwargs):
 
         if ocr_response.json()['code'] == 200:
             id_number = ocr_response.json()["data"]["id_number"]
-            pan_plus_response = pan_plus(id_number)
-            ucl.log_api_error(pan_plus_response)
+            if id_number and ocr_response.json()['data']["pan_type"]:
+                pan_plus_response = pan_plus(id_number)
+                ucl.log_api_error(pan_plus_response)
 
-            response = pan_plus_response["data"]
-            response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
-            response["pan_type"] = ocr_response.json()['data']["pan_type"]
+                response = pan_plus_response["data"]
+                response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+                response["pan_type"] = ocr_response.json()['data']["pan_type"]
+            else:
+                partner.company_pan_file = ""
+                partner.save(ignore_permissions=True)
+                frappe.db.commit()
+                response = ocr_response.json()
+                ucl.log_api_error(mess = str(response))
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+                raise ucl.exceptions.ValidationException(errors="Please upload a valid Pan Card")
         else:
             partner.company_pan_file = ""
             partner.save(ignore_permissions=True)
             frappe.db.commit()
-            response = ocr_response
+            response = ocr_response.json()
             ucl.log_api_error(mess = response)
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+            raise ucl.exceptions.ValidationException(errors=ocr_response.json()["message"])
+        
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
     
         return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
@@ -791,16 +803,27 @@ def aadhaar_ocr(**kwargs):
 
         response = requests.request("POST", url, headers=headers, json=payload)
         if response.json()['code'] == 200:
-            id_number = response.json()['data']['id_number'][-4:]
-            if partner.aadhaar_linked and id_number != partner.masked_aadhaar[-4:]:
-                raise ucl.exceptions.UnauthorizedException(
-                        _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
-                    )
+            if response.json()['data']['id_number']:
+                id_number = response.json()['data']['id_number'][-4:]
+                if partner.aadhaar_linked and id_number != partner.masked_aadhaar[-4:]:
+                    raise ucl.exceptions.UnauthorizedException(
+                            _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
+                        )
+            else:
+                partner.aadhaar_front = ""
+                partner.aadhaar_back  = ""
+                partner.save(ignore_permissions=True)
+                frappe.db.commit()
+                ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+                raise ucl.exceptions.ValidationException(errors="Please Upload a valid Aadhaar Card.")
+
         else:
             partner.aadhaar_front = ""
             partner.aadhaar_back  = ""
             partner.save(ignore_permissions=True)
             frappe.db.commit()
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            raise ucl.exceptions.ValidationException(errors=response.json()["message"])
 
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
     
@@ -839,6 +862,8 @@ def rc_advance(**kwargs):
 def penny_drop(**kwargs):
     try:
         ucl.validate_http_method("POST")
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,
@@ -849,6 +874,11 @@ def penny_drop(**kwargs):
         })
         url = "https://api.digio.in/client/verify/bank_account"
         ucl_setting = frappe.get_single("UCL Settings")
+        # payload = {
+        #     "beneficiary_account_no" : data.get("beneficiary_account_no"),
+        #     "beneficiary_ifsc": data.get("beneficiary_ifsc"),
+        #     "beneficiary_name": partner.pan_full_name
+        # }
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()

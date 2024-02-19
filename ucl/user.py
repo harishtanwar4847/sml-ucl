@@ -106,27 +106,46 @@ def update_pan_details(**kwargs):
                 "aadhaar_linked": "decimal|between:0,1"
         })
         api_log_doc = ucl.log_api(method = "Update Pan Details", request_time = datetime.now(), request = str(data))
-        partner_dict = {
-            "pan_father_name": data.get("fathers_name"),
-            "pan_number": data.get("pan_number"),
-            "pan_type": data.get("pan_type"),
-            "pan_full_name": data.get("full_name"),
-            "masked_aadhaar": data.get("masked_aadhaar"),
-            "line_1": data.get("address_line_1"),
-            "line_2": data.get("address_line_2"),
-            "street_name": data.get("address_street_name"),
-            "zip": data.get("zip"),
-            "pan_city": data.get("city"),
-            "pan_state": data.get("state"),
-            "pan_country": data.get("country"),
-            "pan_full_address": data.get("full_address"),
-            "email_id": data.get("email"),
-            "pan_phone_number": data.get("phone_number"),
-            "pan_gender": data.get("gender"),
-            "pan_dob": data.get("dob"),
-            "aadhaar_linked": data.get("aadhaar_linked"),
-            "kyc_pan_linked": 1
-        }
+        if data.get("pan_type") == "Individual":
+            partner_dict = {
+                "pan_father_name": data.get("fathers_name"),
+                "pan_number": data.get("pan_number"),
+                "pan_type": data.get("pan_type"),
+                "pan_full_name": data.get("full_name"),
+                "masked_aadhaar": data.get("masked_aadhaar"),
+                "line_1": data.get("address_line_1"),
+                "line_2": data.get("address_line_2"),
+                "street_name": data.get("address_street_name"),
+                "zip": data.get("zip"),
+                "pan_city": data.get("city"),
+                "pan_state": data.get("state"),
+                "pan_country": data.get("country"),
+                "pan_full_address": data.get("full_address"),
+                "email_id": data.get("email"),
+                "pan_phone_number": data.get("phone_number"),
+                "pan_gender": data.get("gender"),
+                "pan_dob": data.get("dob"),
+                "aadhaar_linked": data.get("aadhaar_linked"),
+                "kyc_pan_linked": 1
+            }
+        else:
+            partner_dict = {
+                "company_pan_number": data.get("pan_number"),
+                "company_pan_type": data.get("pan_type"),
+                "company_name": data.get("full_name"),
+                "company_address_line1": data.get("address_line_1"),
+                "company_address_line2": data.get("address_line_2"),
+                "company_address_street_name": data.get("address_street_name"),
+                "company_address_zip": data.get("zip"),
+                "company_address_city": data.get("city"),
+                "company_address_state": data.get("state"),
+                "company_address_country": data.get("country"),
+                "company_full_address": data.get("full_address"),
+                "company_email": data.get("email"),
+                "company_phone_no": data.get("phone_number"),
+                "company_dob": data.get("dob"),
+                "kyc_company_pan_linked": 1
+            }   
         
         partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
@@ -340,59 +359,59 @@ def face_match(**kwargs):
         ucl.log_api_error()
         return e.respond()
     
-@frappe.whitelist(allow_guest=True)
-def update_company_pan_details(**kwargs):
-    try:
-        ucl.validate_http_method("POST")
-        user = ucl.__user()
-        partner = ucl.__partner(user.name)
+# @frappe.whitelist(allow_guest=True)
+# def update_company_pan_details(**kwargs):
+#     try:
+#         ucl.validate_http_method("POST")
+#         user = ucl.__user()
+#         partner = ucl.__partner(user.name)
 
-        data = ucl.validate(
-        kwargs,{
-            "pan_number": ["required"],
-            "pan_type": "",
-            "full_name": ["required"],
-            "address_line_1": "",
-            "address_line_2": "",
-            "address_street_name": "",
-            "zip": "",
-            "city": "",
-            "state": "",
-            "country": "",
-            "full_address": "",
-            "email": "",
-            "phone_number": "",
-            "dob": "",
-        })
-        api_log_doc = ucl.log_api(method = "Update Company Pan Details", request_time = datetime.now(), request = str(data))
-        company_address_dict = {
-            "company_pan_number": data.get("pan_number"),
-            "company_pan_type": data.get("pan_type"),
-            "company_name": data.get("full_name"),
-            "company_address_line1": data.get("address_line_1"),
-            "company_address_line2": data.get("address_line_2"),
-            "company_address_street_name": data.get("address_street_name"),
-            "company_address_zip": data.get("zip"),
-            "company_address_city": data.get("city"),
-            "company_address_state": data.get("state"),
-            "company_address_country": data.get("country"),
-            "company_full_address": data.get("full_address"),
-            "company_email": data.get("email"),
-            "company_phone_no": data.get("phone_number"),
-            "company_dob": data.get("dob"),
-            "kyc_company_pan_linked": 1
-        }
+#         data = ucl.validate(
+#         kwargs,{
+#             "pan_number": ["required"],
+#             "pan_type": "",
+#             "full_name": ["required"],
+#             "address_line_1": "",
+#             "address_line_2": "",
+#             "address_street_name": "",
+#             "zip": "",
+#             "city": "",
+#             "state": "",
+#             "country": "",
+#             "full_address": "",
+#             "email": "",
+#             "phone_number": "",
+#             "dob": "",
+#         })
+#         api_log_doc = ucl.log_api(method = "Update Company Pan Details", request_time = datetime.now(), request = str(data))
+#         company_address_dict = {
+#             "company_pan_number": data.get("pan_number"),
+#             "company_pan_type": data.get("pan_type"),
+#             "company_name": data.get("full_name"),
+#             "company_address_line1": data.get("address_line_1"),
+#             "company_address_line2": data.get("address_line_2"),
+#             "company_address_street_name": data.get("address_street_name"),
+#             "company_address_zip": data.get("zip"),
+#             "company_address_city": data.get("city"),
+#             "company_address_state": data.get("state"),
+#             "company_address_country": data.get("country"),
+#             "company_full_address": data.get("full_address"),
+#             "company_email": data.get("email"),
+#             "company_phone_no": data.get("phone_number"),
+#             "company_dob": data.get("dob"),
+#             "kyc_company_pan_linked": 1
+#         }
         
-        partner_doc = frappe.get_doc("Partner", partner.name).update(company_address_dict).save(ignore_permissions = True)
-        frappe.db.commit()
-        response = "Company Pan details updated successfully"
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+#         partner_doc = frappe.get_doc("Partner", partner.name).update(company_address_dict).save(ignore_permissions = True)
+#         frappe.db.commit()
+#         response = "Company Pan details updated successfully"
+#         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
             
-        return ucl.responder.respondWithSuccess(message=frappe._(response))
+#         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
-    except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
-        return e.respond()
+#     except ucl.exceptions.APIException as e:
+#         ucl.log_api_error()
+        # return e.respond()
 
 
 @frappe.whitelist(allow_guest=True)
@@ -621,7 +640,7 @@ def download_esign_document(document_id):
         return e.respond()
     
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def reset_pin(**kwargs):
     try:
         ucl.validate_http_method("POST")
