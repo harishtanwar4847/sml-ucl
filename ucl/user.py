@@ -552,7 +552,7 @@ def esign_request():
         partner.save(ignore_permissions = True)
         # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}".format(id,user.name), "redirect_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://my_redirection_url".format(id,user.name)})
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://my_redirection_url".format(id,user.name)})
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
