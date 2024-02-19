@@ -745,7 +745,7 @@ def pan_ocr(**kwargs):
                 response = ocr_response.json()
                 ucl.log_api_error(mess = str(response))
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-                raise ucl.exceptions.ValidationException(errors="Please upload a valid Pan Card")
+                raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
         else:
             partner.company_pan_file = ""
             partner.save(ignore_permissions=True)
@@ -753,7 +753,7 @@ def pan_ocr(**kwargs):
             response = ocr_response.json()
             ucl.log_api_error(mess = response)
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-            raise ucl.exceptions.ValidationException(errors=ocr_response.json()["message"])
+            raise ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
         
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
     
@@ -815,7 +815,7 @@ def aadhaar_ocr(**kwargs):
                 partner.save(ignore_permissions=True)
                 frappe.db.commit()
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-                raise ucl.exceptions.ValidationException(errors="Please Upload a valid Aadhaar Card.")
+                raise ucl.responder.respondWithFailure(message=frappe._("Please Upload a valid Aadhaar Card."), data=response.json()['data'])
 
         else:
             partner.aadhaar_front = ""
@@ -823,7 +823,7 @@ def aadhaar_ocr(**kwargs):
             partner.save(ignore_permissions=True)
             frappe.db.commit()
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
-            raise ucl.exceptions.ValidationException(errors=response.json()["message"])
+            raise ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
 
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
     
