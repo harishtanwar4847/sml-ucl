@@ -529,9 +529,7 @@ def esign_request():
             "notify_signers": True,
             "send_sign_link": True
         }
-        print(signers_data)
-        ucl_settings = frappe.get_doc("UCL Settings")
-        esign_file = ucl_settings.digital_agreement.split("/files/")[1]
+        esign_file = ucl_setting.digital_agreement.split("/files/")[1]
         files = {
             'file': (esign_file, open(frappe.utils.get_files_path(esign_file), 'rb'), 'application/pdf'),
             'request': (

@@ -20,7 +20,11 @@
   "column_break_nejm",
   "privacy_policy",
   "digital_agreement_section",
-  "digital_agreement"
+  "digital_agreement",
+  "glib_details_section",
+  "glib_client_id",
+  "column_break_yqli",
+  "glib_client_secret"
  ],
  "fields": [
   {
@@ -98,12 +102,31 @@
    "fieldname": "digital_agreement",
    "fieldtype": "Attach",
    "label": "Digital Agreement"
+  },
+  {
+   "fieldname": "glib_details_section",
+   "fieldtype": "Section Break",
+   "label": "Glib Details"
+  },
+  {
+   "fieldname": "glib_client_id",
+   "fieldtype": "Data",
+   "label": "Glib Client Id"
+  },
+  {
+   "fieldname": "column_break_yqli",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "glib_client_secret",
+   "fieldtype": "Data",
+   "label": "Glib Client Secret"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-13 15:58:12.715192",
+ "modified": "2024-02-20 10:12:43.226664",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Settings",
