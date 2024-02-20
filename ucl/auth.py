@@ -639,8 +639,11 @@ def get_partner_list():
     try:
         try:
             partner = ucl.partner_list()
+            partner_type = ["Individual", "Corporate"]
+            company_type = ["Proprietary Firm", "Partnership Firm", "LLP Firm", "Pvt Ltd Firm", "Public Ltd Firm", "HUF", "Trust"]
+            data = {"partner_type" : partner_type, "company_type" : company_type, "partner":partner}
             return ucl.responder.respondWithSuccess(
-                    message=frappe._("List"), data=partner
+                    message=frappe._("List"), data=data
                 )
             
         except NotFoundException:

@@ -710,7 +710,7 @@ def kyc_submit():
         user = ucl.__user()
         partner = ucl.__partner(user.name)
         ucl.validate_http_method("POST")
-        if (partner.partner_type == "Corporate" and partner.kyc_digital_agreement_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner.kyc_company_pan_linked and partner.kyc_company_documents_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner.kyc_live_image_linked and partner.kyc_digital_agreement_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.associate and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked):
+        if (partner.partner_type == "Corporate" and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner.kyc_company_pan_linked and partner.kyc_company_documents_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.associate and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked):
             response = "KYC Successful"
             partner.status = "Pending"
             partner.workflow_state = "Pending"
