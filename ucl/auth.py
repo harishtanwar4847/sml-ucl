@@ -734,13 +734,18 @@ def pan_ocr(**kwargs):
 
         if ocr_response.json()['code'] == 200:
             id_number = ocr_response.json()["data"]["id_number"]
-            if id_number and ocr_response.json()['data']["pan_type"]:
-                pan_plus_response = pan_plus(id_number)
-                ucl.log_api_error(pan_plus_response)
 
-                response = pan_plus_response["data"]
-                response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
-                response["pan_type"] = ocr_response.json()['data']["pan_type"]
+            if id_number and ocr_response.json()['data']["pan_type"]:
+                if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
+                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=response)
+                
+                else:
+                    pan_plus_response = pan_plus(id_number)
+                    ucl.log_api_error(pan_plus_response)
+
+                    response = pan_plus_response["data"]
+                    response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+                    response["pan_type"] = ocr_response.json()['data']["pan_type"]
             else:
                 partner.company_pan_file = ""
                 partner.save(ignore_permissions=True)
@@ -862,26 +867,15 @@ def rc_advance(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def penny_drop(**kwargs):
+def penny_drop(beneficiary_account_no,beneficiary_ifsc):
     try:
-        ucl.validate_http_method("POST")
-        user = ucl.__user()
-        partner = ucl.__partner(user.name)
-
-        data = ucl.validate(
-            kwargs,
-            {
-            "beneficiary_account_no" : ["required"],
-            "beneficiary_ifsc": ["required"],
-            "beneficiary_name": ""
-        })
         url = "https://api.digio.in/client/verify/bank_account"
         ucl_setting = frappe.get_single("UCL Settings")
-        # payload = {
-        #     "beneficiary_account_no" : data.get("beneficiary_account_no"),
-        #     "beneficiary_ifsc": data.get("beneficiary_ifsc"),
-        #     "beneficiary_name": partner.pan_full_name
-        # }
+        payload = {
+            "beneficiary_account_no" : beneficiary_account_no,
+            "beneficiary_ifsc": beneficiary_ifsc,
+            "beneficiary_name": ""
+        }
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()
@@ -889,12 +883,12 @@ def penny_drop(**kwargs):
         "Authorization": f"Basic {base64_credentials}",
         "Content-Type": "application/json"
         }
-        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
+        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(payload)))
         
-        response = requests.request("POST",url, headers=headers, json = data)
+        response = requests.request("POST",url, headers=headers, json = payload)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+        return response.json()
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()

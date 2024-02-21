@@ -24,7 +24,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Screen to Open",
-   "options": "My Loans\nDashboard\nMargin Shortfall Action"
+   "options": "Home"
   },
   {
    "fieldname": "column_break_osqo",
@@ -46,7 +46,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-06 18:42:28.713265",
+ "modified": "2024-02-21 15:23:43.114044",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Push Notification",
