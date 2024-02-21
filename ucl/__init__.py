@@ -101,11 +101,6 @@ def send_otp(**kwargs):
                     }
                 ).insert(ignore_permissions=True)
             log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
-            # api_log_doc.response_time = datetime.now()
-            # api_log_doc.api_type = "Internal"
-            # api_log_doc.response = "OTP Sent"
-            # api_log_doc.save(ignore_permissions=True)
-            # frappe.db.commit()
             return ucl.responder.respondWithSuccess(
                     message=frappe._("OTP Sent"),
                 )

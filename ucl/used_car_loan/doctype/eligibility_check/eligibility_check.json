@@ -29,6 +29,7 @@
   "sanctioned_loan_amount",
   "emi",
   "total_emis_paid",
+  "co_applicant",
   "car_details_section",
   "brand",
   "registration_number",
@@ -43,7 +44,26 @@
   "city",
   "car_owner",
   "colour",
-  "kms_driven"
+  "kms_driven",
+  "co_applicant_details_section",
+  "coapplicant_occupation_type",
+  "coapplicant_mobile_no",
+  "coapplicant_pan",
+  "coapplicant_first_name",
+  "coapplicant_last_name",
+  "coapplicant_gender",
+  "coapplicant_dob",
+  "coapplicant_address",
+  "coapplicant_loan_amount",
+  "column_break_ubfd",
+  "coapplicant_monthly_salary",
+  "coapplicant_monthly_gross_income",
+  "coapplicant_running_loan",
+  "coapplicant_lender",
+  "coapplicant_pos",
+  "coapplicant_sanctioned_loan_amount",
+  "coapplicant_emi",
+  "coapplicant_total_emi_paid"
  ],
  "fields": [
   {
@@ -219,8 +239,9 @@
   },
   {
    "fieldname": "lender_name",
-   "fieldtype": "Select",
-   "label": "Lender Name"
+   "fieldtype": "Link",
+   "label": "Lender Name",
+   "options": "Lender"
   },
   {
    "fieldname": "pos",
@@ -241,11 +262,114 @@
    "fieldname": "total_emis_paid",
    "fieldtype": "Data",
    "label": "Total EMI's Paid"
+  },
+  {
+   "fieldname": "co_applicant",
+   "fieldtype": "Select",
+   "label": "Co-Applicant",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "column_break_ubfd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "coapplicant_occupation_type",
+   "fieldtype": "Select",
+   "label": "Occupation Type",
+   "options": "\nSalaried\nSelf Employed"
+  },
+  {
+   "fieldname": "coapplicant_mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No"
+  },
+  {
+   "fieldname": "coapplicant_pan",
+   "fieldtype": "Data",
+   "label": "PAN"
+  },
+  {
+   "fieldname": "coapplicant_first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "coapplicant_last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "coapplicant_gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "coapplicant_dob",
+   "fieldtype": "Data",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "coapplicant_address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "coapplicant_loan_amount",
+   "fieldtype": "Currency",
+   "label": "Requested Loan Amount"
+  },
+  {
+   "fieldname": "coapplicant_monthly_salary",
+   "fieldtype": "Currency",
+   "label": "Monthly Salary"
+  },
+  {
+   "fieldname": "coapplicant_monthly_gross_income",
+   "fieldtype": "Currency",
+   "label": "Monthly Gross Income"
+  },
+  {
+   "fieldname": "coapplicant_running_loan",
+   "fieldtype": "Select",
+   "label": "Does you have a running car loan?"
+  },
+  {
+   "fieldname": "coapplicant_lender",
+   "fieldtype": "Link",
+   "label": "Lender",
+   "options": "Lender"
+  },
+  {
+   "fieldname": "coapplicant_pos",
+   "fieldtype": "Data",
+   "label": "POS"
+  },
+  {
+   "fieldname": "coapplicant_sanctioned_loan_amount",
+   "fieldtype": "Currency",
+   "label": "Sanctioned Loan Amount"
+  },
+  {
+   "fieldname": "coapplicant_emi",
+   "fieldtype": "Data",
+   "label": "EMI"
+  },
+  {
+   "fieldname": "coapplicant_total_emi_paid",
+   "fieldtype": "Data",
+   "label": "Toatl EMI's Paid"
+  },
+  {
+   "depends_on": "eval:doc.co_applicant == \"Yes\"; ",
+   "fieldname": "co_applicant_details_section",
+   "fieldtype": "Section Break",
+   "label": "Co-Applicant Details"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-09 16:33:40.675818",
+ "modified": "2024-02-21 13:56:26.357376",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
