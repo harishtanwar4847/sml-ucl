@@ -155,15 +155,15 @@ def bre_offers(**kwargs):
             "obligations": "required",
             "profession": "required",
             "coApplicant": "required",
-            "coApplicantProfile": "required",
+            "coApplicantProfile": "",
             "coApplicantTotalNetIncome": "required",
-            "creditReportXml": "required"
+            "creditReportXml": ""
         })
 
         url = "http://bre.switchmyloan.in/v1/bre/used-car-loans/offers-post-new"
-        headers = {
-            'Content-Type': 'application/json'
-        }
+        # headers = {
+        #     'Content-Type': 'application/json'
+        # }
     
         payload={
             "cibilScore": data.get("cibilScore"),
@@ -185,11 +185,12 @@ def bre_offers(**kwargs):
             "coApplicantTotalNetIncome": data.get("coApplicantTotalNetIncome"),
             "creditReportXml": data.get("creditReportXml")
         }
-        api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
-        response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+        print(payload)
+        # api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+        response = requests.request("POST", url, data=payload)
+        # ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
         print(response)
-        return response
+        return response.json()
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -346,5 +347,217 @@ def download_report(id):
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def ibb_make(**kwargs):
+    try:
+        user = ucl.__user()
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,{
+            "year": "required", 
+            "month": "required"
+        },
+        )
+        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        payload = {
+            "for": "make", 
+            "year": data.get("year"), 
+            "month": data.get("month"), 
+            "access_token": ucl_setting.ibb_token 
+        }
+        
+        response = requests.request("POST", url, data=payload)
+        print(response)
+        if response.status_code == 200:
+            api_log_doc = ucl.log_api(method = "IBB Make API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['make'])
+        else:
+            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def ibb_model(**kwargs):
+    try:
+        user = ucl.__user()
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,{
+            "year":"required", 
+            "month":"required", 
+            "make": "required"        },
+        )
+        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        payload = {
+            "for": "model", 
+            "year": data.get("year"), 
+            "month": data.get("month"), 
+            "make": data.get("make"),
+            "access_token": ucl_setting.ibb_token 
+        }        
+        response = requests.request("POST", url, data=payload)
+        print(response)
+        if response.status_code == 200:
+            api_log_doc = ucl.log_api(method = "IBB Model API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['model'])
+        else:
+            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def ibb_variant(**kwargs):
+    try:
+        user = ucl.__user()
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,{
+            "year":"required", 
+            "month":"required", 
+            "make": "required",
+            "model": "required"
+        },
+        )
+        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        payload = {
+            "for": "variant", 
+            "year": data.get("year"), 
+            "month": data.get("month"), 
+            "make": data.get("make"),
+            "model": data.get("model"),
+            "access_token": ucl_setting.ibb_token 
+        }        
+        response = requests.request("POST", url, data=payload)
+        print(response)
+        if response.status_code == 200:
+            api_log_doc = ucl.log_api(method = "IBB Variant API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['variant'])
+        else:
+            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def ibb_location(**kwargs):
+    try:
+        user = ucl.__user()
+        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        payload = {
+            "for": "city",
+            "access_token": ucl_setting.ibb_token 
+        }        
+        response = requests.request("POST", url, data=payload)
+        print(response)
+        if response.status_code == 200:
+            api_log_doc = ucl.log_api(method = "IBB Location API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['city'])
+        else:
+            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def ibb_color(**kwargs):
+    try:
+        user = ucl.__user()
+        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        payload = {
+            "for": "color",
+            "access_token": ucl_setting.ibb_token 
+        }        
+        response = requests.request("POST", url, data=payload)
+        print(response)
+        if response.status_code == 200:
+            api_log_doc = ucl.log_api(method = "IBB Color API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['color'])
+        else:
+            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+
+
+
+@frappe.whitelist(allow_guest=True)
+def ibb_price(**kwargs):
+    try:
+        user = ucl.__user()
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,{
+            "year": "required", 
+            "month": "required", 
+            "make": "required", 
+            "model": "required", 
+            "variant": "", 
+            "location": "required", 
+            "color": "required", 
+            "owner": "required", 
+            "kilometer": "required", 
+        },
+        )
+        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
+        ucl_setting = frappe.get_single("UCL Settings")
+
+        payload = {
+            "for": "comprehensivePrice", 
+            "year": data.get("year"), 
+            "month": data.get("month"), 
+            "make": data.get("make"), 
+            "model": data.get("model"), 
+            "variant": data.get("variant"), 
+            "location": data.get("location"), 
+            "color": data.get("color"), 
+            "owner": data.get("owner"), 
+            "kilometer": data.get("kilometer"), 
+            "access_token": ucl_setting.ibb_token 
+        }
+        print(payload)
+        
+        response = requests.request("POST", url, data=payload)
+        print(response)
+        if response.status_code == 200:
+            api_log_doc = ucl.log_api(method = "IBB Price API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['retail'])
+        else:
+            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+        
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+
 
     

@@ -24,7 +24,9 @@
   "glib_details_section",
   "glib_client_id",
   "column_break_yqli",
-  "glib_client_secret"
+  "glib_client_secret",
+  "ibb_details_section",
+  "ibb_token"
  ],
  "fields": [
   {
@@ -121,12 +123,22 @@
    "fieldname": "glib_client_secret",
    "fieldtype": "Data",
    "label": "Glib Client Secret"
+  },
+  {
+   "fieldname": "ibb_details_section",
+   "fieldtype": "Section Break",
+   "label": "IBB details"
+  },
+  {
+   "fieldname": "ibb_token",
+   "fieldtype": "Data",
+   "label": "IBB Token"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-20 10:12:43.226664",
+ "modified": "2024-02-20 15:24:33.505372",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Settings",

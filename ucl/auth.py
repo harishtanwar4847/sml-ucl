@@ -641,7 +641,7 @@ def get_partner_list():
             partner = ucl.partner_list()
             partner_type = ["Individual", "Corporate"]
             company_type = ["Proprietary Firm", "Partnership Firm", "LLP Firm", "Pvt Ltd Firm", "Public Ltd Firm", "HUF", "Trust"]
-            data = {"partner_type" : partner_type, "company_type" : company_type, "partner":partner}
+            data = {"partner_type" : partner_type, "company_type" : company_type, "partner":partner if partner else ""}
             return ucl.responder.respondWithSuccess(
                     message=frappe._("List"), data=data
                 )
@@ -855,7 +855,7 @@ def rc_advance(**kwargs):
         response = requests.request("GET",url, headers=headers, json = payload)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
-        return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json()['data'])
+        return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json())
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()

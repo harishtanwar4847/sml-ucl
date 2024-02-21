@@ -79,9 +79,10 @@
   "kyc_company_pan_linked",
   "company_documents_tab",
   "business_proof",
+  "kyc_business_proof_linked",
   "column_break_nxdy",
   "company_gst_certificate",
-  "kyc_company_documents_linked",
+  "kyc_company_gst_certificate_linked",
   "current_address_tab",
   "same_as_on_pan",
   "address_proof",
@@ -506,13 +507,6 @@
    "label": "Company GST Certificate"
   },
   {
-   "default": "0",
-   "fieldname": "kyc_company_documents_linked",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "KYC Company Documents Linked"
-  },
-  {
    "fieldname": "current_address_tab",
    "fieldtype": "Tab Break",
    "label": "Current Address"
@@ -622,11 +616,25 @@
    "fieldname": "address_proof",
    "fieldtype": "Attach",
    "label": "Address Proof"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_business_proof_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Business Proof Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_company_gst_certificate_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company GST Certificate Linked"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-17 12:02:24.419346",
+ "modified": "2024-02-21 12:43:20.472389",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

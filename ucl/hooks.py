@@ -151,7 +151,8 @@ scheduler_events = {
 	# ],
     "cron" : {
         "0 0 * * *": [
-            "ucl.authorize_deepvue"
+            "ucl.authorize_deepvue",
+            "ucl.authorize_ibb"
         ],  # At 12:00 AM
 	},
 }

@@ -622,6 +622,31 @@ def authorize_deepvue():
         ucl.log_api_error()
         return e.respond()
     
+@frappe.whitelist()
+def authorize_ibb():
+    try:
+        ucl.validate_http_method("POST")
+        ucl_setting = frappe.get_single("UCL Settings")
+        url = "https://system.indianbluebook.com/api/get_access_token"
+        payload = { 
+            "username":"switchmyloan@ibb.com", 
+            "password":"{m78YzqE8_+o" 
+        }
+        api_log_doc = ucl.log_api(method = "IBB Authorize", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload)))
+        response = requests.request("POST",url, data = payload)
+
+        if response.status_code == 200:
+            ucl_setting.ibb_token = response.json()["access_token"]
+            ucl_setting.save(ignore_permissions = True)
+            frappe.db.commit()
+        else:
+            return RespondWithFailureException()
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
 def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,attached_to_field,partner=None):
     base64_encoded_image = image_bytes
     decoded_image = base64.b64decode(base64_encoded_image)

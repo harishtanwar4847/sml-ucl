@@ -430,6 +430,7 @@ def update_business_proof(**kwargs):
         file_name = "{}_{}_{}.{}".format(partner.partner_name, data.get("business_proof_type"), randint(1,9),data.get("extension")).replace(" ", "-")
         file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="business_proof",partner=partner)
         partner.business_proof = "/files/{}".format(file_name)
+        partner.kyc_business_proof_linked = 1
         partner.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfuly".format(data.get("business_proof_type"))))
@@ -454,7 +455,7 @@ def update_gst_certificate(**kwargs):
         file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
         file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
         partner.company_gst_certificate = "/files/{}".format(file_name)
-        partner.kyc_company_documents_linked = 1
+        partner.kyc_company_gst_certificate_linked = 1
         partner.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
@@ -708,7 +709,7 @@ def kyc_submit():
         user = ucl.__user()
         partner = ucl.__partner(user.name)
         ucl.validate_http_method("POST")
-        if (partner.partner_type == "Corporate" and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner.kyc_company_pan_linked and partner.kyc_company_documents_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.associate and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked):
+        if (partner.partner_type == "Corporate" and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner.kyc_company_pan_linked and partner.kyc_business_proof_linked and partner.kyc_company_gst_certificate_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.associate and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked):
             response = "KYC Successful"
             partner.status = "Pending"
             partner.workflow_state = "Pending"
