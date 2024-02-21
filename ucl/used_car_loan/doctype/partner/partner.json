@@ -98,6 +98,7 @@
   "bank_details_tab",
   "cancelled_cheque",
   "bank_name",
+  "bank_account_number",
   "column_break_uvju",
   "ifsc_code",
   "beneficiary_name",
@@ -624,11 +625,16 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "KYC Company GST Certificate Linked"
+  },
+  {
+   "fieldname": "bank_account_number",
+   "fieldtype": "Data",
+   "label": "Bank Account Number"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-21 18:40:08.077604",
+ "modified": "2024-02-21 19:06:24.138972",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
