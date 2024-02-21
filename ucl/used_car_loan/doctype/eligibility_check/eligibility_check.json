@@ -54,7 +54,7 @@
   "coapplicant_gender",
   "coapplicant_dob",
   "coapplicant_address",
-  "coapplicant_loan_amount",
+  "coapplicant_requested_loan_amount",
   "column_break_ubfd",
   "coapplicant_monthly_salary",
   "coapplicant_monthly_gross_income",
@@ -315,11 +315,6 @@
    "label": "Address"
   },
   {
-   "fieldname": "coapplicant_loan_amount",
-   "fieldtype": "Currency",
-   "label": "Requested Loan Amount"
-  },
-  {
    "fieldname": "coapplicant_monthly_salary",
    "fieldtype": "Currency",
    "label": "Monthly Salary"
@@ -365,11 +360,16 @@
    "fieldname": "co_applicant_details_section",
    "fieldtype": "Section Break",
    "label": "Co-Applicant Details"
+  },
+  {
+   "fieldname": "coapplicant_requested_loan_amount",
+   "fieldtype": "Currency",
+   "label": "Requested Loan Amount"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-21 13:56:26.357376",
+ "modified": "2024-02-21 16:47:49.545474",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

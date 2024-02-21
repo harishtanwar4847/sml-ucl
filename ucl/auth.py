@@ -737,7 +737,7 @@ def pan_ocr(**kwargs):
 
             if id_number and ocr_response.json()['data']["pan_type"]:
                 if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
-                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=response)
+                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
                 
                 else:
                     pan_plus_response = pan_plus(id_number)

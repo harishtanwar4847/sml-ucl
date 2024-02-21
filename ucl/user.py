@@ -478,7 +478,6 @@ def update_bank_details(**kwargs):
                 "document1": ["required"],
                 "bank_account_number" : ["required"],
                 "bank_name": ["required"],
-                "bank_address": ["required"],
                 "ifsc_code": ["required"],
                 "beneficiary_name": ["required"],
                 "extension" : ["required"]
@@ -491,7 +490,6 @@ def update_bank_details(**kwargs):
                 "cancelled_cheque": "/files/{}".format(file_name),
                 "bank_account_number" : data.get("bank_account_number"),
                 "bank_name": data.get("bank_name"),
-                "bank_address": data.get("bank_address"),
                 "ifsc_code": data.get("ifsc_code"),
                 "beneficiary_name": data.get("beneficiary_name"),
                 "kyc_bank_details_linked": 1

@@ -86,7 +86,7 @@ def update_basic_details(**kwargs):
                 "dob": "required",
                 "address": "required"
         })
-        api_log_doc = ucl.log_api(method = "Mobile No Check", request_time = datetime.now(), request = str(data))
+        api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = str(data))
         eligibility_doc = frappe.get_doc(
             {
                 "doctype": "Eligibility Check",
@@ -101,8 +101,9 @@ def update_basic_details(**kwargs):
             }
         ).insert(ignore_permissions=True)
         frappe.db.commit()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(eligibility_doc))
-        return ucl.responder.respondWithSuccess(message=frappe._("Basic eligibility details updated successfuly"))
+        eligibility_doc_name = eligibility_doc.name
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        return ucl.responder.respondWithSuccess(message=frappe._("Basic eligibility details updated successfuly"), data={"id": eligibility_doc_name})
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -119,23 +120,44 @@ def update_loan_details(**kwargs):
             {
                 "occupation_type": "required",
                 "requested_loan_amount" : "required",
-                "monthly_salary" : "required",
-                "monthly_gross_income": "required",
-                "running_loan": "required",
-                "lender_name": "",
-                "pos": "required",
-                "sanctioned_loan_amount": "required",
-                "emi": "required",
-                "total_emis_paid": "required",
-                "co_applicant": "required"
+                "monthly_salary" : "",
+                "monthly_gross_income": ""
         })
-        api_log_doc = ucl.log_api(method = "Mobile No Check", request_time = datetime.now(), request = str(data))
-        eligibility_doc = frappe.get_doc(
-            {
+        api_log_doc = ucl.log_api(method = "Update Loan Details", request_time = datetime.now(), request = str(data))
+        eligibility_dict ={
                 "occupation_type": data.get("occupation_type"),
                 "requested_loan_amount" : data.get("requested_loan_amount"),
                 "monthly_salary" : data.get("monthly_salary"),
-                "monthly_gross_income": data.get("monthly_gross_income"),
+                "monthly_gross_income": data.get("monthly_gross_income")
+        }
+        eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
+        frappe.db.commit()
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        return ucl.responder.respondWithSuccess(message=frappe._("Loan details updated successfuly"))
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def update_existing_loan_details(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        data = ucl.validate(
+            kwargs,
+            {
+                "running_loan": "",
+                "lender_name": "",
+                "pos": "required",
+                "sanctioned_loan_amount": "",
+                "emi": "",
+                "total_emis_paid": "",
+                "co_applicant": ""
+        })
+        api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = str(data))
+        eligibility_dict ={
                 "running_loan": data.get("running_loan"),
                 "lender_name": data.get("lender_name"),
                 "pos": data.get("pos"),
@@ -144,10 +166,98 @@ def update_loan_details(**kwargs):
                 "total_emis_paid": data.get("total_emis_paid"),
                 "co_applicant": data.get("co_applicant")
         }
-        ).insert(ignore_permissions=True)
+        eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(eligibility_doc))
-        return ucl.responder.respondWithSuccess(message=frappe._("Loan details updated successfuly"))
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        return ucl.responder.respondWithSuccess(message=frappe._("Existing Loan details updated successfuly"))
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def update_car_details(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        data = ucl.validate(
+            kwargs,
+            {
+                "brand": "required",
+                "registration_number": "",
+                "model": "required",
+                "variant": "required",
+                "on_road_price": "",
+                "manufacturing_year": "required",
+                "month": "required",
+                "city": "required",
+                "car_owner": "required",
+                "colour": "required",
+                "kms_driven": "required"
+
+        })
+        api_log_doc = ucl.log_api(method = "Update Car Details", request_time = datetime.now(), request = str(data))
+        eligibility_dict ={
+                "brand": data.get("brand"),
+                "registration_number": data.get("registration_number"),
+                "model": data.get("model"),
+                "variant": data.get("variant"),
+                "on_road_price": data.get("on_road_price"),
+                "manufacturing_year": data.get("manufacturing_year"),
+                "month": data.get("month"),
+                "city": data.get("city"),
+                "car_owner": data.get("car_owner"),
+                "colour": data.get("colour"),
+                "kms_driven": data.get("kms_driven")
+
+        }
+        eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
+        frappe.db.commit()
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        return ucl.responder.respondWithSuccess(message=frappe._("Car details updated successfuly"))
+
+    except ucl.exceptions.APIException as e:
+        ucl.log_api_error()
+        return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def update_coapplicant_details(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        data = ucl.validate(
+            kwargs,
+            {
+                "occupation_type": "required",
+                "pan_number": "required",
+                "first_name": "required",
+                "last_name": "",
+                "gender": "required",
+                "dob": "required",
+                "address": "required",
+                "requested_loan_amount" : "required",
+                "monthly_salary" : "",
+                "monthly_gross_income": ""
+        })
+        api_log_doc = ucl.log_api(method = "Update Coapplicant Details", request_time = datetime.now(), request = str(data))
+        eligibility_dict ={
+                "coapplicant_occupation_type": data.get("occupation_type"),
+                "coapplicant_pan": data.get("pan_number"),
+                "coapplicant_first_name": data.get("first_name"),
+                "coapplicant_last_name": data.get("last_name"),
+                "coapplicant_gender": data.get("gender"),
+                "coapplicant_dob": data.get("dob"),
+                "coapplicant_address": data.get("address"),
+                "coapplicant_requested_loan_amount" : data.get("requested_loan_amount"),
+                "coapplicant_monthly_salary" : data.get("monthly_salary"),
+                "coapplicant_monthly_gross_income": data.get("monthly_gross_income")
+        }
+        eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
+        frappe.db.commit()
+        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        return ucl.responder.respondWithSuccess(message=frappe._("Coapplicant details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
