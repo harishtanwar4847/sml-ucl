@@ -470,7 +470,7 @@ def update_gst_certificate(**kwargs):
 def update_bank_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("9832451657")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
         data = ucl.validate(
             kwargs,
