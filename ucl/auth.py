@@ -738,6 +738,8 @@ def pan_ocr(**kwargs):
             if id_number and ocr_response.json()['data']["pan_type"]:
                 if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
                     raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
+                if data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] == "Company":
+                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
                 
                 else:
                     pan_plus_response = pan_plus(id_number)
@@ -747,6 +749,7 @@ def pan_ocr(**kwargs):
                     response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
                     response["pan_type"] = ocr_response.json()['data']["pan_type"]
             else:
+                partner.pan_card_file = ""
                 partner.company_pan_file = ""
                 partner.save(ignore_permissions=True)
                 frappe.db.commit()
@@ -755,6 +758,7 @@ def pan_ocr(**kwargs):
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
                 raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
         else:
+            partner.pan_card_file = ""
             partner.company_pan_file = ""
             partner.save(ignore_permissions=True)
             frappe.db.commit()

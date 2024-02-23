@@ -1,29 +1,46 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "Prompt",
+ "autoname": "field:consent_name",
  "creation": "2024-01-18 16:26:45.653301",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "consent"
+  "consent_name",
+  "consent",
+  "esign_consent"
  ],
  "fields": [
   {
+   "depends_on": "eval:doc.consent_name != \"E-sign\";",
    "fieldname": "consent",
    "fieldtype": "Text",
    "in_list_view": 1,
    "label": "Consent",
    "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.consent_name == \"E-sign\";",
+   "fieldname": "esign_consent",
+   "fieldtype": "Table",
+   "label": "Esign Consent",
+   "options": "E-sign Consent"
+  },
+  {
+   "fieldname": "consent_name",
+   "fieldtype": "Data",
+   "label": "Consent Name",
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-18 16:27:50.953342",
+ "modified": "2024-02-23 11:23:46.810371",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Consent",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

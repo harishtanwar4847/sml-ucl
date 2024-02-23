@@ -15,7 +15,6 @@
   "is_pin_set",
   "status",
   "live_image",
-  "document_id",
   "digital_agreement",
   "kyc_live_image_linked",
   "kyc_digital_agreement_linked",
@@ -166,12 +165,6 @@
    "fieldname": "live_image",
    "fieldtype": "Attach",
    "label": "Live Image"
-  },
-  {
-   "fieldname": "document_id",
-   "fieldtype": "Data",
-   "label": "Document ID",
-   "read_only": 1
   },
   {
    "fieldname": "digital_agreement",
@@ -582,8 +575,9 @@
   },
   {
    "fieldname": "bank_name",
-   "fieldtype": "Data",
-   "label": "Bank Name"
+   "fieldtype": "Link",
+   "label": "Bank Name",
+   "options": "Bank"
   },
   {
    "fieldname": "column_break_uvju",
@@ -633,7 +627,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-22 15:15:52.593944",
+ "modified": "2024-02-23 11:12:35.695602",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

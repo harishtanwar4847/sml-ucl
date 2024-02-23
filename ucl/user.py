@@ -88,9 +88,9 @@ def update_pan_details(**kwargs):
             kwargs,
             {
                 "fathers_name": "",
-                "pan_number": ["required"],
+                "pan_number": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "pan_type": "",
-                "full_name": ["required"],
+                "full_name": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "masked_aadhaar": "",
                 "address_line_1": "",
                 "address_line_2": "",
@@ -450,16 +450,22 @@ def update_gst_certificate(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "document1": ["required"],
-                "extension" : ["required"]
+                "document1": ["required" if partner.company_type not in ["Proprietary Firm", "HUF"] else ""],
+                "extension" : ["required" if partner.company_type not in ["Proprietary Firm", "HUF"] else ""]
         })
-        file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
-        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
-        partner.company_gst_certificate = "/files/{}".format(file_name)
-        partner.kyc_company_gst_certificate_linked = 1
-        partner.save(ignore_permissions=True)
-        frappe.db.commit()
-        return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
+        if data.get("document1"):
+            file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
+            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
+            partner.company_gst_certificate = "/files/{}".format(file_name)
+            partner.kyc_company_gst_certificate_linked = 1
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
+            return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
+        else:
+            partner.kyc_company_gst_certificate_linked = 1
+            partner.save(ignore_permissions=True)
+            frappe.db.commit()
+            return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -475,20 +481,22 @@ def update_bank_details(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "document1": ["required"],
+                "document1": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "bank_account_number" : ["required"],
                 "bank_name": ["required"],
                 "ifsc_code": ["required"],
                 "beneficiary_name": ["required"],
-                "extension" : ["required"]
+                "extension" : ["required" if partner.company_type != "Proprietary Firm" else ""]
         })
-        file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
+        if data.get("document1"):
+            file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
         penny_drop = auth.penny_drop(beneficiary_account_no = data.get("bank_account_number"),beneficiary_ifsc = data.get("ifsc_code"))
         if "verified" in penny_drop:
             if penny_drop["verified"] == True:
-                file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="cancelled_cheque",partner=partner)
+                if data.get("document1"):
+                    file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="cancelled_cheque",partner=partner)
                 bank_details_dict = {
-                    "cancelled_cheque": "/files/{}".format(file_name),
+                    "cancelled_cheque": "/files/{}".format(file_name) if data.get("document1") else "",
                     "bank_account_number" : data.get("bank_account_number"),
                     "bank_name": data.get("bank_name"),
                     "ifsc_code": data.get("ifsc_code"),
@@ -506,6 +514,30 @@ def update_bank_details(**kwargs):
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
+    
+@frappe.whitelist(allow_guest=True)
+def get_esign_consent():
+    try:
+        try:
+            esign_doc = frappe.get_doc("Consent", "E-sign")
+            consent_points = []
+            for i in esign_doc.esign_consent:
+                consent_points.append({"title":i.title, "description":i.description})
+            return ucl.responder.respondWithSuccess(
+                    message=frappe._("Success"), data={"consent_points" : consent_points}
+                )
+            
+        except NotFoundException:
+            raise ucl.exceptions.NotFoundException()
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        ucl.log_api_error()
+        return ucl.responder.respondUnauthorized(message=str(e))    
+
     
 
 @frappe.whitelist(allow_guest=True)
@@ -547,11 +579,16 @@ def esign_request():
                 'text/plain'
             )
         }
-        print(files)
         response = requests.post(url, headers=headers, files=files)
        
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
-        
+        login_consent_doc = frappe.get_doc(
+                    {
+                        "doctype": "User Consent",
+                        "mobile": user.mobile_no,
+                        "consent": "E-sign",
+                    }
+                ).insert(ignore_permissions=True)
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
         id = response.json()['id']
@@ -559,7 +596,7 @@ def esign_request():
         partner.save(ignore_permissions = True)
         # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://my_redirection_url".format(id,user.name)})
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://atriina.com".format(id,user.name)})
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -603,6 +640,7 @@ def get_esign_details(**kwargs):
         ucl.log_api_error()
         return e.respond() 
 
+
 def download_esign_document(document_id):
     try:
         user = ucl.__user()
@@ -635,6 +673,7 @@ def download_esign_document(document_id):
         ).insert(ignore_permissions=True)
         frappe.db.commit()
         partner.digital_agreement = "/files/{}".format(file_name)
+        partner.kyc_digital_agreement_linked = 1
         partner.save(ignore_permissions = True)
         api_log_doc = ucl.log_api(method = "Download Esign document", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + document_id))
         
