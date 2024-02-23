@@ -521,10 +521,12 @@ def get_esign_consent():
         try:
             esign_doc = frappe.get_doc("Consent", "E-sign")
             consent_points = []
+            ucl_setting = frappe.get_single("UCL Settings")
+            esign_url = frappe.utils.get_url(ucl_setting.digital_agreement)
             for i in esign_doc.esign_consent:
                 consent_points.append({"title":i.title, "description":i.description})
             return ucl.responder.respondWithSuccess(
-                    message=frappe._("Success"), data={"consent_points" : consent_points}
+                    message=frappe._("Success"), data={"consent_points" : consent_points, "esign_agreement_url" : esign_url}
                 )
             
         except NotFoundException:
@@ -541,10 +543,17 @@ def get_esign_consent():
     
 
 @frappe.whitelist(allow_guest=True)
-def esign_request():
+def esign_request(**kwargs):
     try:
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+            "consent" : "decimal|between:0,1"
+            })
         url = "https://api.digio.in/v2/client/document/upload"
         ucl_setting = frappe.get_single("UCL Settings")
 
@@ -553,51 +562,52 @@ def esign_request():
         headers = {
             "authorization": f"Basic {base64_credentials}",
         }
-
-        signers_data = {
-            "signers": [
-                {
-                    "identifier": user.name,
-                    "name": partner.partner_name,
-                    "sign_type": "aadhaar",
-                    "reason": "Digio esign test-atriina team"
-                }
-            ],
-            "comment": "Testing",
-            "expire_in_days": 10,
-            "sequential": True,
-            "display_on_page": "last",
-            "notify_signers": True,
-            "send_sign_link": True
-        }
-        esign_file = ucl_setting.digital_agreement.split("/files/")[1]
-        files = {
-            'file': (esign_file, open(frappe.utils.get_files_path(esign_file), 'rb'), 'application/pdf'),
-            'request': (
-                None,
-                json.dumps(signers_data),
-                'text/plain'
-            )
-        }
-        response = requests.post(url, headers=headers, files=files)
-       
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
-        login_consent_doc = frappe.get_doc(
+        if data.get("consent") == 1:
+
+            signers_data = {
+                "signers": [
                     {
-                        "doctype": "User Consent",
-                        "mobile": user.mobile_no,
-                        "consent": "E-sign",
+                        "identifier": user.name,
+                        "name": partner.partner_name,
+                        "sign_type": "aadhaar",
+                        "reason": "Digio esign test-atriina team"
                     }
-                ).insert(ignore_permissions=True)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+                ],
+                "comment": "Testing",
+                "expire_in_days": 10,
+                "sequential": True,
+                "display_on_page": "last",
+                "notify_signers": True,
+                "send_sign_link": True
+            }
+            esign_file = ucl_setting.digital_agreement.split("/files/")[1]
+            files = {
+                'file': (esign_file, open(frappe.utils.get_files_path(esign_file), 'rb'), 'application/pdf'),
+                'request': (
+                    None,
+                    json.dumps(signers_data),
+                    'text/plain'
+                )
+            }
+            response = requests.post(url, headers=headers, files=files)
+            login_consent_doc = frappe.get_doc(
+                        {
+                            "doctype": "User Consent",
+                            "mobile": user.mobile_no,
+                            "consent": "E-sign",
+                        }
+                    ).insert(ignore_permissions=True)
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
-        id = response.json()['id']
-        partner.document_id = id
-        partner.save(ignore_permissions = True)
-        # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+            id = response.json()['id']
+            partner.document_id = id
+            partner.save(ignore_permissions = True)
+            return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://atriina.com".format(id,user.name)})
 
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://atriina.com".format(id,user.name)})
-
+        else:
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "Consent not received")
+            return ucl.responder.respondUnauthorized(message="Not received your consent yet. To continue please review agreement once.")
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
