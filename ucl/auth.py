@@ -704,73 +704,78 @@ def pan_ocr(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-                "document1": ["required"],
+                "document1": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "name": "",
                 "company_pan": "decimal|between:0,1",
-                "extension" : ["required"]
+                "extension" : ["required" if partner.company_type != "Proprietary Firm" else ""]
         })
-        if data.get("company_pan") == 0:
-            pan_file_name = "{}_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
-            pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
-            partner.pan_card_file = "/files/{}".format(pan_file_name)
-            partner.save(ignore_permissions=True)
-            frappe.db.commit()
-        else:
-            pan_file_name = "{}_company_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
-            pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_pan_file",partner=partner)
-            partner.company_pan_file = "/files/{}".format(pan_file_name)
-            partner.save(ignore_permissions=True)
-            frappe.db.commit()
-        payload = {
-            "document1": pan_file_url
-        }
-        ucl_setting = frappe.get_single("UCL Settings")
-        url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
-        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+        if data.get("document1"):
+            if data.get("company_pan") == 0:
+                pan_file_name = "{}_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
+                partner.pan_card_file = "/files/{}".format(pan_file_name)
+                partner.save(ignore_permissions=True)
+                frappe.db.commit()
+            else:
+                pan_file_name = "{}_company_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_pan_file",partner=partner)
+                partner.company_pan_file = "/files/{}".format(pan_file_name)
+                partner.save(ignore_permissions=True)
+                frappe.db.commit()
+            payload = {
+                "document1": pan_file_url
+            }
+            ucl_setting = frappe.get_single("UCL Settings")
+            url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
+            headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
 
-        api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
-        ocr_response = requests.request("POST", url, headers=headers, json=payload)
-        ucl.log_api_error(ocr_response.json())
+            api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+            ocr_response = requests.request("POST", url, headers=headers, json=payload)
+            ucl.log_api_error(ocr_response.json())
 
-        if ocr_response.json()['code'] == 200:
-            id_number = ocr_response.json()["data"]["id_number"]
+            if ocr_response.json()['code'] == 200:
+                id_number = ocr_response.json()["data"]["id_number"]
 
-            if id_number and ocr_response.json()['data']["pan_type"]:
-                if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
-                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
-                if data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] == "Company":
-                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
-                
+                if id_number and ocr_response.json()['data']["pan_type"]:
+                    if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
+                        raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
+                    if data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] == "Company":
+                        raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
+                    
+                    else:
+                        pan_plus_response = pan_plus(id_number)
+                        ucl.log_api_error(pan_plus_response)
+
+                        response = pan_plus_response["data"]
+                        response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+                        response["pan_type"] = ocr_response.json()['data']["pan_type"]
                 else:
-                    pan_plus_response = pan_plus(id_number)
-                    ucl.log_api_error(pan_plus_response)
-
-                    response = pan_plus_response["data"]
-                    response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
-                    response["pan_type"] = ocr_response.json()['data']["pan_type"]
+                    partner.pan_card_file = ""
+                    partner.company_pan_file = ""
+                    partner.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    response = ocr_response.json()
+                    ucl.log_api_error(mess = str(response))
+                    ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+                    raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
             else:
                 partner.pan_card_file = ""
                 partner.company_pan_file = ""
                 partner.save(ignore_permissions=True)
                 frappe.db.commit()
                 response = ocr_response.json()
-                ucl.log_api_error(mess = str(response))
+                ucl.log_api_error(mess = response)
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-                raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
-        else:
-            partner.pan_card_file = ""
-            partner.company_pan_file = ""
-            partner.save(ignore_permissions=True)
-            frappe.db.commit()
-            response = ocr_response.json()
-            ucl.log_api_error(mess = response)
+                raise ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
+            
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-            raise ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
         
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+            return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
+        
+        else:
+            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly")
+            return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"))
     
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
-
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()

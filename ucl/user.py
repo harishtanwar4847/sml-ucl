@@ -482,34 +482,39 @@ def update_bank_details(**kwargs):
             kwargs,
             {
                 "document1": ["required" if partner.company_type != "Proprietary Firm" else ""],
-                "bank_account_number" : ["required"],
-                "bank_name": ["required"],
-                "ifsc_code": ["required"],
-                "beneficiary_name": ["required"],
+                "bank_account_number" : ["required" if partner.company_type != "Proprietary Firm" else ""],
+                "bank_name": ["required" if partner.company_type != "Proprietary Firm" else ""],
+                "ifsc_code": ["required" if partner.company_type != "Proprietary Firm" else ""],
+                "beneficiary_name": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "extension" : ["required" if partner.company_type != "Proprietary Firm" else ""]
         })
         if data.get("document1"):
             file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
-        penny_drop = auth.penny_drop(beneficiary_account_no = data.get("bank_account_number"),beneficiary_ifsc = data.get("ifsc_code"))
-        if "verified" in penny_drop:
-            if penny_drop["verified"] == True:
-                if data.get("document1"):
-                    file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="cancelled_cheque",partner=partner)
-                bank_details_dict = {
-                    "cancelled_cheque": "/files/{}".format(file_name) if data.get("document1") else "",
-                    "bank_account_number" : data.get("bank_account_number"),
-                    "bank_name": data.get("bank_name"),
-                    "ifsc_code": data.get("ifsc_code"),
-                    "beneficiary_name": data.get("beneficiary_name"),
-                    "kyc_bank_details_linked": 1
-                }
-                partner_doc = frappe.get_doc("Partner", partner.name).update(bank_details_dict).save(ignore_permissions = True)
-                frappe.db.commit()
-                return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
+        if data.get("bank_account_number") and data.get("ifsc_code"):
+            penny_drop = auth.penny_drop(beneficiary_account_no = data.get("bank_account_number"),beneficiary_ifsc = data.get("ifsc_code"))
+            if "verified" in penny_drop:
+                if penny_drop["verified"] == True:
+                    if data.get("document1"):
+                        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="cancelled_cheque",partner=partner)
+                    bank_details_dict = {
+                        "cancelled_cheque": "/files/{}".format(file_name) if data.get("document1") else "",
+                        "bank_account_number" : data.get("bank_account_number"),
+                        "bank_name": data.get("bank_name"),
+                        "ifsc_code": data.get("ifsc_code"),
+                        "beneficiary_name": data.get("beneficiary_name"),
+                        "kyc_bank_details_linked": 1
+                    }
+                    partner_doc = frappe.get_doc("Partner", partner.name).update(bank_details_dict).save(ignore_permissions = True)
+                    frappe.db.commit()
+                    return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
+                else:
+                    return ucl.responder.respondUnauthorized(message=penny_drop["error_msg"])
             else:
-                return ucl.responder.respondUnauthorized(message=penny_drop["error_msg"])
+                return ucl.responder.respondUnauthorized(message=penny_drop["message"])
         else:
-            return ucl.responder.respondUnauthorized(message=penny_drop["message"])
+            partner.kyc_bank_details_linked = 1
+            partner.save(ignore_permissions = True)
+            return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
