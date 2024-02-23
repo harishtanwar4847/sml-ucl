@@ -655,10 +655,21 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
                 "content" : decoded_image,
                 "is_private": False,
             }
-        ).insert(ignore_permissions=True)
+        )
+    if frappe.db.exists("File", {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field}):
+        print("yes")
+        doc = frappe.get_last_doc(
+            'File', filters = {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field
+        })
+        if doc:
+            file_doc = frappe.get_doc("File", doc.name)
+            print(file_doc)
+            frappe.delete_doc("File", doc.name)
+    file.insert(ignore_permissions = True)
+
     frappe.db.commit()
     file_name_url = file.file_url
-    # file_url = "https://78e5a7a343d6d1.lhr.life{}".format(file_name_url).replace(" ", "-")
+    # file_url = "https://d3e46327446e1d.lhr.life{}".format(file_name_url).replace(" ", "-")
     file_url = frappe.utils.get_url("{}".format(file_name_url).replace(" ", "-"))
     return file_url
 
