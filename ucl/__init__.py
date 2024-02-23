@@ -669,7 +669,7 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
 
     frappe.db.commit()
     file_name_url = file.file_url
-    # file_url = "https://d3e46327446e1d.lhr.life{}".format(file_name_url).replace(" ", "-")
+    # file_url = "https://3d6cd6a140b911.lhr.life{}".format(file_name_url).replace(" ", "-")
     file_url = frappe.utils.get_url("{}".format(file_name_url).replace(" ", "-"))
     return file_url
 
@@ -684,11 +684,12 @@ def get_firebase_tokens(entity):
     return [i.token for i in token_list]
 
 def send_ucl_push_notification(
-    fcm_notification={}, message="", loan="", customer=None
+    fcm_notification={}, message="", loan="", partner=None, lead=None
 ):
     try:
+        user = frappe.get_doc("User", partner.user_id)
         fcm_payload = {}
-        tokens = get_firebase_tokens(customer.user)
+        tokens = get_firebase_tokens(user.mobile_no)
         if fcm_notification and tokens:
             if message:
                 message = message
@@ -758,7 +759,6 @@ def send_ucl_push_notification(
                     "request": data,
                     "response": res_json,
                 }
-
                 create_log(log, "Send_UCL_Push_Notification_Log")
 
                 # fa.send_android_message(
@@ -768,6 +768,7 @@ def send_ucl_push_notification(
                 #     tokens=get_firebase_tokens(customer.user),
                 #     priority="high",
                 # )
+               
                 if res.ok and res.status_code == 200:
                     # Save log for UCL Push Notification
                     frappe.get_doc(
@@ -775,8 +776,8 @@ def send_ucl_push_notification(
                             "doctype": "UCL Push Notification Log",
                             "name": notification_name,
                             "title": data["title"],
-                            "loan_customer": customer.name,
-                            "customer_name": customer.full_name,
+                            "lead": lead.name if lead else "",
+                            "partner": partner.name,
                             "loan": data["loan_no"],
                             "screen_to_open": data["screen"],
                             "notification_id": data["notification_id"],
@@ -802,7 +803,7 @@ def send_ucl_push_notification(
         frappe.log_error(
             message=frappe.get_traceback()
             + "\nNotification Info:\n"
-            + json.dumps(fcm_payload if fcm_payload else customer.name),
+            + json.dumps(fcm_payload if fcm_payload else partner.name),
             title="UCL Push Notification Error",
         )
 

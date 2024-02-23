@@ -11,6 +11,9 @@
   "screen_to_open",
   "notification_type",
   "click_action",
+  "lead",
+  "partner",
+  "loan",
   "column_break_ufpo",
   "time",
   "message",
@@ -71,11 +74,28 @@
    "fieldname": "is_read",
    "fieldtype": "Check",
    "label": "Is Read"
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "Lead"
+  },
+  {
+   "fieldname": "partner",
+   "fieldtype": "Link",
+   "label": "Partner",
+   "options": "Partner"
+  },
+  {
+   "fieldname": "loan",
+   "fieldtype": "Data",
+   "label": "Loan"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-06 18:49:00.723631",
+ "modified": "2024-02-23 17:45:44.547330",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Push Notification Log",

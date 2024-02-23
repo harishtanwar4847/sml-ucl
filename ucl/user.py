@@ -341,6 +341,14 @@ def face_match(**kwargs):
                     partner.kyc_live_image_linked = 1
                     partner.save(ignore_permissions=True)                    
                     frappe.db.commit()
+                    fcm_notification = frappe.get_doc(
+                        "UCL Push Notification",
+                        "Face Match successful",
+                        fields=["*"],
+                    )
+                    ucl.send_ucl_push_notification(
+                        fcm_notification=fcm_notification, partner=partner
+                    )
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
