@@ -496,6 +496,9 @@ def update_bank_details(**kwargs):
                 "beneficiary_name": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "extension" : ["required" if partner.company_type != "Proprietary Firm" else ""]
         })
+        if not data.get("ifsc_code").isalnum():
+            raise ucl.exceptions.FailureException(message= "Invalid IFSC Code")
+
         if data.get("document1"):
             file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
         if data.get("bank_account_number") and data.get("ifsc_code"):

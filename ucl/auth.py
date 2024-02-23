@@ -382,6 +382,7 @@ def login(**kwargs):
         data = ucl.validate(
             kwargs,
             {
+                "mobile" : ["required", "decimal", ucl.validator.rules.LengthRule(10)],
                 "pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
                 "firebase_token": [ucl.validator.rules.RequiredIfPresent("pin")],
                 # "accept_terms": "decimal|between:0,1",
@@ -405,7 +406,7 @@ def login(**kwargs):
                 )
 
         try:
-            user = ucl.__user()
+            user = ucl.__user(data.get("mobile"))
         except UserNotFoundException:
             user = None
             raise ucl.exceptions.UserNotFoundException()
