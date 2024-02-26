@@ -1,0 +1,9 @@
+frappe
+firebase-admin
+validator==0.7.1
+pdf2image==1.17.0
+fitz==0.0.1.dev2
+face-recognition==1.3.0
+numpy==1.26.3
+requests==2.31.0
+PyMuPDF==1.23.18

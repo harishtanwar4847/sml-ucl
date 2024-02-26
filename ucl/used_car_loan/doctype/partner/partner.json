@@ -15,6 +15,7 @@
   "user_id",
   "partner_kyc",
   "digital_agreement",
+  "kyc_approved",
   "kyc_digital_agreement_linked"
  ],
  "fields": [
@@ -86,11 +87,18 @@
    "fieldtype": "Link",
    "label": "Partner KYC",
    "options": "Partner KYC"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_approved",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Approved?"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-26 11:55:29.182076",
+ "modified": "2024-02-26 14:43:33.438433",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
