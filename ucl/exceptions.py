@@ -54,6 +54,13 @@ class PartnerNotFoundException(APIException):
     def __init__(self, message="Partner not found"):
         self.message = message
 
+class PartnerKYCNotFoundException(APIException):
+    http_status_code = 404
+
+    def __init__(self, message="Partner KYC not found"):
+        self.message = message
+
+
 
 class InvalidUserTokenException(APIException):
     http_status_code = 422

@@ -148,7 +148,7 @@ def update_pan_details(**kwargs):
                 "kyc_company_pan_linked": 1
             }   
         
-        partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
+        partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
         
         response = {"message" : "Pan details updated successfully", "partner" : partner_doc.as_dict()}
@@ -198,7 +198,7 @@ def update_aadhaar_details(**kwargs):
             "street_address": data.get("street_address"),
             "kyc_aadhaar_linked": 1
         }
-        partner_doc = frappe.get_doc("Partner", partner.name).update(partner_dict).save(ignore_permissions = True)
+        partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
         
         response = {"message" : "Aadhaar details updated successfully", "partner" : partner_doc.as_dict()}
@@ -268,7 +268,7 @@ def update_current_address(**kwargs):
                 }
         
 
-        partner_doc = frappe.get_doc("Partner", partner.name).update(address_dict).save(ignore_permissions = True)
+        partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(address_dict).save(ignore_permissions = True)
         frappe.db.commit()
         response = "Address updated successfully"
         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
@@ -298,14 +298,15 @@ def face_match(**kwargs):
         live_picture_file = "{}_live_image_{}.{}".format(
             partner.partner_name,randint(1,9),data.get("extension")
         ).replace(" ", "-")
+        partner_kyc = frappe.get_doc("Partnern KYC", partner.partner_kyc)
 
-        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
+        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner KYC", attached_to_name=partner.partner_kyc, attached_to_field="live_image", partner=partner)
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
-        partner.live_image = "/files/{}".format(live_picture_file)
-        if partner.pan_card_file:
-            path = urlparse(partner.pan_card_file).path
+        partner_kyc.live_image = "/files/{}".format(live_picture_file)
+        if partner_kyc.pan_card_file:
+            path = urlparse(partner_kyc.pan_card_file).path
             file_extension = os.path.splitext(path)[1]
-            filename = os.path.basename(partner.pan_card_file)
+            filename = os.path.basename(partner_kyc.pan_card_file)
             if file_extension ==".pdf":
             # Specify the input PDF file and output folder
                 input_pdf_path = frappe.utils.get_files_path(filename)
@@ -338,21 +339,21 @@ def face_match(**kwargs):
                 results = face_recognition.compare_faces([face_encoding_1], face_encoding_2)
 
                 if results[0]:
-                    partner.kyc_live_image_linked = 1
-                    partner.save(ignore_permissions=True)                    
+                    partner_kyc.kyc_live_image_linked = 1
+                    partner_kyc.save(ignore_permissions=True)                    
                     frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
-                    partner.live_image =""
-                    partner.kyc_live_image_linked = 0
-                    partner.save(ignore_permissions=True)                    
+                    partner_kyc.live_image =""
+                    partner_kyc.kyc_live_image_linked = 0
+                    partner_kyc.save(ignore_permissions=True)                    
                     frappe.db.commit()
                     return ucl.responder.respondUnauthorized(message = "Faces do not match.")
             else:
-                partner.live_image =""
-                partner.kyc_live_image_linked = 0
-                partner.save(ignore_permissions=True)                    
+                partner_kyc.live_image =""
+                partner_kyc.kyc_live_image_linked = 0
+                partner_kyc.save(ignore_permissions=True)                    
                 frappe.db.commit()
                 return ucl.responder.respondNotFound(message = "No faces detected.")
 
@@ -428,11 +429,12 @@ def update_business_proof(**kwargs):
                 "extension" : ["required"],
                 "business_proof_type" : ""
         })
+        partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
         file_name = "{}_{}_{}.{}".format(partner.partner_name, data.get("business_proof_type"), randint(1,9),data.get("extension")).replace(" ", "-")
-        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="business_proof",partner=partner)
-        partner.business_proof = "/files/{}".format(file_name)
-        partner.kyc_business_proof_linked = 1
-        partner.save(ignore_permissions=True)
+        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner.partner_kyc,attached_to_field="business_proof",partner=partner)
+        partner_kyc.business_proof = "/files/{}".format(file_name)
+        partner_kyc.kyc_business_proof_linked = 1
+        partner_kyc.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfuly".format(data.get("business_proof_type"))))
 
@@ -447,6 +449,10 @@ def update_gst_certificate(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
         data = ucl.validate(
             kwargs,
             {
@@ -455,15 +461,15 @@ def update_gst_certificate(**kwargs):
         })
         if data.get("document1"):
             file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
-            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
-            partner.company_gst_certificate = "/files/{}".format(file_name)
-            partner.kyc_company_gst_certificate_linked = 1
-            partner.save(ignore_permissions=True)
+            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="company_gst_certificate",partner=partner)
+            partner_kyc.company_gst_certificate = "/files/{}".format(file_name)
+            partner_kyc.kyc_company_gst_certificate_linked = 1
+            partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
         else:
-            partner.kyc_company_gst_certificate_linked = 1
-            partner.save(ignore_permissions=True)
+            partner_kyc.kyc_company_gst_certificate_linked = 1
+            partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
 
@@ -478,6 +484,10 @@ def update_bank_details(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
         data = ucl.validate(
             kwargs,
             {
@@ -495,7 +505,7 @@ def update_bank_details(**kwargs):
             if "verified" in penny_drop:
                 if penny_drop["verified"] == True:
                     if data.get("document1"):
-                        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="cancelled_cheque",partner=partner)
+                        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="cancelled_cheque",partner=partner)
                     bank_details_dict = {
                         "cancelled_cheque": "/files/{}".format(file_name) if data.get("document1") else "",
                         "bank_account_number" : data.get("bank_account_number"),
@@ -504,7 +514,7 @@ def update_bank_details(**kwargs):
                         "beneficiary_name": data.get("beneficiary_name"),
                         "kyc_bank_details_linked": 1
                     }
-                    partner_doc = frappe.get_doc("Partner", partner.name).update(bank_details_dict).save(ignore_permissions = True)
+                    partner_doc = frappe.get_doc("Partner KYC", partner_kyc.name).update(bank_details_dict).save(ignore_permissions = True)
                     frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
                 else:
@@ -512,8 +522,8 @@ def update_bank_details(**kwargs):
             else:
                 return ucl.responder.respondUnauthorized(message=penny_drop["message"])
         else:
-            partner.kyc_bank_details_linked = 1
-            partner.save(ignore_permissions = True)
+            partner_kyc.kyc_bank_details_linked = 1
+            partner_kyc.save(ignore_permissions = True)
             return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
@@ -770,12 +780,13 @@ def kyc_submit():
     try:
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
         ucl.validate_http_method("POST")
-        if (partner.partner_type == "Corporate" and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner.kyc_company_pan_linked and partner.kyc_business_proof_linked and partner.kyc_company_gst_certificate_linked and partner.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked and partner. kyc_current_address_linked and partner.kyc_bank_details_linked) or (partner.associate and partner.kyc_live_image_linked and partner.kyc_pan_linked and partner.kyc_aadhaar_linked):
+        if (partner.partner_type == "Corporate" and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked and partner_kyc.kyc_company_pan_linked and partner_kyc.kyc_business_proof_linked and partner_kyc.kyc_company_gst_certificate_linked and partner_kyc.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner_kyc.kyc_live_image_linked and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked and partner_kyc. kyc_current_address_linked and partner_kyc.kyc_bank_details_linked) or (partner.associate and partner_kyc.kyc_live_image_linked and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked):
             response = "KYC Successful"
-            partner.status = "Pending"
-            partner.workflow_state = "Pending"
-            partner.save(ignore_permissions=True)
+            partner_kyc.status = "Pending"
+            partner_kyc.workflow_state = "Pending"
+            partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
         else:
             response = "Please complete the KYC process"

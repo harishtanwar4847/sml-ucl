@@ -33,8 +33,8 @@ def verify_email(**kwargs):
             },
         )
 
+        api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = str(data))
         if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "used": 1}):
-            api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = str(data))
 
             email_regex = (
                 r"^([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})"
@@ -60,7 +60,13 @@ def verify_email(**kwargs):
                         token=ucl.create_user_access_token(user.name)
                     )
                 
-                ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
+                partner = ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
+                print(partner)
+                partner_kyc = frappe.new_doc("Partner KYC").save(ignore_permissions = True)
+                print(partner_kyc)
+                partner.partner_kyc = partner_kyc.name
+                partner.save(ignore_permissions = True)
+                print(partner.partner_kyc)
                     
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "User Created Successfully")
 
@@ -503,6 +509,11 @@ def get_user_details(**kwargs):
                 partner = ucl.__partner(user.name)
                 partner_doc = frappe.get_doc("Partner", partner.name)
                 user_doc.partner = partner_doc.as_dict()
+                if partner.partner_kyc:
+                    partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc).as_dict()
+                    user_doc.partner_kyc = partner_kyc
+                else:
+                    user_doc.partner_kyc = None
                 response = "User details" + "\n" + str(user_doc)
                 return ucl.responder.respondWithSuccess(
                 message=frappe._("User details"), data = user_doc
@@ -701,6 +712,10 @@ def pan_ocr(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
         data = ucl.validate(
             kwargs,
             {
@@ -712,15 +727,15 @@ def pan_ocr(**kwargs):
         if data.get("document1"):
             if data.get("company_pan") == 0:
                 pan_file_name = "{}_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
-                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
-                partner.pan_card_file = "/files/{}".format(pan_file_name)
-                partner.save(ignore_permissions=True)
+                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner.partner_kyc,attached_to_field="pan_card_file",partner=partner)
+                partner_kyc.pan_card_file = "/files/{}".format(pan_file_name)
+                partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
             else:
                 pan_file_name = "{}_company_pan_card_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
-                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_pan_file",partner=partner)
-                partner.company_pan_file = "/files/{}".format(pan_file_name)
-                partner.save(ignore_permissions=True)
+                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner.partner_kyc,attached_to_field="company_pan_file",partner=partner)
+                partner_kyc.company_pan_file = "/files/{}".format(pan_file_name)
+                partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
             payload = {
                 "document1": pan_file_url
@@ -739,29 +754,25 @@ def pan_ocr(**kwargs):
                 if id_number and ocr_response.json()['data']["pan_type"]:
                     if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
                         raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
-                    if data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] == "Company":
+                    elif data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] != "Individual":
                         raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
-                    
                     else:
                         pan_plus_response = pan_plus(id_number)
-                        ucl.log_api_error(pan_plus_response)
 
                         response = pan_plus_response["data"]
                         response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
                         response["pan_type"] = ocr_response.json()['data']["pan_type"]
                 else:
-                    partner.pan_card_file = ""
-                    partner.company_pan_file = ""
-                    partner.save(ignore_permissions=True)
+                    partner_kyc.company_pan_file = ""
+                    partner_kyc.save(ignore_permissions=True)
                     frappe.db.commit()
                     response = ocr_response.json()
                     ucl.log_api_error(mess = str(response))
                     ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
                     raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
             else:
-                partner.pan_card_file = ""
-                partner.company_pan_file = ""
-                partner.save(ignore_permissions=True)
+                partner_kyc.company_pan_file = ""
+                partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
                 response = ocr_response.json()
                 ucl.log_api_error(mess = response)
@@ -771,11 +782,10 @@ def pan_ocr(**kwargs):
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
         
             return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
-        
         else:
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly")
-            return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"))
-    
+            return ucl.responder.respondWithSuccess(message=frappe._("Success"))
+
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()
@@ -787,6 +797,10 @@ def aadhaar_ocr(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC". partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
 
         data = ucl.validate(
             kwargs,
@@ -799,14 +813,14 @@ def aadhaar_ocr(**kwargs):
         aadhaar_front_file_name = "{}_aadhaar_card_front_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
         aadhaar_back_file_name = "{}_aadhaar_card_back_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
 
-        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=aadhaar_front_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_front",partner=partner)
+        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=aadhaar_front_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner.partner_kyc, attached_to_field="aadhaar_front",partner=partner)
         partner.aadhaar_front = "/files/{}".format(aadhaar_front_file_name)
         if data.get("document2"):
-            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name=aadhaar_back_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_back",partner=partner)
-            partner.aadhaar_back = "/files/{}".format(aadhaar_back_file_name)
+            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name=aadhaar_back_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner.partner_kyc, attached_to_field="aadhaar_back",partner=partner)
+            partner_kyc.aadhaar_back = "/files/{}".format(aadhaar_back_file_name)
         else:
             aadhaar_file_url2 = ""
-        partner.save(ignore_permissions=True)
+        partner_kyc.save(ignore_permissions=True)
         frappe.db.commit()
         payload = {
             "document1": aadhaar_file_url1,
@@ -822,22 +836,22 @@ def aadhaar_ocr(**kwargs):
         if response.json()['code'] == 200:
             if response.json()['data']['id_number']:
                 id_number = response.json()['data']['id_number'][-4:]
-                if partner.aadhaar_linked and id_number != partner.masked_aadhaar[-4:]:
+                if partner_kyc.aadhaar_linked and id_number != partner_kyc.masked_aadhaar[-4:]:
                     raise ucl.exceptions.UnauthorizedException(
                             _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
                         )
             else:
-                partner.aadhaar_front = ""
-                partner.aadhaar_back  = ""
-                partner.save(ignore_permissions=True)
+                partner_kyc.aadhaar_front = ""
+                partner_kyc.aadhaar_back  = ""
+                partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
                 raise ucl.responder.respondWithFailure(message=frappe._("Please Upload a valid Aadhaar Card."), data=response.json()['data'])
 
         else:
-            partner.aadhaar_front = ""
-            partner.aadhaar_back  = ""
-            partner.save(ignore_permissions=True)
+            partner_kyc.aadhaar_front = ""
+            partner_kyc.aadhaar_back  = ""
+            partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
             raise ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])

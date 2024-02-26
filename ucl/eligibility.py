@@ -4,6 +4,8 @@ from frappe import _
 from datetime import datetime, timedelta
 import ucl
 import re
+
+from ucl import auth
 from .exceptions import *
 import requests
 import base64
@@ -50,19 +52,11 @@ def pan_plus(**kwargs):
             {
             "pan_number" : "required"
         })
-        ucl_setting = frappe.get_single("UCL Settings")
-
-        url = "https://production.deepvue.tech/v1/verification/pan-plus?pan_number=" + data.get("pan_number")
-    
-        payload={}
-        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
-        response = requests.request("GET", url, headers=headers, data=payload)
-        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
-        if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
-            return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=response.json()['data'])
+        pan_plus_response = auth.pan_plus(data.get("pan_number"))
+        if pan_plus_response["code"] == 200 and pan_plus_response["sub_code"] == "SUCCESS":
+            return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=pan_plus_response.json()['data'])
         else:
-            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.json())
+            return ucl.responder.respondWithFailure(message=frappe._("Pan Verification Failed"), data=pan_plus_response.json())
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
