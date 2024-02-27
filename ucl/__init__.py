@@ -669,7 +669,7 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
     frappe.db.commit()
     file_name_url = file.file_url
     # file_url = "https://d3e46327446e1d.lhr.life{}".format(file_name_url).replace(" ", "-")
-    file_url = frappe.utils.get_url("{}".format(file_name_url).replace(" ", "-"))
+    file_url = file.file_url
     return file_url
 
 
