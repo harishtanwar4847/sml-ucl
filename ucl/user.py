@@ -3,6 +3,7 @@ import frappe
 import json
 from frappe import _
 from datetime import datetime, timedelta
+from frappe.model import workflow
 from frappe.utils.password import check_password, update_password
 import ucl
 import re
@@ -436,7 +437,7 @@ def update_business_proof(**kwargs):
         partner_kyc.kyc_business_proof_linked = 1
         partner_kyc.save(ignore_permissions=True)
         frappe.db.commit()
-        return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfuly".format(data.get("business_proof_type"))))
+        return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfully".format(data.get("business_proof_type"))))
 
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
@@ -569,8 +570,8 @@ def esign_request(**kwargs):
             {
             "consent" : "decimal|between:0,1"
             })
-        url = "https://api.digio.in/v2/client/document/upload"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.esign_request
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()
@@ -640,8 +641,8 @@ def get_esign_details(**kwargs):
             "document_id" : "required"
             })
         
-        url = "https://api.digio.in/v2/client/document/{}".format(data.get("document_id"))
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl.get_esign_details.format(document_id = data.get("document_id"))
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()
@@ -671,7 +672,7 @@ def download_esign_document(document_id):
         user = ucl.__user()
         partner = ucl.__partner(user.name)
             
-        url = "https://api.digio.in/v2/client/document/download?document_id={}".format(document_id)
+        url = ucl_setting.download_esign_document.format(document_id=document_id)
         ucl_setting = frappe.get_single("UCL Settings")
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
@@ -785,7 +786,8 @@ def kyc_submit():
         if (partner.partner_type == "Corporate" and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked and partner_kyc.kyc_company_pan_linked and partner_kyc.kyc_business_proof_linked and partner_kyc.kyc_company_gst_certificate_linked and partner_kyc.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner_kyc.kyc_live_image_linked and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked and partner_kyc. kyc_current_address_linked and partner_kyc.kyc_bank_details_linked) or (partner.associate and partner_kyc.kyc_live_image_linked and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked):
             response = "KYC Successful"
             partner_kyc.status = "Pending"
-            partner_kyc.workflow_state = "Pending"
+            # partner_kyc.workflow_state = "Pending"
+            workflow.apply_workflow(partner_kyc, "Review")
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
         else:

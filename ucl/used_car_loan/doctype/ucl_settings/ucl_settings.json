@@ -15,18 +15,43 @@
   "digio_client_id",
   "column_break_klbf",
   "digio_client_secret",
+  "third_party_api_urls_section",
+  "pan_ocr",
+  "pan_plus",
+  "rc_advance",
+  "column_break_lwbn",
+  "aadhaar_ocr",
+  "penny_drop",
+  "bre",
   "terms_and_policy_section",
   "terms_of_use",
   "column_break_nejm",
   "privacy_policy",
   "digital_agreement_section",
   "digital_agreement",
+  "get_esign_details",
+  "column_break_fgkz",
+  "esign_request",
+  "download_esign_document",
   "glib_details_section",
   "glib_client_id",
+  "create_workorder",
+  "process_workorder",
+  "download_report",
   "column_break_yqli",
   "glib_client_secret",
+  "add_bank_statement",
+  "retrieve_workorder",
   "ibb_details_section",
-  "ibb_token"
+  "ibb_token",
+  "column_break_abze",
+  "ibb_url",
+  "experian_details_section",
+  "enhance_match_register",
+  "generate_otp",
+  "column_break_ltni",
+  "full_match_register",
+  "validate_otp"
  ],
  "fields": [
   {
@@ -133,12 +158,133 @@
    "fieldname": "ibb_token",
    "fieldtype": "Data",
    "label": "IBB Token"
+  },
+  {
+   "fieldname": "third_party_api_urls_section",
+   "fieldtype": "Section Break",
+   "label": "Third Party API Urls"
+  },
+  {
+   "fieldname": "pan_ocr",
+   "fieldtype": "Data",
+   "label": "Pan OCR"
+  },
+  {
+   "fieldname": "pan_plus",
+   "fieldtype": "Data",
+   "label": "Pan Plus"
+  },
+  {
+   "fieldname": "rc_advance",
+   "fieldtype": "Data",
+   "label": "RC Advance"
+  },
+  {
+   "fieldname": "column_break_lwbn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "aadhaar_ocr",
+   "fieldtype": "Data",
+   "label": "Aadhaar OCR"
+  },
+  {
+   "fieldname": "penny_drop",
+   "fieldtype": "Data",
+   "label": "Penny Drop"
+  },
+  {
+   "fieldname": "get_esign_details",
+   "fieldtype": "Data",
+   "label": "Get Esign Details"
+  },
+  {
+   "fieldname": "column_break_fgkz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "download_esign_document",
+   "fieldtype": "Data",
+   "label": "Download Esign Document"
+  },
+  {
+   "fieldname": "create_workorder",
+   "fieldtype": "Data",
+   "label": "Create Workorder"
+  },
+  {
+   "fieldname": "process_workorder",
+   "fieldtype": "Data",
+   "label": "Process Workorder"
+  },
+  {
+   "fieldname": "download_report",
+   "fieldtype": "Data",
+   "label": "Download Report"
+  },
+  {
+   "fieldname": "add_bank_statement",
+   "fieldtype": "Data",
+   "label": "Add Bank Statement"
+  },
+  {
+   "fieldname": "retrieve_workorder",
+   "fieldtype": "Data",
+   "label": "Retrieve Workorder"
+  },
+  {
+   "fieldname": "column_break_abze",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "experian_details_section",
+   "fieldtype": "Section Break",
+   "label": "Experian Details"
+  },
+  {
+   "fieldname": "enhance_match_register",
+   "fieldtype": "Data",
+   "label": "Enhance Match Register"
+  },
+  {
+   "fieldname": "generate_otp",
+   "fieldtype": "Data",
+   "label": "Generate OTP"
+  },
+  {
+   "fieldname": "column_break_ltni",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "full_match_register",
+   "fieldtype": "Data",
+   "label": "Full Match Register"
+  },
+  {
+   "fieldname": "validate_otp",
+   "fieldtype": "Data",
+   "label": "Validate OTP"
+  },
+  {
+   "fieldname": "bre",
+   "fieldtype": "Data",
+   "label": "BRE "
+  },
+  {
+   "fieldname": "esign_request",
+   "fieldtype": "Data",
+   "label": "Esign Request"
+  },
+  {
+   "fieldname": "ibb_url",
+   "fieldtype": "Data",
+   "label": "IBB URL"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-20 15:24:33.505372",
+ "modified": "2024-02-26 15:52:29.455292",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Settings",

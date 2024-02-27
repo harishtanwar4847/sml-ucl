@@ -274,7 +274,7 @@ def register_mobile_no(**kwargs):
         })
         ucl_setting = frappe.get_single("UCL Settings")
 
-        url = "https://consumer.experian.in:8443/ECV-P2/content/registerEnhancedMatchMobileOTP.action"
+        url = ucl_setting.enhance_match_register
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -321,7 +321,7 @@ def generate_mobile_otp(**kwargs):
         })
         ucl_setting = frappe.get_single("UCL Settings")
 
-        url = "https://consumer.experian.in:8443/ECV-P2/content/generateMobileOTP.action"
+        url = ucl_setting.generate_otp
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -360,7 +360,7 @@ def validate_mobile_otp(**kwargs):
         })
         ucl_setting = frappe.get_single("UCL Settings")
 
-        url = "https://consumer.experian.in:8443/ECV-P2/content/validateMobileOTP.action"
+        url = ucl_setting.validate_otp
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -409,8 +409,8 @@ def bre_offers(**kwargs):
             "coApplicantTotalNetIncome": "required",
             "creditReportXml": ""
         })
-        print(user)
-        url = "http://bre.switchmyloan.in/v1/bre/used-car-loans/offers-post-new"
+        ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.bre
         headers = {
             'Content-Type': 'application/json'
         }
@@ -453,8 +453,9 @@ def bre_offers(**kwargs):
 def create_workorder():
     try:
         user = ucl.__user()
-        url = "https://switch-my-loan.staging.autosift.cloud/api/work_orders/?report_type=personal_salaried"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.create_workorder.format(report_type="personal_salaried")
+
 
         headers = {
             'client-id': ucl_setting.glib_client_id,
@@ -479,8 +480,8 @@ def create_workorder():
 def add_bank_statement(id):
     try:
         user = ucl.__user()
-        url = "https://switch-my-loan.staging.autosift.cloud/api/work_orders/{}/bank_statement/".format(id)
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.add_bank_statement.format(id = id)
 
         headers = {
             'client-id': ucl_setting.glib_client_id,
@@ -508,8 +509,8 @@ def add_bank_statement(id):
 def process_workorder(id):
     try:
         user = ucl.__user()
-        url = "https://switch-my-loan.staging.autosift.cloud/api/work_orders/{}/process/".format(id)
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.add_bank_statement.format(id = id)
 
         headers = {
             'client-id': ucl_setting.glib_client_id,
@@ -531,8 +532,8 @@ def process_workorder(id):
 def retrieve_workorder(id):
     try:
         user = ucl.__user()
-        url = "https://switch-my-loan.staging.autosift.cloud/api/work_orders/{}/".format(id)
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.retrieve_workorder.format(id = id)
 
         headers = {
             'client-id': ucl_setting.glib_client_id,
@@ -557,10 +558,8 @@ def download_report(id):
     try:
         user = ucl.__user()
         # id = "3cc1b47f-a750-4a5f-9cd6-bc1ebb3ee1c7"
-        print(id)
-        url = "https://switch-my-loan.staging.autosift.cloud/api/work_orders/{}/download/".format(id)
-        print(url)
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.download_report.format(id=id)
 
         headers = {
             'client-id': ucl_setting.glib_client_id,
@@ -570,10 +569,6 @@ def download_report(id):
             "file_type": "json"
         }
         response = requests.get(url, headers=headers, params=params)
-        print(response)
-        print(response.status_code)
-        print(response.json(), "Content")
-        print("Download Report")
         api_log_doc = ucl.log_api(method = "Glib download report", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 200:     
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
@@ -583,8 +578,6 @@ def download_report(id):
                     salary = i['Amount']
                 if i['Type'] == "EMI/LOAN":
                     obligation = i["Amount"]
-            print(salary)
-            print(obligation)
 
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
@@ -606,8 +599,8 @@ def ibb_make(**kwargs):
             "month": "required"
         },
         )
-        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.ibb_url
 
         payload = {
             "for": "make", 
@@ -640,8 +633,8 @@ def ibb_model(**kwargs):
             "month":"required", 
             "make": "required"        },
         )
-        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.ibb_url
 
         payload = {
             "for": "model", 
@@ -676,8 +669,8 @@ def ibb_variant(**kwargs):
             "model": "required"
         },
         )
-        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.ibb_url
 
         payload = {
             "for": "variant", 
@@ -704,8 +697,8 @@ def ibb_variant(**kwargs):
 def ibb_location(**kwargs):
     try:
         user = ucl.__user()
-        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.ibb_url
 
         payload = {
             "for": "city",
@@ -728,8 +721,8 @@ def ibb_location(**kwargs):
 def ibb_color(**kwargs):
     try:
         user = ucl.__user()
-        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.ibb_url
 
         payload = {
             "for": "color",
@@ -767,8 +760,8 @@ def ibb_price(**kwargs):
             "kilometer": "required", 
         },
         )
-        url = "https://system.indianbluebook.com/api/SwitchMyLoan"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.ibb_url
 
         payload = {
             "for": "comprehensivePrice", 
@@ -783,7 +776,6 @@ def ibb_price(**kwargs):
             "kilometer": data.get("kilometer"), 
             "access_token": ucl_setting.ibb_token 
         }
-        print(payload)
         
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Price API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          

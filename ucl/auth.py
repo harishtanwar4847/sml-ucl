@@ -652,7 +652,7 @@ def get_partner_list():
             partner = ucl.partner_list()
             partner_type = ["Individual", "Corporate"]
             company_type = ["Proprietary Firm", "Partnership Firm", "LLP Firm", "Pvt Ltd Firm", "Public Ltd Firm", "HUF", "Trust"]
-            data = {"partner_type" : partner_type, "company_type" : company_type, "partner":partner if partner else ""}
+            data = {"partner_type" : partner_type, "company_type" : company_type, "partner":partner if partner else []}
             return ucl.responder.respondWithSuccess(
                     message=frappe._("List"), data=data
                 )
@@ -692,7 +692,7 @@ def pan_plus(pan_number):
     try:
         ucl_setting = frappe.get_single("UCL Settings")
 
-        url = "https://production.deepvue.tech/v1/verification/pan-plus?pan_number=" + (pan_number)
+        url = ucl_setting.pan_plus.format(id_number = pan_number)
     
         payload={}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
@@ -741,7 +741,7 @@ def pan_ocr(**kwargs):
                 "document1": pan_file_url
             }
             ucl_setting = frappe.get_single("UCL Settings")
-            url = "https://production.deepvue.tech/v1/documents/extraction/ind_pancard" 
+            url = ucl_setting.pan_ocr
             headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
 
             api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
@@ -827,7 +827,7 @@ def aadhaar_ocr(**kwargs):
             "document2": aadhaar_file_url2
         }
         ucl_setting = frappe.get_single("UCL Settings")
-        url = "https://production.deepvue.tech/v1/documents/extraction/ind_aadhaar" 
+        url = ucl_setting.aadhaar_ocr 
         
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
@@ -876,7 +876,7 @@ def rc_advance(**kwargs):
             "rc_number": ["required"]
         })
         ucl_setting = frappe.get_single("UCL Settings")
-        url = "https://production.deepvue.tech/v1/verification/rc-advanced?rc_number=" + data.get("rc_number")
+        url = ucl_setting.rc_advance.format(rc_number =data.get("rc_number"))
         payload = {}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
@@ -892,8 +892,8 @@ def rc_advance(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def penny_drop(beneficiary_account_no,beneficiary_ifsc):
     try:
-        url = "https://api.digio.in/client/verify/bank_account"
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.penny_drop
         payload = {
             "beneficiary_account_no" : beneficiary_account_no,
             "beneficiary_ifsc": beneficiary_ifsc,

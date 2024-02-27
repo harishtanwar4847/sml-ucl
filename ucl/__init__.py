@@ -261,24 +261,25 @@ def create_user_token(entity, token, token_type, app_version_platform=""):
     return user_token
 
 
-def add_firebase_token(firebase_token, app_version_platform, user=None):
-    if not user:
-        user = frappe.session.user
+def add_firebase_token(firebase_token, app_version_platform, entity):
+    # if not user:
+    #     user = frappe.session.user
 
-    if frappe.db.exists("User Token", {"token_type": "Firebase Token"}):
-        old_token = frappe.get_last_doc("User Token",filters={"token_type": "Firebase Token"})
+    if frappe.db.exists("User Token", {"token_type": "Firebase Token", "entity":entity, "used":0}):
+        old_token = frappe.get_last_doc("User Token",filters={"token_type": "Firebase Token", "entity":entity, "used":0})
         if old_token:
             token_mark_as_used(old_token)
 
     get_user_token = frappe.db.get_value(
         "User Token",
-        {"token_type": "Firebase Token", "token": firebase_token, "entity": user},
+        {"token_type": "Firebase Token", "token": firebase_token, "entity": entity},
     )
+    print(get_user_token)
     if get_user_token:
         return
 
     create_user_token(
-        entity=user,
+        entity=entity,
         token=firebase_token,
         token_type="Firebase Token",
         app_version_platform=app_version_platform,
@@ -590,7 +591,7 @@ def employer_list():
 def partner_list():
     res = frappe.get_all("Partner", filters = {"kyc_approved" : 1, "associate" : 0}, fields = ["name","partner_name"])
     if len(res) == 0:
-        res = ""
+        res = []
     res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
     return res
 
@@ -657,13 +658,11 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
             }
         )
     if frappe.db.exists("File", {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field}):
-        print("yes")
         doc = frappe.get_last_doc(
             'File', filters = {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field
         })
         if doc:
             file_doc = frappe.get_doc("File", doc.name)
-            print(file_doc)
             frappe.delete_doc("File", doc.name)
     file.insert(ignore_permissions = True)
 
