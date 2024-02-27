@@ -287,6 +287,10 @@ def face_match(**kwargs):
     try:
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
 
         ucl.validate_http_method("POST")
             
@@ -301,9 +305,8 @@ def face_match(**kwargs):
         live_picture_file = "{}_live_image_{}.{}".format(
             partner.partner_name,randint(1,9),data.get("extension")
         ).replace(" ", "-")
-        partner_kyc = frappe.get_doc("Partnern KYC", partner.partner_kyc)
 
-        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
+        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner KYC", attached_to_name=partner_kyc.name, attached_to_field="live_image", partner=partner)
         
         
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
@@ -382,6 +385,10 @@ def update_business_proof(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
         data = ucl.validate(
             kwargs,
             {
@@ -390,10 +397,10 @@ def update_business_proof(**kwargs):
                 "business_proof_type" : ""
         })
         file_name = "{}_{}.{}".format(partner.partner_name, data.get("business_proof_type"),data.get("extension")).replace(" ", "-")
-        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="business_proof",partner=partner)
-        partner.business_proof = file_url
-        partner.kyc_business_proof_linked = 1
-        partner.save(ignore_permissions=True)
+        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="business_proof",partner=partner)
+        partner_kyc.business_proof = file_url
+        partner_kyc.kyc_business_proof_linked = 1
+        partner_kyc.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfully".format(data.get("business_proof_type"))))
 
@@ -421,10 +428,10 @@ def update_gst_certificate(**kwargs):
         })
         if data.get("document1"):
             file_name = "{}_gst_cert.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
-            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
-            partner.company_gst_certificate = file_url
-            partner.kyc_company_gst_certificate_linked = 1
-            partner.save(ignore_permissions=True)
+            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="company_gst_certificate",partner=partner)
+            partner_kyc.company_gst_certificate = file_url
+            partner_kyc.kyc_company_gst_certificate_linked = 1
+            partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
         else:

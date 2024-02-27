@@ -624,7 +624,7 @@ def pan_plus(pan_number):
 def pan_ocr(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("8888888861")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
         if partner.partner_kyc:
             partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
@@ -641,15 +641,16 @@ def pan_ocr(**kwargs):
         if data.get("document1"):
             if data.get("company_pan") == 0:
                 pan_file_name = "{}_pan_card.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
-                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="pan_card_file",partner=partner)
-                partner.pan_card_file = pan_file_url
-                partner.save(ignore_permissions=True)
+                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="pan_card_file",partner=partner)
+                print(pan_file_url)
+                partner_kyc.pan_card_file = pan_file_url
+                partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
             else:
                 pan_file_name = "{}_company_pan_card.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
-                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_pan_file",partner=partner)
-                partner.company_pan_file = pan_file_url
-                partner.save(ignore_permissions=True)
+                pan_file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=pan_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="company_pan_file",partner=partner)
+                partner_kyc.company_pan_file = pan_file_url
+                partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
             print(pan_file_url)
             payload = {
@@ -728,11 +729,11 @@ def aadhaar_ocr(**kwargs):
         aadhaar_front_file_name = "{}_aadhaar_card_front.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
         aadhaar_back_file_name = "{}_aadhaar_card_back.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
 
-        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=aadhaar_front_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_front",partner=partner)
-        partner.aadhaar_front = aadhaar_file_url1
+        aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=aadhaar_front_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name, attached_to_field="aadhaar_front",partner=partner)
+        partner_kyc.aadhaar_front = aadhaar_file_url1
         if data.get("document2"):
-            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name=aadhaar_back_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="aadhaar_back",partner=partner)
-            partner.aadhaar_back = aadhaar_file_url2
+            aadhaar_file_url2 = ucl.attach_files(image_bytes=data.get("document2"),file_name=aadhaar_back_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name, attached_to_field="aadhaar_back",partner=partner)
+            partner_kyc.aadhaar_back = aadhaar_file_url2
         else:
             aadhaar_file_url2 = ""
         partner_kyc.save(ignore_permissions=True)
