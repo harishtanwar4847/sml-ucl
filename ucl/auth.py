@@ -56,12 +56,9 @@ def verify_email(**kwargs):
                     )
                 
                 partner = ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
-                print(partner)
                 partner_kyc = frappe.new_doc("Partner KYC").save(ignore_permissions = True)
-                print(partner_kyc)
                 partner.partner_kyc = partner_kyc.name
                 partner.save(ignore_permissions = True)
-                print(partner.partner_kyc)
                     
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "User Created Successfully")
 
@@ -682,7 +679,6 @@ def pan_ocr(**kwargs):
                     partner_kyc.save(ignore_permissions=True)
                     frappe.db.commit()
                     response = ocr_response.json()
-                    ucl.log_api_error(mess = str(response))
                     ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
                     raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
             else:
@@ -690,7 +686,6 @@ def pan_ocr(**kwargs):
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
                 response = ocr_response.json()
-                ucl.log_api_error(mess = response)
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
                 raise ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
             
@@ -714,7 +709,7 @@ def aadhaar_ocr(**kwargs):
         user = ucl.__user()
         partner = ucl.__partner(user.name)
         if partner.partner_kyc:
-            partner_kyc = frappe.get_doc("Partner KYC". partner.partner_kyc)
+            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
         else:
             raise ucl.exceptions.PartnerKYCNotFoundException()
 

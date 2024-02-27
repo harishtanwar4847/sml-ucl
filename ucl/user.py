@@ -3,7 +3,6 @@ import frappe
 import json
 from frappe import _
 from datetime import datetime, timedelta
-from frappe.model import workflow
 from frappe.utils.password import check_password, update_password
 import ucl
 import re
@@ -86,6 +85,10 @@ def update_pan_details(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
 
         data = ucl.validate(
             kwargs,
@@ -171,6 +174,10 @@ def update_aadhaar_details(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
 
         data = ucl.validate(
             kwargs, 
@@ -204,7 +211,6 @@ def update_aadhaar_details(**kwargs):
         }
         partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        
         response = {"message" : "Aadhaar details updated successfully", "partner" : partner_doc.as_dict()}
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
         return ucl.responder.respondWithSuccess(message=frappe._("Aadhaar details updated successfully"), data = partner_doc.as_dict())    
@@ -221,7 +227,10 @@ def update_current_address(**kwargs):
         ucl.validate_http_method("POST")
         user = ucl.__user()
         partner = ucl.__partner(user.name)
-
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
         data = ucl.validate(
             kwargs, 
             {
@@ -238,7 +247,7 @@ def update_current_address(**kwargs):
         })
         address_file_name = "{}_address_proof.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
 
-        address_proof_url = ucl.attach_files(image_bytes=data.get("address_proof"),file_name=address_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="address_proof",partner=partner)
+        address_proof_url = ucl.attach_files(image_bytes=data.get("address_proof"),file_name=address_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name, attached_to_field="address_proof",partner=partner)
 
         api_log_doc = ucl.log_api(method = "Update Current Address", request_time = datetime.now(), request = str(data))
         if data.get("same_as_on_pan") == 1:
@@ -281,7 +290,38 @@ def update_current_address(**kwargs):
         api_log_doc = ucl.log_api(method = "Update Current Address", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
-    
+
+def download_pdf_from_url(pdf_url):
+    response = requests.get(pdf_url)
+    if response.status_code == 200:
+        return BytesIO(response.content)
+    else:
+        raise Exception(f"Failed to download PDF from {pdf_url}. Status code: {response.status_code}")
+
+def pdf_to_temp_images(pdf_bytes):
+    pdf_document = fitz.open("pdf", pdf_bytes)
+    temp_image_paths = []
+
+    for page_number in range(pdf_document.page_count):
+        page = pdf_document[page_number]
+        pixmap = page.get_pixmap()
+        image = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+
+        # Convert image to base64 format
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+        # Save the base64 image to a temporary file
+        temp_image_path = f"temp_image_page_{page_number + 1}.png"
+        with open(temp_image_path, "wb") as temp_file:
+            temp_file.write(base64.b64decode(img_str))
+
+        temp_image_paths.append(temp_image_path)
+
+    pdf_document.close()
+    return temp_image_paths
+
 @frappe.whitelist(allow_guest=True)
 def face_match(**kwargs):
     try:
@@ -307,32 +347,23 @@ def face_match(**kwargs):
         ).replace(" ", "-")
 
         live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner KYC", attached_to_name=partner_kyc.name, attached_to_field="live_image", partner=partner)
-        
-        
-        image_path_1 = frappe.utils.get_files_path(live_picture_file)
-        partner_kyc.live_image = "/files/{}".format(live_picture_file)
+        response_live = requests.get(live_image)
+
+        pdf_url = partner_kyc.pan_card_file
+        _, extension = os.path.splitext(partner_kyc.pan_card_file)
+        if extension == ".pdf":
+            pdf_bytes = download_pdf_from_url(pdf_url)
+            temp_image_paths = pdf_to_temp_images(pdf_bytes)
+            image_path = temp_image_paths[0]
+        else:
+            response_pan = requests.get(partner_kyc.pan_card_file)
+            image_path = BytesIO(response_pan.content)
+
+       
+        partner_kyc.live_image = live_image
         if partner_kyc.pan_card_file:
-            path = urlparse(partner_kyc.pan_card_file).path
-            file_extension = os.path.splitext(path)[1]
-            filename = os.path.basename(partner_kyc.pan_card_file)
-            if file_extension ==".pdf":
-            # Specify the input PDF file and output folder
-                input_pdf_path = frappe.utils.get_files_path(filename)
-                pdf_document = fitz.open(input_pdf_path)
-                for page_number in range(pdf_document.page_count):
-                    page = pdf_document[page_number]
-                    image = page.get_pixmap()
-                    pil_image = Image.frombytes("RGB", [image.width, image.height], image.samples)
-                    # image_path_2 = f"{output_folder}/{partner.partner_name}_pan_card.jpg"
-                    image_path_2 = frappe.utils.get_files_path("{}_pan_card.jpg".format(partner.partner_name))
-                    pil_image.save(image_path_2, "JPEG")
-                pdf_document.close()
-            
-            else:
-                image_path_2 = frappe.utils.get_files_path(filename)
-            
-            image_1 = face_recognition.load_image_file(live_image)
-            image_2 = face_recognition.load_image_file(pan_card_image)
+            image_1 = face_recognition.load_image_file(BytesIO(response_live.content))
+            image_2 = face_recognition.load_image_file(image_path)
 
             face_locations_1 = face_recognition.face_locations(image_1)
             face_locations_2 = face_recognition.face_locations(image_2)
@@ -347,9 +378,6 @@ def face_match(**kwargs):
                 results = face_recognition.compare_faces([face_encoding_1], face_encoding_2)
 
                 if results[0]:
-                    partner_kyc.kyc_live_image_linked = 1
-                    partner_kyc.save(ignore_permissions=True)                    
-                    frappe.db.commit()
                     fcm_notification = frappe.get_doc(
                         "UCL Push Notification",
                         "Face Match successful",
@@ -358,17 +386,18 @@ def face_match(**kwargs):
                     ucl.send_ucl_push_notification(
                         fcm_notification=fcm_notification, partner=partner
                     )
+                    partner_kyc.kyc_live_image_linked = 1
+                    partner_kyc.save(ignore_permissions=True)                    
+                    frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
-                    partner_kyc.live_image =""
-                    partner_kyc.kyc_live_image_linked = 0
+                    partner_kyc.live_image_remarks = "Faces do not match."
                     partner_kyc.save(ignore_permissions=True)                    
                     frappe.db.commit()
                     return ucl.responder.respondNotFound(message = "Faces do not match.")
             else:
-                partner_kyc.live_image =""
-                partner_kyc.kyc_live_image_linked = 0
+                partner_kyc.live_image_remarks = "No faces detected."
                 partner_kyc.save(ignore_permissions=True)                    
                 frappe.db.commit()
                 return ucl.responder.respondNotFound(message = "No faces detected.")
@@ -389,6 +418,7 @@ def update_business_proof(**kwargs):
             partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
         else:
             raise ucl.exceptions.PartnerKYCNotFoundException()
+
         data = ucl.validate(
             kwargs,
             {
@@ -402,7 +432,7 @@ def update_business_proof(**kwargs):
         partner_kyc.kyc_business_proof_linked = 1
         partner_kyc.save(ignore_permissions=True)
         frappe.db.commit()
-        return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfully".format(data.get("business_proof_type"))))
+        return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfuly".format(data.get("business_proof_type"))))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Business Proof", request_time = datetime.now(), request = "")
@@ -417,9 +447,10 @@ def update_gst_certificate(**kwargs):
         user = ucl.__user()
         partner = ucl.__partner(user.name)
         if partner.partner_kyc:
-            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
         else:
             raise ucl.exceptions.PartnerKYCNotFoundException()
+
         data = ucl.validate(
             kwargs,
             {
@@ -453,9 +484,10 @@ def update_bank_details(**kwargs):
         user = ucl.__user()
         partner = ucl.__partner(user.name)
         if partner.partner_kyc:
-            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
         else:
             raise ucl.exceptions.PartnerKYCNotFoundException()
+
         data = ucl.validate(
             kwargs,
             {
@@ -485,7 +517,7 @@ def update_bank_details(**kwargs):
                         "beneficiary_name": data.get("beneficiary_name"),
                         "kyc_bank_details_linked": 1
                     }
-                    partner_doc = frappe.get_doc("Partner KYC", partner_kyc.name).update(bank_details_dict).save(ignore_permissions = True)
+                    partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(bank_details_dict).save(ignore_permissions = True)
                     frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
                 else:
@@ -618,8 +650,9 @@ def get_esign_details(**kwargs):
             "document_id" : "required"
             })
         
+        
         ucl_setting = frappe.get_single("UCL Settings")
-        url = ucl.get_esign_details.format(document_id = data.get("document_id"))
+        url = ucl_setting.get_esign_details.format(document_id = data.get("document_id"))
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()
@@ -627,7 +660,6 @@ def get_esign_details(**kwargs):
             "authorization": f"Basic {base64_credentials}",
             "Content-Type": "application/json"
         }
-        print(headers, "headers")
 
         response = requests.get(url, headers=headers, data=data)
        
@@ -650,8 +682,8 @@ def download_esign_document(document_id):
         user = ucl.__user()
         partner = ucl.__partner(user.name)
             
-        url = ucl_setting.download_esign_document.format(document_id=document_id)
         ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.download_esign_document.format(document_id=document_id)
 
         credentials = f"{ucl_setting.digio_client_id}:{ucl_setting.digio_client_secret}"
         base64_credentials = base64.b64encode(credentials.encode()).decode()
@@ -701,8 +733,7 @@ def kyc_submit():
         if (partner.partner_type == "Corporate" and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked and partner_kyc.kyc_company_pan_linked and partner_kyc.kyc_business_proof_linked and partner_kyc.kyc_company_gst_certificate_linked and partner_kyc.kyc_bank_details_linked) or (partner.partner_type == "Individual" and partner_kyc.kyc_live_image_linked and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked and partner_kyc. kyc_current_address_linked and partner_kyc.kyc_bank_details_linked) or (partner.associate and partner_kyc.kyc_live_image_linked and partner_kyc.kyc_pan_linked and partner_kyc.kyc_aadhaar_linked):
             response = "KYC Successful"
             partner_kyc.status = "Pending"
-            # partner_kyc.workflow_state = "Pending"
-            workflow.apply_workflow(partner_kyc, "Review")
+            partner_kyc.workflow_state = "Pending"
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
         else:

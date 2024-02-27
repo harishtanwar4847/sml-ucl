@@ -10,6 +10,7 @@
   "naming_series",
   "column_break_ufuf",
   "live_image",
+  "live_image_remarks",
   "kyc_live_image_linked",
   "pan_details_tab",
   "pan_card_file",
@@ -568,11 +569,17 @@
    "fieldname": "associate",
    "fieldtype": "Check",
    "label": "Associate?"
+  },
+  {
+   "fieldname": "live_image_remarks",
+   "fieldtype": "Data",
+   "label": "Live Image Remarks",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-26 17:06:02.339039",
+ "modified": "2024-02-27 23:01:33.523408",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner KYC",

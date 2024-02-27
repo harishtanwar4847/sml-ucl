@@ -190,7 +190,6 @@ def update_lead_details(**kwargs):
             "tenure_serviced": data.get("tenure_serviced"),
         }
         lead_doc = frappe.get_doc("Lead", data.get("name")).update(lead).save(ignore_permissions = True)
-        print(lead_doc)
         
         response = "Lead details saved successfully"
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
