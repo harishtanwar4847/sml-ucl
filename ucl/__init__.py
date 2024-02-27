@@ -657,13 +657,13 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
                 "is_private": False,
             }
         )
-    if frappe.db.exists("File", {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field}):
-        doc = frappe.get_last_doc(
-            'File', filters = {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field
-        })
-        if doc:
-            file_doc = frappe.get_doc("File", doc.name)
-            frappe.delete_doc("File", doc.name)
+    # if frappe.db.exists("File", {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field}):
+    #     doc = frappe.get_last_doc(
+    #         'File', filters = {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field
+    #     })
+    #     if doc:
+    #         file_doc = frappe.get_doc("File", doc.name)
+    #         frappe.delete_doc("File", doc.name)
     file.insert(ignore_permissions = True)
 
     frappe.db.commit()

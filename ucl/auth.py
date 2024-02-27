@@ -710,7 +710,7 @@ def pan_plus(pan_number):
 def pan_ocr(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user()
+        user = ucl.__user("8888888861")
         partner = ucl.__partner(user.name)
         if partner.partner_kyc:
             partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
@@ -737,6 +737,7 @@ def pan_ocr(**kwargs):
                 partner_kyc.company_pan_file = "/files/{}".format(pan_file_name)
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
+            print(pan_file_url)
             payload = {
                 "document1": pan_file_url
             }
