@@ -575,9 +575,8 @@
   },
   {
    "fieldname": "bank_name",
-   "fieldtype": "Link",
-   "label": "Bank Name",
-   "options": "Bank"
+   "fieldtype": "Data",
+   "label": "Bank Name"
   },
   {
    "fieldname": "column_break_uvju",
@@ -627,7 +626,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
+<<<<<<< HEAD
  "modified": "2024-02-27 12:34:13.637473",
+=======
+ "modified": "2024-02-26 11:50:18.292972",
+>>>>>>> ee2d7cb376fa496a7ddd7029be6f8c527852c3f1
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",

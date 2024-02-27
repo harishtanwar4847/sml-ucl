@@ -341,6 +341,14 @@ def face_match(**kwargs):
                     partner.kyc_live_image_linked = 1
                     partner.save(ignore_permissions=True)                    
                     frappe.db.commit()
+                    fcm_notification = frappe.get_doc(
+                        "UCL Push Notification",
+                        "Face Match successful",
+                        fields=["*"],
+                    )
+                    ucl.send_ucl_push_notification(
+                        fcm_notification=fcm_notification, partner=partner
+                    )
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
@@ -488,6 +496,9 @@ def update_bank_details(**kwargs):
                 "beneficiary_name": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "extension" : ["required" if partner.company_type != "Proprietary Firm" else ""]
         })
+        if not data.get("ifsc_code").isalnum():
+            raise ucl.exceptions.FailureException(message= "Invalid IFSC Code")
+
         if data.get("document1"):
             file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
         if data.get("bank_account_number") and data.get("ifsc_code"):
