@@ -14,8 +14,11 @@ def execute():
         "Auditor",
         "Employee"
     ]
+    list = []
+    for i in frappe.get_list("Role"):
+        list.append(i['name'])
     for role in role_list:
-        if frappe.db.exists("Role", role) != role:
+        if role not in list:
             doc = frappe.new_doc("Role")
             doc.role_name = role
             doc.insert()

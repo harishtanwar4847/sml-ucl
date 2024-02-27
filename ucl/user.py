@@ -17,6 +17,7 @@ import numpy as np
 from random import randint
 import requests
 from ucl import auth
+from io import BytesIO
 
 
 @frappe.whitelist(allow_guest=True)
@@ -70,11 +71,12 @@ def update_partner_type(**kwargs):
         partner.save(ignore_permissions = True)
         frappe.db.commit()
 
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "success")
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "success")
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=data)
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Partner Type", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
 
 
@@ -154,11 +156,12 @@ def update_pan_details(**kwargs):
         
         response = {"message" : "Pan details updated successfully", "partner" : partner_doc.as_dict()}
 
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
         return ucl.responder.respondWithSuccess(message=frappe._("Pan details updated successfully"), data = partner_doc.as_dict())    
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Pan Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -203,11 +206,12 @@ def update_aadhaar_details(**kwargs):
         frappe.db.commit()
         
         response = {"message" : "Aadhaar details updated successfully", "partner" : partner_doc.as_dict()}
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
         return ucl.responder.respondWithSuccess(message=frappe._("Aadhaar details updated successfully"), data = partner_doc.as_dict())    
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Aadhaar Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
 
 
@@ -232,18 +236,15 @@ def update_current_address(**kwargs):
             "state": "",
             "country": "",
         })
-        address_file_name = "{}_address_proof_{}.{}".format(partner.partner_name,randint(1,9),data.get("extension")).replace(" ", "-")
+        address_file_name = "{}_address_proof.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
 
         address_proof_url = ucl.attach_files(image_bytes=data.get("address_proof"),file_name=address_file_name,attached_to_doctype="Partner",attached_to_name=partner.name, attached_to_field="address_proof",partner=partner)
-        # partner.address_proof = "/files/{}".format(address_file_name)
-        # partner.save(ignore_permissions=True)
-        # frappe.db.commit()
 
         api_log_doc = ucl.log_api(method = "Update Current Address", request_time = datetime.now(), request = str(data))
         if data.get("same_as_on_pan") == 1:
             address_dict = {
                 "same_as_on_pan" : data.get("same_as_on_pan"),
-                "address_proof" : "/files/{}".format(address_file_name),
+                "address_proof" : address_proof_url,
                 "ca_line1" : "",
                 "ca_line2": "",
                 "ca_street_name": "",
@@ -256,7 +257,7 @@ def update_current_address(**kwargs):
         else:
             address_dict = {
                 "same_as_on_pan" : data.get("same_as_on_pan"),
-                "address_proof" : "/files/{}".format(address_file_name),
+                "address_proof" : address_proof_url,
                 "ca_line1" : data.get("line1"),
                 "ca_line2": data.get("line2"),
                 "ca_street_name": data.get("street_name"),
@@ -272,12 +273,13 @@ def update_current_address(**kwargs):
         partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(address_dict).save(ignore_permissions = True)
         frappe.db.commit()
         response = "Address updated successfully"
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Current Address", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 @frappe.whitelist(allow_guest=True)
@@ -301,7 +303,9 @@ def face_match(**kwargs):
         ).replace(" ", "-")
         partner_kyc = frappe.get_doc("Partnern KYC", partner.partner_kyc)
 
-        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner KYC", attached_to_name=partner.partner_kyc, attached_to_field="live_image", partner=partner)
+        live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner", attached_to_name=partner.name, attached_to_field="live_image", partner=partner)
+        
+        
         image_path_1 = frappe.utils.get_files_path(live_picture_file)
         partner_kyc.live_image = "/files/{}".format(live_picture_file)
         if partner_kyc.pan_card_file:
@@ -324,8 +328,8 @@ def face_match(**kwargs):
             else:
                 image_path_2 = frappe.utils.get_files_path(filename)
             
-            image_1 = face_recognition.load_image_file(image_path_1)
-            image_2 = face_recognition.load_image_file(image_path_2)
+            image_1 = face_recognition.load_image_file(live_image)
+            image_2 = face_recognition.load_image_file(pan_card_image)
 
             face_locations_1 = face_recognition.face_locations(image_1)
             face_locations_2 = face_recognition.face_locations(image_2)
@@ -343,6 +347,14 @@ def face_match(**kwargs):
                     partner_kyc.kyc_live_image_linked = 1
                     partner_kyc.save(ignore_permissions=True)                    
                     frappe.db.commit()
+                    fcm_notification = frappe.get_doc(
+                        "UCL Push Notification",
+                        "Face Match successful",
+                        fields=["*"],
+                    )
+                    ucl.send_ucl_push_notification(
+                        fcm_notification=fcm_notification, partner=partner
+                    )
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
 
                 else:
@@ -350,7 +362,7 @@ def face_match(**kwargs):
                     partner_kyc.kyc_live_image_linked = 0
                     partner_kyc.save(ignore_permissions=True)                    
                     frappe.db.commit()
-                    return ucl.responder.respondUnauthorized(message = "Faces do not match.")
+                    return ucl.responder.respondNotFound(message = "Faces do not match.")
             else:
                 partner_kyc.live_image =""
                 partner_kyc.kyc_live_image_linked = 0
@@ -359,63 +371,10 @@ def face_match(**kwargs):
                 return ucl.responder.respondNotFound(message = "No faces detected.")
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Face Match", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
-# @frappe.whitelist(allow_guest=True)
-# def update_company_pan_details(**kwargs):
-#     try:
-#         ucl.validate_http_method("POST")
-#         user = ucl.__user()
-#         partner = ucl.__partner(user.name)
-
-#         data = ucl.validate(
-#         kwargs,{
-#             "pan_number": ["required"],
-#             "pan_type": "",
-#             "full_name": ["required"],
-#             "address_line_1": "",
-#             "address_line_2": "",
-#             "address_street_name": "",
-#             "zip": "",
-#             "city": "",
-#             "state": "",
-#             "country": "",
-#             "full_address": "",
-#             "email": "",
-#             "phone_number": "",
-#             "dob": "",
-#         })
-#         api_log_doc = ucl.log_api(method = "Update Company Pan Details", request_time = datetime.now(), request = str(data))
-#         company_address_dict = {
-#             "company_pan_number": data.get("pan_number"),
-#             "company_pan_type": data.get("pan_type"),
-#             "company_name": data.get("full_name"),
-#             "company_address_line1": data.get("address_line_1"),
-#             "company_address_line2": data.get("address_line_2"),
-#             "company_address_street_name": data.get("address_street_name"),
-#             "company_address_zip": data.get("zip"),
-#             "company_address_city": data.get("city"),
-#             "company_address_state": data.get("state"),
-#             "company_address_country": data.get("country"),
-#             "company_full_address": data.get("full_address"),
-#             "company_email": data.get("email"),
-#             "company_phone_no": data.get("phone_number"),
-#             "company_dob": data.get("dob"),
-#             "kyc_company_pan_linked": 1
-#         }
-        
-#         partner_doc = frappe.get_doc("Partner", partner.name).update(company_address_dict).save(ignore_permissions = True)
-#         frappe.db.commit()
-#         response = "Company Pan details updated successfully"
-#         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-            
-#         return ucl.responder.respondWithSuccess(message=frappe._(response))
-
-#     except ucl.exceptions.APIException as e:
-#         ucl.log_api_error()
-        # return e.respond()
-
 
 @frappe.whitelist(allow_guest=True)
 def update_business_proof(**kwargs):
@@ -430,17 +389,17 @@ def update_business_proof(**kwargs):
                 "extension" : ["required"],
                 "business_proof_type" : ""
         })
-        partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
-        file_name = "{}_{}_{}.{}".format(partner.partner_name, data.get("business_proof_type"), randint(1,9),data.get("extension")).replace(" ", "-")
-        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner.partner_kyc,attached_to_field="business_proof",partner=partner)
-        partner_kyc.business_proof = "/files/{}".format(file_name)
-        partner_kyc.kyc_business_proof_linked = 1
-        partner_kyc.save(ignore_permissions=True)
+        file_name = "{}_{}.{}".format(partner.partner_name, data.get("business_proof_type"),data.get("extension")).replace(" ", "-")
+        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="business_proof",partner=partner)
+        partner.business_proof = file_url
+        partner.kyc_business_proof_linked = 1
+        partner.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("{} processed successfully".format(data.get("business_proof_type"))))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Business Proof", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -461,11 +420,11 @@ def update_gst_certificate(**kwargs):
                 "extension" : ["required" if partner.company_type not in ["Proprietary Firm", "HUF"] else ""]
         })
         if data.get("document1"):
-            file_name = "{}_gst_cert_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
-            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="company_gst_certificate",partner=partner)
-            partner_kyc.company_gst_certificate = "/files/{}".format(file_name)
-            partner_kyc.kyc_company_gst_certificate_linked = 1
-            partner_kyc.save(ignore_permissions=True)
+            file_name = "{}_gst_cert.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
+            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner",attached_to_name=partner.name,attached_to_field="company_gst_certificate",partner=partner)
+            partner.company_gst_certificate = file_url
+            partner.kyc_company_gst_certificate_linked = 1
+            partner.save(ignore_permissions=True)
             frappe.db.commit()
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
         else:
@@ -475,7 +434,8 @@ def update_gst_certificate(**kwargs):
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update GST Certificate", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -499,8 +459,11 @@ def update_bank_details(**kwargs):
                 "beneficiary_name": ["required" if partner.company_type != "Proprietary Firm" else ""],
                 "extension" : ["required" if partner.company_type != "Proprietary Firm" else ""]
         })
+        if not data.get("ifsc_code").isalnum():
+            raise ucl.exceptions.FailureException(message= "Invalid IFSC Code")
+
         if data.get("document1"):
-            file_name = "{}_cancelled_cheque_{}.{}".format(partner.partner_name, randint(1,9),data.get("extension")).replace(" ", "-")
+            file_name = "{}_cancelled_cheque.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
         if data.get("bank_account_number") and data.get("ifsc_code"):
             penny_drop = auth.penny_drop(beneficiary_account_no = data.get("bank_account_number"),beneficiary_ifsc = data.get("ifsc_code"))
             if "verified" in penny_drop:
@@ -508,7 +471,7 @@ def update_bank_details(**kwargs):
                     if data.get("document1"):
                         file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="cancelled_cheque",partner=partner)
                     bank_details_dict = {
-                        "cancelled_cheque": "/files/{}".format(file_name) if data.get("document1") else "",
+                        "cancelled_cheque": file_url if data.get("document1") else "",
                         "bank_account_number" : data.get("bank_account_number"),
                         "bank_name": data.get("bank_name"),
                         "ifsc_code": data.get("ifsc_code"),
@@ -519,16 +482,17 @@ def update_bank_details(**kwargs):
                     frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
                 else:
-                    return ucl.responder.respondUnauthorized(message=penny_drop["error_msg"])
+                    return ucl.responder.respondInvalidData(message=penny_drop["error_msg"])
             else:
-                return ucl.responder.respondUnauthorized(message=penny_drop["message"])
+                return ucl.responder.respondInvalidData(message=penny_drop["message"])
         else:
             partner_kyc.kyc_bank_details_linked = 1
             partner_kyc.save(ignore_permissions = True)
             return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Bank Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 @frappe.whitelist(allow_guest=True)
@@ -538,22 +502,26 @@ def get_esign_consent():
             esign_doc = frappe.get_doc("Consent", "E-sign")
             consent_points = []
             ucl_setting = frappe.get_single("UCL Settings")
-            esign_url = frappe.utils.get_url(ucl_setting.digital_agreement)
+            esign_url = ucl_setting.digital_agreement
+            terms_of_use = ucl_setting.terms_of_use
+            privacy_policy = ucl_setting.privacy_policy
             for i in esign_doc.esign_consent:
                 consent_points.append({"title":i.title, "description":i.description})
             return ucl.responder.respondWithSuccess(
-                    message=frappe._("Success"), data={"consent_points" : consent_points, "esign_agreement_url" : esign_url}
+                    message=frappe._("Success"), data={"consent_points" : consent_points, "esign_agreement_url" : esign_url, "terms_of_use" : terms_of_use, "privacy_policy" : privacy_policy}
                 )
             
         except NotFoundException:
             raise ucl.exceptions.NotFoundException()
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Get Esign Consent", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Get Esign Consent", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return ucl.responder.respondUnauthorized(message=str(e))    
 
     
@@ -597,9 +565,10 @@ def esign_request(**kwargs):
                 "notify_signers": True,
                 "send_sign_link": True
             }
-            esign_file = ucl_setting.digital_agreement.split("/files/")[1]
+            esign_file = ucl_setting.digital_agreement
+            response = requests.get(esign_file)
             files = {
-                'file': (esign_file, open(frappe.utils.get_files_path(esign_file), 'rb'), 'application/pdf'),
+                'file': ("esign_file", BytesIO(response.content), 'application/pdf'),
                 'request': (
                     None,
                     json.dumps(signers_data),
@@ -614,7 +583,7 @@ def esign_request(**kwargs):
                             "consent": "E-sign",
                         }
                     ).insert(ignore_permissions=True)
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
             id = response.json()['id']
             partner.document_id = id
@@ -622,10 +591,11 @@ def esign_request(**kwargs):
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://atriina.com".format(id,user.name)})
 
         else:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "Consent not received")
-            return ucl.responder.respondUnauthorized(message="Not received your consent yet. To continue please review agreement once.")
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Consent not received")
+            return ucl.responder.respondInvalidData(message="Not received your consent yet. To continue please review agreement once.")
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Esign Request", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
 
 @frappe.whitelist(allow_guest=True)
@@ -656,14 +626,15 @@ def get_esign_details(**kwargs):
        
         api_log_doc = ucl.log_api(method = "Get Esign details", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
         if response.status_code == 200:
             if json.loads(response.text)["agreement_status"] == "completed":
                 download_esign_document(data.get("document_id"))
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Get Esign Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond() 
 
 
@@ -685,7 +656,7 @@ def download_esign_document(document_id):
         save_path = "/home/dell/Downloads/output.pdf"
         response = requests.get(url, headers=headers)
 
-        file_name = "{}_signed_agreement_{}.pdf".format(partner.partner_name, randint(1,9)).replace(" ", "-")
+        file_name = "{}_signed_agreement.pdf".format(partner.partner_name).replace(" ", "-")
         file = frappe.get_doc(
             {
                 "doctype": "File",
@@ -698,82 +669,19 @@ def download_esign_document(document_id):
             }
         ).insert(ignore_permissions=True)
         frappe.db.commit()
-        partner.digital_agreement = "/files/{}".format(file_name)
+        partner.digital_agreement = file.file_url
         partner.kyc_digital_agreement_linked = 1
         partner.save(ignore_permissions = True)
         api_log_doc = ucl.log_api(method = "Download Esign document", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + document_id))
         
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "success")
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "success")
 
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.content)
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Download Esign Document", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
-    
-
-@frappe.whitelist()
-def reset_pin(**kwargs):
-    try:
-        ucl.validate_http_method("POST")
-        data = ucl.validate(
-            kwargs,
-            {
-                "old_pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
-                "new_pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
-                "retype_pin": ["required","decimal",ucl.validator.rules.LengthRule(4)],
-            },
-        )
-
-        req = {"old_pin": "****","new_pin": "****","retype_new_pin": "****"}
-        api_log_doc = ucl.log_api(method = "Reset Pin", request_time = datetime.now(), request = str(req))
-        try:
-            user = ucl.__user()
-        except UserNotFoundException:
-            user = None
-            raise ucl.exceptions.UserNotFoundException()
-            
-        try:
-            # returns user in correct case
-            old_pass_check = check_password(
-                frappe.session.user, data.get("old_pin")
-            )
-        except frappe.AuthenticationError:
-            raise ucl.exceptions.RespondFailureException(_("Invalid current pin."))
-        
-        if old_pass_check:
-            if data.get("retype_pin") == data.get("new_pin") and data.get(
-                "old_pin"
-            ) != data.get("new_pin"):
-                # update pin
-                update_password(frappe.session.user, data.get("retype_pin"))
-                frappe.db.commit()
-                response = "Your pin has been changed successfully!"
-
-            elif data.get("old_pin") == data.get("new_pin"):
-                response = "New pin cannot be same as old pin."
-                raise ucl.exceptions.RespondFailureException(
-                    _(response)
-                )
-            
-            else:
-                response = "Retyped pin does not match with new pin"
-                raise ucl.exceptions.RespondFailureException(
-                    _(response)
-                )
-            return ucl.responder.respondWithSuccess(
-                message=frappe._(response)
-            )
-
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-    except ucl.exceptions.APIException as e:
-        frappe.db.rollback()
-        ucl.log_api_error()
-        return e.respond()
-    except frappe.SecurityException as e:
-        frappe.db.rollback()
-        ucl.log_api_error()
-        return ucl.responder.respondUnauthorized(message=str(e))
     
 
 @frappe.whitelist(allow_guest=True)
@@ -802,10 +710,12 @@ def kyc_submit():
 
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "KYC Submit", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "KYC Submit", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return ucl.responder.respondUnauthorized(message=str(e))
 

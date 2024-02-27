@@ -19,7 +19,7 @@ from random import randint
 from ucl import user
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.1-dev"
 
 
 user_token_expiry_map = {
@@ -57,7 +57,6 @@ class FirebaseDataNotProvidedError(FirebaseError):
 from ucl.validator.rules import *
 from validator import validate as validate_
 
-
 def validate(data, rules):
 	valid, valid_data, errors = validate_(data, rules, return_info=True)
 
@@ -86,7 +85,7 @@ def send_otp(**kwargs):
             },
         )
         if int(data.get("mobile")[0]) < 5:
-            return ucl.responder.respondUnauthorized(message=frappe._("Please Enter Valid Mobile Number"),)
+            return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
                 user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
@@ -100,12 +99,13 @@ def send_otp(**kwargs):
                         "consent": "Login",
                     }
                 ).insert(ignore_permissions=True)
-            log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
+            log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
             return ucl.responder.respondWithSuccess(
                     message=frappe._("OTP Sent"),
                 )
     except Exception as e:
-        log_api_error()
+        api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = "")
+        log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         generateResponse(is_success=False, error=e)
         raise
 
@@ -135,28 +135,15 @@ def create_user(first_name, last_name, mobile, email):
                 "phone": mobile,
                 "mobile_no": mobile,
                 "send_welcome_email": 0,
-                # "new_password": frappe.mock("password"),
                 "roles": [
                     {"doctype": "Has Role", "role": "Partner"}
                 ]
-                # if tester
-                # else [{"doctype": "Has Role", "role": "Loan Customer"}],
             }
         ).insert(ignore_permissions=True)
 
         return user
     except Exception as e:
         raise exceptions.APIException(message=str(e))
-    
-
-# def delete_user(user):
-#     if not frappe.db.exists("Partner", {"user_id": user.name}):
-#         frappe.db.sql("delete from `tabUser` where name = %s", user.name)
-#         frappe.db.commit()
-#     else:
-#         ucl.responder.respondWithFailure(
-#             message=frappe._("Partner already present with this Mobile No. Please use a different Mobile No"),
-#         )
 
     
 def create_partner(first_name, mobile, email, user):
@@ -328,10 +315,12 @@ def log_api(method, request_time, request):
             title=_("API Log Error"),
         )
 
-def log_api_response(api_log_doc, api_type, response):
+def log_api_response(is_error, error, api_log_doc, api_type, response):
     api_log_doc.response_time = datetime.now()
     api_log_doc.api_type = api_type
     api_log_doc.response = response
+    api_log_doc.is_error = is_error
+    api_log_doc.error = error
     api_log_doc.save(ignore_permissions=True)
     frappe.db.commit()
 
@@ -612,10 +601,11 @@ def authorize_deepvue():
             frappe.db.commit()
         else:
             return RespondWithFailureException()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Authorize deepvue", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 @frappe.whitelist()
@@ -637,10 +627,11 @@ def authorize_ibb():
             frappe.db.commit()
         else:
             return RespondWithFailureException()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Authorize IBB", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,attached_to_field,partner=None):
@@ -657,18 +648,9 @@ def attach_files(image_bytes,file_name,attached_to_doctype,attached_to_name,atta
                 "is_private": False,
             }
         )
-    # if frappe.db.exists("File", {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field}):
-    #     doc = frappe.get_last_doc(
-    #         'File', filters = {"attached_to_doctype" : file.attached_to_doctype, "attached_to_name": file.attached_to_name, "attached_to_field": file.attached_to_field
-    #     })
-    #     if doc:
-    #         file_doc = frappe.get_doc("File", doc.name)
-    #         frappe.delete_doc("File", doc.name)
+    
     file.insert(ignore_permissions = True)
-
     frappe.db.commit()
-    file_name_url = file.file_url
-    # file_url = "https://d3e46327446e1d.lhr.life{}".format(file_name_url).replace(" ", "-")
     file_url = file.file_url
     return file_url
 
@@ -683,11 +665,12 @@ def get_firebase_tokens(entity):
     return [i.token for i in token_list]
 
 def send_ucl_push_notification(
-    fcm_notification={}, message="", loan="", customer=None
+    fcm_notification={}, message="", loan="", partner=None, lead=None
 ):
     try:
+        user = frappe.get_doc("User", partner.user_id)
         fcm_payload = {}
-        tokens = get_firebase_tokens(customer.user)
+        tokens = get_firebase_tokens(user.mobile_no)
         if fcm_notification and tokens:
             if message:
                 message = message
@@ -757,16 +740,8 @@ def send_ucl_push_notification(
                     "request": data,
                     "response": res_json,
                 }
-
                 create_log(log, "Send_UCL_Push_Notification_Log")
-
-                # fa.send_android_message(
-                #     title=fcm_notification.title,
-                #     body=message,
-                #     data=data,
-                #     tokens=get_firebase_tokens(customer.user),
-                #     priority="high",
-                # )
+               
                 if res.ok and res.status_code == 200:
                     # Save log for UCL Push Notification
                     frappe.get_doc(
@@ -774,8 +749,8 @@ def send_ucl_push_notification(
                             "doctype": "UCL Push Notification Log",
                             "name": notification_name,
                             "title": data["title"],
-                            "loan_customer": customer.name,
-                            "customer_name": customer.full_name,
+                            "lead": lead.name if lead else "",
+                            "partner": partner.name,
                             "loan": data["loan_no"],
                             "screen_to_open": data["screen"],
                             "notification_id": data["notification_id"],
@@ -801,48 +776,6 @@ def send_ucl_push_notification(
         frappe.log_error(
             message=frappe.get_traceback()
             + "\nNotification Info:\n"
-            + json.dumps(fcm_payload if fcm_payload else customer.name),
+            + json.dumps(fcm_payload if fcm_payload else partner.name),
             title="UCL Push Notification Error",
         )
-
-@frappe.whitelist(allow_guest=True)
-def digio_webhook_doc_signed(**kwargs):
-    data = frappe.local.form_dict
-    log = {"digio_doc_esign_log": data}
-    create_log(log, "digio_doc_esign_log")
-
-# @frappe.whitelist(allow_guest=True)
-# def digio_webhook_doc_signed_(**kwargs):
-#     try:
-#         user = ucl.__user()
-#         partner = ucl.__partner(user.name)
-#         data = frappe.local.form_dict
-#         log = {"digio_doc_esign_log": data}
-#         create_log(log, "digio_doc_esign_log")
-#         response = requests.get(frappe.utils.get_url("/files/digio_doc_esign_log.json"))
-#         api_log_doc = ucl.log_api(method = "Digio Webhook doc signed", request_time = datetime.now(), request = partner.document_id)
-#         log_data = response.json()
-#         if response.status_code == 200:
-#             sorted_log_data = sorted(log_data, key=lambda x: x.get('digio_doc_esign_log', {}).get('created_at', 0), reverse=True)
-
-#             for i in sorted_log_data:
-#                 if "payload" in i["digio_doc_esign_log"] and "document" in i["digio_doc_esign_log"]["payload"] and "id" in  i["digio_doc_esign_log"]["payload"]["document"] and i["digio_doc_esign_log"]["payload"]["document"]["id"] == partner.document_id:
-#                     if "agreement_status" in i["digio_doc_esign_log"]["payload"]["document"]:          
-#                         if i["digio_doc_esign_log"]["payload"]["document"]["agreement_status"] == "completed":
-#                             ucl.user.download_esign_document(partner.document_id)
-#                             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "success")
-#                             return ucl.responder.respondWithSuccess(status=200, message='Digital agreement stored')
-#                         else:
-#                             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Agreement status not completed")
-#                             return ucl.responder.respondNotFound(status=404, message='Agreement status not completed')
-#                     else:
-#                         ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Agreement status not found")
-#                         return ucl.responder.respondNotFound(status=404, message='Agreement status not found')
-#             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Document ID not found")
-#             return ucl.responder.respondNotFound(status=404, message='Document ID not found')
-#         else:
-#             return ucl.responder.respondWithFailure(status=500, message='Something went wrong', data={}, errors={})
-        
-#     except ucl.exceptions.APIException as e:
-#         ucl.log_api_error()
-#         return e.respond()

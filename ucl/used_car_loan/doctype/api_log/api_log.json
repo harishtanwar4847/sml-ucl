@@ -7,6 +7,8 @@
  "field_order": [
   "api_name",
   "api_type",
+  "is_error",
+  "error",
   "request",
   "response",
   "request_time",
@@ -51,11 +53,25 @@
    "label": "API Type",
    "options": "\nInternal\nThird Party",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_error",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Code",
+   "label": "Error",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 17:14:06.035313",
+ "modified": "2024-02-27 15:12:48.692539",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "API Log",

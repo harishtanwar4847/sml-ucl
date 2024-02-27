@@ -6,7 +6,6 @@ from frappe.model.document import Document
 
 
 class PartnerKYC(Document):
-    # pass
 	
 	def before_save(self):
 		partner_name = frappe.db.sql("select name from `tabPartner` where partner_kyc = '{name}'".format(name = self.name))

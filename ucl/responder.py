@@ -30,3 +30,6 @@ def respondForbidden(status=403, message='Forbidden',data={}):
 
 def respondNotFound(status=404, message='Not Found'):
 	return respond(status=status, message=message)
+
+def respondInvalidData(status=422, message = "Invalid Data"):
+	return respond(status=status, message=message)
