@@ -92,12 +92,13 @@ def save_lead_details(**kwargs):
         }).insert(ignore_permissions=True)
         
         response = "Lead details saved successfully"
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Save lead details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -192,10 +193,11 @@ def update_lead_details(**kwargs):
         print(lead_doc)
         
         response = "Lead details saved successfully"
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update lead details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()

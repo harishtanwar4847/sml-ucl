@@ -33,10 +33,11 @@ def mobile_check(**kwargs):
             }
         else:
             details = "No Lead found with this Mobile No."
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(details))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(details))
         return ucl.responder.respondWithSuccess(message=frappe._("Success"), data=details)
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Mobile Check", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -59,13 +60,14 @@ def pan_plus(**kwargs):
         response = requests.request("GET", url, headers=headers, data=payload)
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=response.json()['data'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.json())
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -102,11 +104,12 @@ def update_basic_details(**kwargs):
         ).insert(ignore_permissions=True)
         frappe.db.commit()
         eligibility_doc_name = eligibility_doc.name
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
         return ucl.responder.respondWithSuccess(message=frappe._("Basic eligibility details updated successfuly"), data={"id": eligibility_doc_name})
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -132,11 +135,12 @@ def update_loan_details(**kwargs):
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
         return ucl.responder.respondWithSuccess(message=frappe._("Loan details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Loan Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -168,11 +172,12 @@ def update_existing_loan_details(**kwargs):
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
         return ucl.responder.respondWithSuccess(message=frappe._("Existing Loan details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -214,11 +219,12 @@ def update_car_details(**kwargs):
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
         return ucl.responder.respondWithSuccess(message=frappe._("Car details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Car Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -256,11 +262,12 @@ def update_coapplicant_details(**kwargs):
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
         return ucl.responder.respondWithSuccess(message=frappe._("Coapplicant details updated successfuly"))
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Update Coapplicant Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
 
@@ -303,11 +310,12 @@ def register_mobile_no(**kwargs):
         }
         api_log_doc = ucl.log_api(method = "Experian Register Mobile No", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
         return response.json()
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Register Mobile No", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -341,11 +349,12 @@ def generate_mobile_otp(**kwargs):
         }
         api_log_doc = ucl.log_api(method = "Experian Generate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
         return response.json()
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Generate Mobile OTP", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -381,11 +390,12 @@ def validate_mobile_otp(**kwargs):
         }
         api_log_doc = ucl.log_api(method = "Experian Validate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
         return response.json()
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Validate Mobile OTP", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 @frappe.whitelist(allow_guest=True)
@@ -445,13 +455,14 @@ def bre_offers(**kwargs):
         response = requests.request("POST", url, headers=headers, json=payload)
         api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("Offers Successfully Generated"), data=response.json()['offers'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -469,7 +480,7 @@ def create_workorder():
         response = requests.request("POST", url, headers=headers)
         api_log_doc = ucl.log_api(method = "Glib create workorder", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 201:        
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             id = response.json()['id']
             add_bank_statement(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
@@ -478,7 +489,8 @@ def create_workorder():
 
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Create Workorder", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -501,14 +513,15 @@ def add_bank_statement(id):
         response = requests.request("POST", url, headers=headers, data=payload, files=files)
         api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 200:        
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             process_workorder(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
        
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Add bank statement", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
 
 def process_workorder(id):
@@ -524,14 +537,15 @@ def process_workorder(id):
         response = requests.request("POST", url, headers=headers)
         api_log_doc = ucl.log_api(method = "Glib process workorder", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 200:        
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             retrieve_workorder(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Process Workorder", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
 
 def retrieve_workorder(id):
@@ -547,14 +561,15 @@ def retrieve_workorder(id):
         response = requests.request("GET", url, headers=headers)
         api_log_doc = ucl.log_api(method = "Glib retrieve workorder", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 200:        
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             download_report(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Retrieve Workorder", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
 
 
@@ -582,7 +597,7 @@ def download_report(id):
         print("Download Report")
         api_log_doc = ucl.log_api(method = "Glib download report", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 200:     
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             details = response.json()['Summary - Fixed Income / Obligation']
             for i in details:
                 if i['Type'] == "Salary":
@@ -597,7 +612,8 @@ def download_report(id):
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "Download Report", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -625,13 +641,14 @@ def ibb_make(**kwargs):
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Make API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['make'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "IBB Make", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -659,13 +676,14 @@ def ibb_model(**kwargs):
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Model API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['model'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "IBB Model", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -696,13 +714,14 @@ def ibb_variant(**kwargs):
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Variant API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['variant'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "IBB Variant", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -720,13 +739,14 @@ def ibb_location(**kwargs):
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Location API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['city'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "IBB Location", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
@@ -744,13 +764,14 @@ def ibb_color(**kwargs):
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Color API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['color'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "IBB Color", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
 
 
@@ -794,13 +815,14 @@ def ibb_price(**kwargs):
         response = requests.request("POST", url, data=payload)
         api_log_doc = ucl.log_api(method = "IBB Price API", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:
-            ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json()['retail'])
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
-        ucl.log_api_error()
+        api_log_doc = ucl.log_api(method = "IBB Price", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
 
