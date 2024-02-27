@@ -169,12 +169,12 @@ def verify_otp(**kwargs):
             if user:
                 LoginAttemptTracker(user_name=user.name).add_failure_attempt()
                 if not user.enabled:
-                    raise ucl.exceptions.UnauthorizedException(
+                    raise ucl.exceptions.FailureException(
                         _("User disabled or missing")
                     )
 
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = "Invalid OTP.")
-            raise ucl.exceptions.UnauthorizedException(message)
+            raise ucl.exceptions.FailureException(message)
 
         if token:
             # frappe.db.begin()
@@ -182,7 +182,7 @@ def verify_otp(**kwargs):
             if token.expiry <= frappe.utils.now_datetime():
                 response = "OTP Expired"
 
-                raise ucl.exceptions.UnauthorizedException(response)
+                raise ucl.exceptions.FailureException(response)
             
             user_data = {}
             if user:
@@ -250,7 +250,7 @@ def set_pin(**kwargs):
             response
             response = "User disabled or missing"
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-            raise ucl.exceptions.UnauthorizedException(_(response))
+            raise ucl.exceptions.FailureException(_(response))
 
         # try:
         #     is_dummy_account = lms.validate_spark_dummy_account(
@@ -275,7 +275,7 @@ def set_pin(**kwargs):
         # if token and not is_dummy_account:
         #     if token.expiry <= frappe.utils.now_datetime():
         #         # return utils.respondUnauthorized(message=frappe._("OTP Expired."))
-        #         raise lms.exceptions.UnauthorizedException(_("OTP Expired"))
+        #         raise lms.exceptions.FailureException(_("OTP Expired"))
 
         if data.get("pin"):
             if data.get("pin"):
@@ -329,7 +329,7 @@ def verify_forgot_pin_otp(**kwargs):
         if not user.enabled:
             response = "User disabled or missing"
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-            raise ucl.exceptions.UnauthorizedException(_(response))
+            raise ucl.exceptions.FailureException(_(response))
 
         try:
             # is_dummy_account = ucl.validate_spark_dummy_account(
@@ -355,7 +355,7 @@ def verify_forgot_pin_otp(**kwargs):
             if token.expiry <= frappe.utils.now_datetime():
                 response = "OTP Expired"
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-                raise ucl.exceptions.UnauthorizedException(_(response))
+                raise ucl.exceptions.FailureException(_(response))
 
         if data.get("otp") and data.get("new_pin"):
             if data.get("new_pin"):
@@ -426,7 +426,7 @@ def login(**kwargs):
             except frappe.SecurityException as e:
                 response = "Incorrect PIN."
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-                raise ucl.exceptions.UnauthorizedException(str(e))
+                raise ucl.exceptions.FailureException(str(e))
             except frappe.AuthenticationError as e:
                 response = "Incorrect PIN."
                 message = frappe._(response)
@@ -444,7 +444,7 @@ def login(**kwargs):
                     message = "3 invalid attempts done. Please try again after 60 seconds."
                     ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = message)
                     raise ucl.exceptions.ForbiddenException(message=message)
-                raise ucl.exceptions.UnauthorizedException(message)
+                raise ucl.exceptions.FailureException(message)
 
             token = dict(
                 token=ucl.create_user_access_token(user.name)
@@ -466,7 +466,7 @@ def login(**kwargs):
             if not data.get("accept_terms"):
                 response = "Please accept Terms of Use and Privacy Policy."
                 ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Internal", response = response)
-                raise ucl.exceptions.UnauthorizedException(
+                raise ucl.exceptions.FailureException(
                     _(response)
                 )
 
@@ -837,7 +837,7 @@ def aadhaar_ocr(**kwargs):
             if response.json()['data']['id_number']:
                 id_number = response.json()['data']['id_number'][-4:]
                 if partner_kyc.aadhaar_linked and id_number != partner_kyc.masked_aadhaar[-4:]:
-                    raise ucl.exceptions.UnauthorizedException(
+                    raise ucl.exceptions.FailureException(
                             _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
                         )
             else:

@@ -19,7 +19,7 @@ def respond(status=200, message='Success', data={}, errors={}):
 def respondWithSuccess(status=200, message='Success', data={}):
 	return respond(status=status, message=message, data=data)
 
-def respondWithFailure(status=500, message='Something went wrong', data={}, errors={}):
+def respondWithFailure(status=417, message='Something went wrong', data={}, errors={}):
 	return respond(status=status, message=message, data=data, errors=errors)
 
 def respondUnauthorized(status=401, message='Unauthorized'):
