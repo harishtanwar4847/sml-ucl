@@ -348,7 +348,7 @@ def face_match(**kwargs):
                     partner.kyc_live_image_linked = 0
                     partner.save(ignore_permissions=True)                    
                     frappe.db.commit()
-                    return ucl.responder.respondUnauthorized(message = "Faces do not match.")
+                    return ucl.responder.respondNotFound(message = "Faces do not match.")
             else:
                 partner.live_image =""
                 partner.kyc_live_image_linked = 0
@@ -508,9 +508,9 @@ def update_bank_details(**kwargs):
                     frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
                 else:
-                    return ucl.responder.respondUnauthorized(message=penny_drop["error_msg"])
+                    return ucl.responder.respondInvalidData(message=penny_drop["error_msg"])
             else:
-                return ucl.responder.respondUnauthorized(message=penny_drop["message"])
+                return ucl.responder.respondInvalidData(message=penny_drop["message"])
         else:
             partner.kyc_bank_details_linked = 1
             partner.save(ignore_permissions = True)
@@ -612,7 +612,7 @@ def esign_request(**kwargs):
 
         else:
             ucl.log_api_response(api_log_doc = api_log_doc, api_type = "Third Party", response = "Consent not received")
-            return ucl.responder.respondUnauthorized(message="Not received your consent yet. To continue please review agreement once.")
+            return ucl.responder.respondInvalidData(message="Not received your consent yet. To continue please review agreement once.")
     except ucl.exceptions.APIException as e:
         ucl.log_api_error()
         return e.respond()

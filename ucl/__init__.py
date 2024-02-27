@@ -86,7 +86,7 @@ def send_otp(**kwargs):
             },
         )
         if int(data.get("mobile")[0]) < 5:
-            return ucl.responder.respondUnauthorized(message=frappe._("Please Enter Valid Mobile Number"),)
+            return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
                 user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
@@ -590,7 +590,7 @@ def employer_list():
 def partner_list():
     res = frappe.get_all("Partner", filters = {"status" : "Approved by SML"}, fields = ["name","partner_name"])
     if len(res) == 0:
-        res = ""
+        res = []
     res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
     return res
 

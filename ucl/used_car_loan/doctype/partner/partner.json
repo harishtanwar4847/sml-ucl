@@ -217,7 +217,7 @@
   },
   {
    "fieldname": "pan_dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB"
   },
   {
@@ -329,7 +329,7 @@
   },
   {
    "fieldname": "aadhaar_dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB"
   },
   {
@@ -627,7 +627,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-23 11:12:35.695602",
+ "modified": "2024-02-27 12:34:13.637473",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner",
