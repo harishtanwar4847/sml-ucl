@@ -347,6 +347,7 @@ def face_match(**kwargs):
         ).replace(" ", "-")
 
         live_image = ucl.attach_files(image_bytes=data.get("image"),file_name = live_picture_file, attached_to_doctype="Partner KYC", attached_to_name=partner_kyc.name, attached_to_field="live_image", partner=partner)
+        partner_kyc.kyc_live_image_linked = 1
         response_live = requests.get(live_image)
 
         pdf_url = partner_kyc.pan_card_file
@@ -386,22 +387,19 @@ def face_match(**kwargs):
                     ucl.send_ucl_push_notification(
                         fcm_notification=fcm_notification, partner=partner
                     )
-                    partner_kyc.kyc_live_image_linked = 1
                     partner_kyc.live_image_remarks = "Faces match."
-                    partner_kyc.save(ignore_permissions=True)                    
-                    frappe.db.commit()
-                    return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
+                    message="Faces Match!"
 
                 else:
                     partner_kyc.live_image_remarks = "Faces do not match."
-                    partner_kyc.save(ignore_permissions=True)                    
-                    frappe.db.commit()
-                    return ucl.responder.respondNotFound(message = "Faces do not match.")
+                    message = "Faces do not match."
             else:
                 partner_kyc.live_image_remarks = "No faces detected."
-                partner_kyc.save(ignore_permissions=True)                    
-                frappe.db.commit()
-                return ucl.responder.respondNotFound(message = "No faces detected.")
+                message = "No faces detected."
+
+            partner_kyc.save(ignore_permissions=True)                    
+            frappe.db.commit()
+            return ucl.responder.respondWithSuccess(message = frappe._(message))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Face Match", request_time = datetime.now(), request = "")

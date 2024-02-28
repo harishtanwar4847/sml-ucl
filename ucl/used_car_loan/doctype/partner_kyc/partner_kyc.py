@@ -14,6 +14,6 @@ class PartnerKYC(Document):
 			if self.status in ["Rejected by SML", "Rejected by Partner"]:
 				partner.partner_kyc = ""
 			elif self.status== "Approved by SML":
-				partner.kyc_approved==1
+				partner.kyc_approved = 1
 			partner.save(ignore_permissions=True)
 			frappe.db.commit()
