@@ -19,7 +19,7 @@ from random import randint
 from ucl import user
 
 
-__version__ = "0.0.1-dev"
+__version__ = "0.0.2-uat"
 
 
 user_token_expiry_map = {
