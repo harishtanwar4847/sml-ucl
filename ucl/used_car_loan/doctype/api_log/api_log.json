@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-10 16:53:33.039466",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "api_name",
+  "api_type",
+  "is_error",
+  "error",
+  "request",
+  "response",
+  "request_time",
+  "response_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "request",
+   "fieldtype": "Long Text",
+   "label": "Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "Small Text",
+   "label": "Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "request_time",
+   "fieldtype": "Datetime",
+   "label": "Request Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "response_time",
+   "fieldtype": "Datetime",
+   "label": "Response Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "api_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "API Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "api_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "API Type",
+   "options": "\nInternal\nThird Party",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_error",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Code",
+   "label": "Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-27 15:12:48.692539",
+ "modified_by": "Administrator",
+ "module": "Used Car Loan",
+ "name": "API Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "api_name",
+ "track_changes": 1
+}
