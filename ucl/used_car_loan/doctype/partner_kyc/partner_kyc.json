@@ -1,0 +1,630 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2024-01-10 17:36:08.556320",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "status",
+  "associate",
+  "naming_series",
+  "column_break_ufuf",
+  "live_image",
+  "live_image_remarks",
+  "kyc_live_image_linked",
+  "pan_details_tab",
+  "pan_card_file",
+  "pan_number",
+  "pan_full_name",
+  "pan_father_name",
+  "pan_gender",
+  "pan_dob",
+  "pan_phone_number",
+  "email_id",
+  "pan_type",
+  "masked_aadhaar",
+  "column_break_exzu",
+  "line_1",
+  "line_2",
+  "street_name",
+  "zip",
+  "pan_city",
+  "pan_state",
+  "pan_country",
+  "pan_full_address",
+  "aadhaar_linked",
+  "kyc_pan_linked",
+  "aadhaar_details_tab",
+  "aadhaar_front",
+  "aadhaar_back",
+  "id_number",
+  "name_on_card",
+  "aadhaar_father_name",
+  "aadhaar_dob",
+  "aadhaar_gender",
+  "year_of_birth",
+  "column_break_pmrt",
+  "house_number",
+  "street_address",
+  "aadhaar_pin_code",
+  "district",
+  "aadhaar_state",
+  "aadhaar_address",
+  "kyc_aadhaar_linked",
+  "company_pan_details_tab",
+  "company_pan_file",
+  "company_pan_number",
+  "company_name",
+  "company_email",
+  "company_dob",
+  "company_phone_no",
+  "company_pan_type",
+  "company_full_address",
+  "column_break_tclh",
+  "address",
+  "company_address_line1",
+  "company_address_line2",
+  "company_address_street_name",
+  "company_address_zip",
+  "company_address_city",
+  "company_address_state",
+  "company_address_country",
+  "kyc_company_pan_linked",
+  "company_documents_tab",
+  "business_proof",
+  "kyc_business_proof_linked",
+  "column_break_nxdy",
+  "company_gst_certificate",
+  "kyc_company_gst_certificate_linked",
+  "current_address_tab",
+  "same_as_on_pan",
+  "address_proof",
+  "ca_line1",
+  "ca_line2",
+  "ca_street_name",
+  "column_break_sxhj",
+  "ca_pincode",
+  "ca_city",
+  "ca_state",
+  "ca_country",
+  "kyc_current_address_linked",
+  "bank_details_tab",
+  "cancelled_cheque",
+  "bank_name",
+  "bank_account_number",
+  "column_break_uvju",
+  "ifsc_code",
+  "beneficiary_name",
+  "kyc_bank_details_linked"
+ ],
+ "fields": [
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nPending\nApproved by Partner\nApproved by SML\nRejected by Partner\nRejected by SML"
+  },
+  {
+   "fieldname": "live_image",
+   "fieldtype": "Attach",
+   "label": "Live Image"
+  },
+  {
+   "fieldname": "column_break_ufuf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_live_image_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Live Image Linked"
+  },
+  {
+   "fieldname": "pan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "PAN Details"
+  },
+  {
+   "fieldname": "pan_card_file",
+   "fieldtype": "Attach",
+   "label": "PAN Card File"
+  },
+  {
+   "fieldname": "pan_number",
+   "fieldtype": "Data",
+   "label": "PAN Number"
+  },
+  {
+   "fieldname": "pan_full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "fieldname": "pan_father_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
+  },
+  {
+   "fieldname": "pan_gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "pan_dob",
+   "fieldtype": "Date",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "pan_phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email ID"
+  },
+  {
+   "fieldname": "pan_type",
+   "fieldtype": "Data",
+   "label": "PAN Type"
+  },
+  {
+   "fieldname": "masked_aadhaar",
+   "fieldtype": "Data",
+   "label": "Masked Aadhaar"
+  },
+  {
+   "fieldname": "column_break_exzu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "pan_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "pan_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "pan_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "pan_full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
+  },
+  {
+   "default": "0",
+   "fieldname": "aadhaar_linked",
+   "fieldtype": "Check",
+   "label": "Aadhaar Linked"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_pan_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Pan Linked"
+  },
+  {
+   "fieldname": "aadhaar_details_tab",
+   "fieldtype": "Tab Break",
+   "label": " Aadhaar Details"
+  },
+  {
+   "fieldname": "aadhaar_front",
+   "fieldtype": "Attach",
+   "label": "Aadhaar Front"
+  },
+  {
+   "fieldname": "aadhaar_back",
+   "fieldtype": "Attach",
+   "label": "Aadhaar Back"
+  },
+  {
+   "fieldname": "id_number",
+   "fieldtype": "Data",
+   "label": "ID Number"
+  },
+  {
+   "fieldname": "name_on_card",
+   "fieldtype": "Data",
+   "label": "Name on Card"
+  },
+  {
+   "fieldname": "aadhaar_father_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
+  },
+  {
+   "fieldname": "aadhaar_dob",
+   "fieldtype": "Date",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "aadhaar_gender",
+   "fieldtype": "Data",
+   "label": "Gender"
+  },
+  {
+   "fieldname": "year_of_birth",
+   "fieldtype": "Int",
+   "label": "Year of Birth"
+  },
+  {
+   "fieldname": "column_break_pmrt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "house_number",
+   "fieldtype": "Data",
+   "label": "House Number"
+  },
+  {
+   "fieldname": "street_address",
+   "fieldtype": "Data",
+   "label": "Street Address"
+  },
+  {
+   "fieldname": "aadhaar_pin_code",
+   "fieldtype": "Data",
+   "label": "Pin Code"
+  },
+  {
+   "fieldname": "district",
+   "fieldtype": "Data",
+   "label": "District"
+  },
+  {
+   "fieldname": "aadhaar_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "aadhaar_address",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "options": "Pin Code"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_aadhaar_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Aadhaar Linked"
+  },
+  {
+   "fieldname": "company_pan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Company PAN Details"
+  },
+  {
+   "fieldname": "company_pan_file",
+   "fieldtype": "Attach",
+   "label": "Company PAN File"
+  },
+  {
+   "fieldname": "company_pan_number",
+   "fieldtype": "Data",
+   "label": "Company PAN Number"
+  },
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "label": "Company Name"
+  },
+  {
+   "fieldname": "company_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "fieldname": "company_dob",
+   "fieldtype": "Data",
+   "label": "DOB"
+  },
+  {
+   "fieldname": "company_phone_no",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "company_pan_type",
+   "fieldtype": "Data",
+   "label": "Pan Type"
+  },
+  {
+   "fieldname": "company_full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
+  },
+  {
+   "fieldname": "column_break_tclh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Heading",
+   "label": "Address"
+  },
+  {
+   "fieldname": "company_address_line1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "fieldname": "company_address_line2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "fieldname": "company_address_street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "company_address_zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "company_address_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "company_address_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "company_address_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_company_pan_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company Pan Linked"
+  },
+  {
+   "fieldname": "company_documents_tab",
+   "fieldtype": "Tab Break",
+   "label": "Company Documents"
+  },
+  {
+   "fieldname": "business_proof",
+   "fieldtype": "Attach",
+   "label": "Business Proof"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_business_proof_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Business Proof Linked"
+  },
+  {
+   "fieldname": "column_break_nxdy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company_gst_certificate",
+   "fieldtype": "Attach",
+   "label": "Company GST Certificate"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_company_gst_certificate_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Company GST Certificate Linked"
+  },
+  {
+   "fieldname": "current_address_tab",
+   "fieldtype": "Tab Break",
+   "label": "Current Address"
+  },
+  {
+   "default": "0",
+   "fieldname": "same_as_on_pan",
+   "fieldtype": "Check",
+   "label": "Same as on PAN"
+  },
+  {
+   "fieldname": "address_proof",
+   "fieldtype": "Attach",
+   "label": "Address Proof"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_line1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_line2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "column_break_sxhj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_pincode",
+   "fieldtype": "Data",
+   "label": "Pincode"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "depends_on": "eval:doc.same_as_on_pan == 0;",
+   "fieldname": "ca_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_current_address_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Current Address Linked"
+  },
+  {
+   "fieldname": "bank_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Bank Details"
+  },
+  {
+   "fieldname": "cancelled_cheque",
+   "fieldtype": "Attach",
+   "label": "Cancelled Cheque"
+  },
+  {
+   "fieldname": "bank_name",
+   "fieldtype": "Data",
+   "label": "Bank Name"
+  },
+  {
+   "fieldname": "bank_account_number",
+   "fieldtype": "Data",
+   "label": "Bank Account Number"
+  },
+  {
+   "fieldname": "column_break_uvju",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ifsc_code",
+   "fieldtype": "Data",
+   "label": "IFSC Code"
+  },
+  {
+   "fieldname": "beneficiary_name",
+   "fieldtype": "Data",
+   "label": "Beneficiary Name With Bank"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_bank_details_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Bank Details Linked"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "Partner-KYC-."
+  },
+  {
+   "default": "0",
+   "fieldname": "associate",
+   "fieldtype": "Check",
+   "label": "Associate?"
+  },
+  {
+   "fieldname": "live_image_remarks",
+   "fieldtype": "Data",
+   "label": "Live Image Remarks",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-27 23:01:33.523408",
+ "modified_by": "Administrator",
+ "module": "Used Car Loan",
+ "name": "Partner KYC",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Partner",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Partner Associate",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
