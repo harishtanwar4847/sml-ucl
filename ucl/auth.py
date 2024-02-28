@@ -693,6 +693,7 @@ def pan_ocr(**kwargs):
         
             return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
         else:
+            api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(data))
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly")
             return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"))
     
