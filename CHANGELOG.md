@@ -1,6 +1,7 @@
 # Changelog
 
-## [v0.0.2-dev] - 28-02-2024 
+## [v0.0.3-uat] - 28-02-2024 
+## [v0.0.3-dev] - 28-02-2024 
 
 ## Fixed
 - [Fix : Face match and Partner list fixes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/4)
