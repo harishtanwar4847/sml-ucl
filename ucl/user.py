@@ -387,6 +387,7 @@ def face_match(**kwargs):
                     ucl.send_ucl_push_notification(
                         fcm_notification=fcm_notification, partner=partner
                     )
+
                     partner_kyc.live_image_remarks = "Faces match."
                     message="Faces Match!"
 
