@@ -387,6 +387,7 @@ def face_match(**kwargs):
                         fcm_notification=fcm_notification, partner=partner
                     )
                     partner_kyc.kyc_live_image_linked = 1
+                    partner_kyc.live_image_remarks = "Faces match."
                     partner_kyc.save(ignore_permissions=True)                    
                     frappe.db.commit()
                     return ucl.responder.respondWithSuccess(message=frappe._("Faces Match!"))
@@ -601,8 +602,8 @@ def esign_request(**kwargs):
                 "expire_in_days": 10,
                 "sequential": True,
                 "display_on_page": "last",
-                "notify_signers": True,
-                "send_sign_link": True
+                "notify_signers": False,
+                "send_sign_link": False
             }
             esign_file = ucl_setting.digital_agreement
             response = requests.get(esign_file)
