@@ -334,29 +334,29 @@ def log_api_response(is_error, error, api_log_doc, api_type, response):
 
 
 
-# def log_api_error(mess=""):
-#     try:
-#         request_parameters = frappe.local.form_dict
-#         headers = {k: v for k, v in frappe.local.request.headers.items()}
+"""def log_api_error(mess=""):
+    try:
+        request_parameters = frappe.local.form_dict
+        headers = {k: v for k, v in frappe.local.request.headers.items()}
 
-#         title = (
-#             request_parameters.get("cmd").split(".")[-1].replace("_", " ").title()
-#             + " API Error"
-#         )
+        title = (
+            request_parameters.get("cmd").split(".")[-1].replace("_", " ").title()
+            + " API Error"
+        )
 
-#         error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n"
-#         log = frappe.get_doc(
-#             dict(doctype="API Error Log", error=frappe.as_unicode(error), method=title)
-#         ).insert(ignore_permissions=True)
-#         frappe.db.commit()
+        error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n"
+        log = frappe.get_doc(
+            dict(doctype="API Error Log", error=frappe.as_unicode(error), method=title)
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
 
-#         return log
+        return log
 
-#     except Exception:
-#         frappe.log_error(
-#             message=frappe.get_traceback(),
-#             title=_("API Error Log Error"),
-#         )
+    except Exception:
+        frappe.log_error(
+            message=frappe.get_traceback(),
+            title=_("API Error Log Error"),
+        )"""
 
 def regex_special_characters(search, regex=None):
     if regex:
