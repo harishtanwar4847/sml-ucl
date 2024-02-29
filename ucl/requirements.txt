@@ -8,3 +8,4 @@ numpy==1.26.3
 requests==2.31.0
 PyMuPDF==1.23.18
 frontend
+html_to_json==2.0.0

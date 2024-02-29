@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
-  "message"
+  "message",
+  "template_id"
  ],
  "fields": [
   {
@@ -20,11 +21,16 @@
    "fieldname": "message",
    "fieldtype": "Long Text",
    "label": "Message"
+  },
+  {
+   "fieldname": "template_id",
+   "fieldtype": "Data",
+   "label": "Template Id"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-11 17:32:48.487302",
+ "modified": "2024-02-29 12:09:40.482003",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL SMS Notification",
