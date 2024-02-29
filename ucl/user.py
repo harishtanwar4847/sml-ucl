@@ -542,12 +542,10 @@ def get_esign_consent():
             consent_points = []
             ucl_setting = frappe.get_single("UCL Settings")
             esign_url = ucl_setting.digital_agreement
-            terms_of_use = ucl_setting.terms_of_use
-            privacy_policy = ucl_setting.privacy_policy
             for i in esign_doc.esign_consent:
                 consent_points.append({"title":i.title, "description":i.description})
             return ucl.responder.respondWithSuccess(
-                    message=frappe._("Success"), data={"consent_points" : consent_points, "esign_agreement_url" : esign_url, "terms_of_use" : terms_of_use, "privacy_policy" : privacy_policy}
+                    message=frappe._("Success"), data={"consent_points" : consent_points, "esign_agreement_url" : esign_url}
                 )
             
         except NotFoundException:

@@ -17,9 +17,14 @@ import requests
 import base64
 from random import randint
 from ucl import user
+from frappe.core.doctype.sms_settings.sms_settings import (
+    validate_receiver_nos,
+    send_via_gateway,
+)
+import html_to_json
 
 
-__version__ = "1.0.0"
+__version__ = "1.0.1-uat"
 
 
 
@@ -89,10 +94,10 @@ def send_otp(**kwargs):
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
-                user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
-                token_mark_as_used(user_token)
+                old_user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
+                token_mark_as_used(old_user_token)
             api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
-            create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
+            user_token = create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
             login_consent_doc = frappe.get_doc(
                     {
                         "doctype": "User Consent",
@@ -101,6 +106,10 @@ def send_otp(**kwargs):
                     }
                 ).insert(ignore_permissions=True)
             log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
+            sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Send OTP")
+            message = sms_notification_doc.message.format(partner = "Partner", token =  user_token.token)
+            receiver_list = [data.get("mobile")]
+            sms_sent = frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
             return ucl.responder.respondWithSuccess(
                     message=frappe._("OTP Sent"),
                 )
@@ -108,7 +117,6 @@ def send_otp(**kwargs):
         api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = "")
         log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         generateResponse(is_success=False, error=e)
-        raise
 
 
 def create_user_access_token(user_name):
@@ -326,29 +334,29 @@ def log_api_response(is_error, error, api_log_doc, api_type, response):
 
 
 
-# def log_api_error(mess=""):
-#     try:
-#         request_parameters = frappe.local.form_dict
-#         headers = {k: v for k, v in frappe.local.request.headers.items()}
+"""def log_api_error(mess=""):
+    try:
+        request_parameters = frappe.local.form_dict
+        headers = {k: v for k, v in frappe.local.request.headers.items()}
 
-#         title = (
-#             request_parameters.get("cmd").split(".")[-1].replace("_", " ").title()
-#             + " API Error"
-#         )
+        title = (
+            request_parameters.get("cmd").split(".")[-1].replace("_", " ").title()
+            + " API Error"
+        )
 
-#         error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n"
-#         log = frappe.get_doc(
-#             dict(doctype="API Error Log", error=frappe.as_unicode(error), method=title)
-#         ).insert(ignore_permissions=True)
-#         frappe.db.commit()
+        error = frappe.get_traceback() + "\n\n" + str(mess) + "\n\n"
+        log = frappe.get_doc(
+            dict(doctype="API Error Log", error=frappe.as_unicode(error), method=title)
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
 
-#         return log
+        return log
 
-#     except Exception:
-#         frappe.log_error(
-#             message=frappe.get_traceback(),
-#             title=_("API Error Log Error"),
-#         )
+    except Exception:
+        frappe.log_error(
+            message=frappe.get_traceback(),
+            title=_("API Error Log Error"),
+        )"""
 
 def regex_special_characters(search, regex=None):
     if regex:
@@ -434,10 +442,7 @@ def validate_receiver_nos(receiver_list):
     return validated_receiver_list
 
 
-def send_sms(receiver_list, msg, sender_name="", success_msg=True):
-
-    import json
-
+def send_sms_custom(receiver_list, msg, sender_name="", success_msg=True, sms_template_id=None):
     from six import string_types
 
     if isinstance(receiver_list, string_types):
@@ -451,6 +456,7 @@ def send_sms(receiver_list, msg, sender_name="", success_msg=True):
         "receiver_list": receiver_list,
         "message": frappe.safe_decode(msg).encode("utf-8"),
         "success_msg": success_msg,
+        "sms_template_id": sms_template_id,
     }
 
     if frappe.db.get_value("SMS Settings", None, "sms_gateway_url"):
@@ -462,11 +468,16 @@ def send_sms(receiver_list, msg, sender_name="", success_msg=True):
 def send_via_gateway(arg):
     ss = frappe.get_doc("SMS Settings", "SMS Settings")
     headers = get_headers(ss)
+    use_json = headers.get("Content-Type") == "application/json"
 
-    args = {ss.message_parameter: arg.get("message")}
+    message = frappe.safe_decode(arg.get("message"))
+    args = {ss.message_parameter: message}
     for d in ss.get("parameters"):
         if not d.header:
             args[d.parameter] = d.value
+
+    if arg["sms_template_id"]:
+        args["templateid"] = arg["sms_template_id"]
 
     success_list = []
     for d in arg.get("receiver_list"):
@@ -500,8 +511,6 @@ def get_headers(sms_settings=None):
 
 
 def send_request(gateway_url, params, headers=None, use_post=False):
-    import requests
-
     if not headers:
         headers = get_headers()
 
@@ -510,15 +519,16 @@ def send_request(gateway_url, params, headers=None, use_post=False):
     else:
         response = requests.get(gateway_url, headers=headers, params=params)
     # SMS LOG
-    import json
 
-    frappe.logger().info(params)
-    if type(params["sms"]) == bytes:
-        params["sms"] = params["sms"].decode("ascii")
+    # json_Str = html_to_json.convert(response)
+    # formatted_Str = json.dumps(json_Str, indent = 2)
+    # frappe.logger().info(params)
+    # if type(params["Text"]) == bytes:
+    #     params["sms"] = params["sms"].decode("ascii")
     log = {
         "url": gateway_url,
         "params": params,
-        "response": response.json(),
+        "response": response.text,
     }
     create_log(log, "sms_log")
     # SMS LOG end
@@ -528,9 +538,8 @@ def send_request(gateway_url, params, headers=None, use_post=False):
 
 # Create SMS Log
 def create_sms_log(args, sent_to):
-    sl = frappe.new_doc("SMS Log")
     from frappe.utils import nowdate
-
+    sl = frappe.new_doc("UCL SMS Log")
     sl.sent_on = nowdate()
     sl.message = args["message"].decode("utf-8")
     sl.no_of_requested_sms = len(args["receiver_list"])

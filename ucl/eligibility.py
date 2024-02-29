@@ -480,6 +480,7 @@ def create_workorder():
             add_bank_statement(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
 
@@ -512,6 +513,7 @@ def add_bank_statement(id):
             process_workorder(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
        
     except ucl.exceptions.APIException as e:
@@ -537,6 +539,7 @@ def process_workorder(id):
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
         else:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Process Workorder", request_time = datetime.now(), request = "")
@@ -560,6 +563,7 @@ def retrieve_workorder(id):
             download_report(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
@@ -596,6 +600,7 @@ def download_report(id):
 
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
     except ucl.exceptions.APIException as e:
