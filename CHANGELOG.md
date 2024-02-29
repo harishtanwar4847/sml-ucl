@@ -1,6 +1,6 @@
 # Changelog
 
-## [v1.0.0] - 29-02-2024
+## [v1.0.1-dev] - 29-02-2024
 
 ## Added
 - [Feat : sms notification and pan ocr fixes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/7)
