@@ -108,7 +108,6 @@ def send_otp(**kwargs):
         api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = "")
         log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         generateResponse(is_success=False, error=e)
-        raise
 
 
 def create_user_access_token(user_name):
