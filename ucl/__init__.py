@@ -21,6 +21,7 @@ from frappe.core.doctype.sms_settings.sms_settings import (
     validate_receiver_nos,
     send_via_gateway,
 )
+import html_to_json
 
 
 __version__ = "1.0.0"
@@ -442,9 +443,6 @@ def validate_receiver_nos(receiver_list):
 
 
 def send_sms_custom(receiver_list, msg, sender_name="", success_msg=True, sms_template_id=None):
-
-    import json
-
     from six import string_types
 
     if isinstance(receiver_list, string_types):
@@ -513,8 +511,6 @@ def get_headers(sms_settings=None):
 
 
 def send_request(gateway_url, params, headers=None, use_post=False):
-    import requests
-
     if not headers:
         headers = get_headers()
 
@@ -523,15 +519,16 @@ def send_request(gateway_url, params, headers=None, use_post=False):
     else:
         response = requests.get(gateway_url, headers=headers, params=params)
     # SMS LOG
-    import json
 
-    frappe.logger().info(params)
-    if type(params["sms"]) == bytes:
-        params["sms"] = params["sms"].decode("ascii")
+    json_Str = html_to_json.convert(response)
+    formatted_Str = json.dumps(json_Str, indent = 2)
+    # frappe.logger().info(params)
+    # if type(params["Text"]) == bytes:
+    #     params["sms"] = params["sms"].decode("ascii")
     log = {
         "url": gateway_url,
         "params": params,
-        "response": response.json(),
+        "response": formatted_Str,
     }
     create_log(log, "sms_log")
     # SMS LOG end
@@ -541,9 +538,8 @@ def send_request(gateway_url, params, headers=None, use_post=False):
 
 # Create SMS Log
 def create_sms_log(args, sent_to):
-    sl = frappe.new_doc("UCL SMS Log")
     from frappe.utils import nowdate
-
+    sl = frappe.new_doc("UCL SMS Log")
     sl.sent_on = nowdate()
     sl.message = args["message"].decode("utf-8")
     sl.no_of_requested_sms = len(args["receiver_list"])
