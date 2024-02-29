@@ -19,7 +19,7 @@ from random import randint
 from ucl import user
 
 
-__version__ = "0.0.3-uat"
+__version__ = "1.0.0"
 
 
 
