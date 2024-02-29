@@ -520,15 +520,15 @@ def send_request(gateway_url, params, headers=None, use_post=False):
         response = requests.get(gateway_url, headers=headers, params=params)
     # SMS LOG
 
-    json_Str = html_to_json.convert(response)
-    formatted_Str = json.dumps(json_Str, indent = 2)
+    # json_Str = html_to_json.convert(response)
+    # formatted_Str = json.dumps(json_Str, indent = 2)
     # frappe.logger().info(params)
     # if type(params["Text"]) == bytes:
     #     params["sms"] = params["sms"].decode("ascii")
     log = {
         "url": gateway_url,
         "params": params,
-        "response": formatted_Str,
+        "response": response.text,
     }
     create_log(log, "sms_log")
     # SMS LOG end
