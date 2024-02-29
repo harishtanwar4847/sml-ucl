@@ -3,7 +3,7 @@
 ## [v1.0.0] - 29-02-2024
 
 ## Added
-- [Feat : Partner KYC Onboarding](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/5)
+- [Feat : Partner KYC Onboarding](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/6)
 
 ## [v0.0.3-uat] - 28-02-2024 
 ## [v0.0.3-dev] - 28-02-2024 
