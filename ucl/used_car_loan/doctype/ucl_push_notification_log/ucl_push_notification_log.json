@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2024-02-06 18:43:52.328964",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "notification_id",
+  "title",
+  "screen_to_open",
+  "notification_type",
+  "click_action",
+  "lead",
+  "partner",
+  "loan",
+  "column_break_ufpo",
+  "time",
+  "message",
+  "is_cleared",
+  "is_read"
+ ],
+ "fields": [
+  {
+   "fieldname": "notification_id",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Notification Id"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "screen_to_open",
+   "fieldtype": "Data",
+   "label": "Screen to Open"
+  },
+  {
+   "fieldname": "notification_type",
+   "fieldtype": "Select",
+   "label": "Notification Type",
+   "options": "Success\nWarning"
+  },
+  {
+   "fieldname": "click_action",
+   "fieldtype": "Data",
+   "label": "Click Action"
+  },
+  {
+   "fieldname": "column_break_ufpo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Datetime",
+   "label": "Time"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Text",
+   "label": "Message"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_cleared",
+   "fieldtype": "Check",
+   "label": "Is Cleared"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_read",
+   "fieldtype": "Check",
+   "label": "Is Read"
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "Lead"
+  },
+  {
+   "fieldname": "partner",
+   "fieldtype": "Link",
+   "label": "Partner",
+   "options": "Partner"
+  },
+  {
+   "fieldname": "loan",
+   "fieldtype": "Data",
+   "label": "Loan"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-23 17:45:44.547330",
+ "modified_by": "Administrator",
+ "module": "Used Car Loan",
+ "name": "UCL Push Notification Log",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

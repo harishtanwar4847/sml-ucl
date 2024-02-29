@@ -133,23 +133,29 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"ucl.tasks.all"
-# 	],
-# 	"daily": [
-# 		"ucl.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"ucl.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"ucl.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"ucl.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	# "all": [
+	# 	"ucl.tasks.all"
+	# ],
+	# "daily": [
+	# 	"ucl.tasks.daily"
+	# ],
+	# "hourly": [
+	# 	"ucl.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"ucl.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"ucl.tasks.monthly"
+	# ],
+    "cron" : {
+        "0 0 * * *": [
+            "ucl.authorize_deepvue",
+            "ucl.authorize_ibb"
+        ],  # At 12:00 AM
+	},
+}
 
 # Testing
 # -------

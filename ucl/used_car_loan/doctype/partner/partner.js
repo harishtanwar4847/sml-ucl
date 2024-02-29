@@ -1,0 +1,15 @@
+// Copyright (c) 2024, Developers and contributors
+// For license information, please see license.txt
+
+frappe.ui.form.on("Partner", {
+	refresh: function (frm) {
+        frm.set_query('partner_kyc', () => {
+            return {
+                "filters": [
+                    ["status", "not in" ,["Rejected by SML", "Rejected by Partner"]]
+                ]
+            };
+        });
+      },
+});
+    

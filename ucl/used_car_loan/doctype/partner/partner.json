@@ -1,0 +1,149 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-10 17:36:08.556320",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "partner_name",
+  "associate",
+  "parent_partner_code",
+  "partner_type",
+  "company_type",
+  "column_break_ufuf",
+  "is_pin_set",
+  "user_id",
+  "partner_kyc",
+  "digital_agreement",
+  "kyc_approved",
+  "kyc_digital_agreement_linked"
+ ],
+ "fields": [
+  {
+   "fieldname": "partner_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Partner Name",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "associate",
+   "fieldtype": "Check",
+   "label": "Associate?"
+  },
+  {
+   "depends_on": "eval:doc.associate == 1;",
+   "fieldname": "parent_partner_code",
+   "fieldtype": "Link",
+   "label": "Parent Partner Code",
+   "options": "Partner"
+  },
+  {
+   "fieldname": "partner_type",
+   "fieldtype": "Select",
+   "label": "Partner Type",
+   "options": "\nIndividual\nCorporate"
+  },
+  {
+   "depends_on": "eval:doc.partner_type == \"Corporate\";",
+   "fieldname": "company_type",
+   "fieldtype": "Select",
+   "label": "Company Type",
+   "options": "\nProprietary Firm\nPartnership Firm\nLLP Firm\nPvt Ltd Firm\nPublic Ltd Firm\nHUF\nTrust"
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Link",
+   "label": "User ID",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_pin_set",
+   "fieldtype": "Check",
+   "label": "Is Pin Set?"
+  },
+  {
+   "fieldname": "digital_agreement",
+   "fieldtype": "Attach",
+   "label": "Digital Agreement"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_digital_agreement_linked",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Digital Agreement Linked"
+  },
+  {
+   "fieldname": "column_break_ufuf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "partner_kyc",
+   "fieldtype": "Link",
+   "label": "Partner KYC",
+   "options": "Partner KYC"
+  },
+  {
+   "default": "0",
+   "fieldname": "kyc_approved",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "KYC Approved?"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-26 16:46:33.961105",
+ "modified_by": "Administrator",
+ "module": "Used Car Loan",
+ "name": "Partner",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Partner",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Partner Associate",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "partner_name",
+ "track_changes": 1
+}
