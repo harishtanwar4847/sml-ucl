@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.0.2-dev] - 01-03-2024
+
+## Added
+- [Feat : Dummy Account creation and Company Pan fixes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/9)
+
 ## [v1.0.1-uat] - 29-02-2024
 
 ## Added

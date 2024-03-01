@@ -7,29 +7,41 @@
  "field_order": [
   "product_details_section",
   "product",
+  "mobile_no",
   "column_break_dbha",
   "occupation_type",
-  "mobile_verification_section",
-  "mobile_no",
-  "basic_details_section",
-  "pan",
-  "first_name",
-  "last_name",
+  "income_details_section",
+  "monthly_salary",
+  "coapplicant_running_loan",
+  "column_break_vzrh",
+  "monthly_gross_income",
+  "requested_loan_amount",
+  "pan_details_tab",
+  "pan_number",
+  "full_name",
+  "fathers_name",
+  "phone_number",
+  "email_id",
   "gender",
   "dob",
-  "address",
-  "pan_mobile_no",
-  "column_break_fgtz",
-  "requested_loan_amount",
-  "monthly_salary",
-  "monthly_gross_income",
-  "running_loan",
+  "masked_aadhaar",
+  "column_break_tqqg",
+  "line_1",
+  "line_2",
+  "street_name",
+  "zip",
+  "pan_city",
+  "pan_state",
+  "pan_country",
+  "full_address",
+  "existing_loan_details_section",
   "lender_name",
-  "pos",
   "sanctioned_loan_amount",
-  "emi",
   "total_emis_paid",
-  "co_applicant",
+  "column_break_nsni",
+  "pos",
+  "emi",
+  "car_details_tab",
   "car_details_section",
   "brand",
   "registration_number",
@@ -45,25 +57,33 @@
   "car_owner",
   "colour",
   "kms_driven",
+  "coapplicant_tab",
   "co_applicant_details_section",
   "coapplicant_occupation_type",
   "coapplicant_mobile_no",
   "coapplicant_pan",
-  "coapplicant_first_name",
-  "coapplicant_last_name",
+  "coapplicant_full_name",
+  "coapplicant_email_id",
   "coapplicant_gender",
   "coapplicant_dob",
-  "coapplicant_address",
-  "coapplicant_requested_loan_amount",
-  "column_break_ubfd",
   "coapplicant_monthly_salary",
   "coapplicant_monthly_gross_income",
-  "coapplicant_running_loan",
-  "coapplicant_lender",
-  "coapplicant_pos",
-  "coapplicant_sanctioned_loan_amount",
-  "coapplicant_emi",
-  "coapplicant_total_emi_paid"
+  "column_break_ubfd",
+  "coapplicant_full_address",
+  "coapplicant_line_1",
+  "coapplicant_line_2",
+  "coapplicant_street_name",
+  "coapplicant_zip",
+  "coapplicant_city",
+  "coapplicant_state",
+  "coapplicant_country",
+  "coapplicant_masked_aadhaar",
+  "bank_statemenr_details_tab",
+  "bank_statement_file",
+  "credit_score",
+  "column_break_acqa",
+  "monthly_income",
+  "obligations"
  ],
  "fields": [
   {
@@ -83,58 +103,14 @@
    "label": "Mobile No"
   },
   {
-   "fieldname": "mobile_verification_section",
-   "fieldtype": "Section Break",
-   "label": "Mobile Verification"
-  },
-  {
-   "fieldname": "basic_details_section",
-   "fieldtype": "Section Break",
-   "label": "Basic Details"
-  },
-  {
-   "fieldname": "pan",
-   "fieldtype": "Data",
-   "label": "PAN"
-  },
-  {
-   "fieldname": "first_name",
-   "fieldtype": "Data",
-   "label": "First Name"
-  },
-  {
-   "fieldname": "last_name",
-   "fieldtype": "Data",
-   "label": "Last Name"
-  },
-  {
    "fieldname": "gender",
    "fieldtype": "Data",
    "label": "Gender"
   },
   {
    "fieldname": "dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB"
-  },
-  {
-   "fieldname": "address",
-   "fieldtype": "Data",
-   "label": "Address"
-  },
-  {
-   "fieldname": "pan_mobile_no",
-   "fieldtype": "Data",
-   "label": "Mobile No"
-  },
-  {
-   "fieldname": "column_break_fgtz",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "requested_loan_amount",
-   "fieldtype": "Currency",
-   "label": "Requested Loan Amount"
   },
   {
    "fieldname": "occupation_type",
@@ -143,19 +119,8 @@
    "options": "\nSalaried\nSelf Employed"
   },
   {
-   "fieldname": "monthly_salary",
-   "fieldtype": "Currency",
-   "label": "Monthly Salary"
-  },
-  {
-   "fieldname": "monthly_gross_income",
-   "fieldtype": "Currency",
-   "label": "Monthly Gross Income"
-  },
-  {
    "fieldname": "car_details_section",
-   "fieldtype": "Section Break",
-   "label": "Car Details"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "brand",
@@ -232,16 +197,9 @@
    "label": "Registration Number"
   },
   {
-   "fieldname": "running_loan",
-   "fieldtype": "Select",
-   "label": "Does you have a running car loan?",
-   "options": "\nYes\nNo"
-  },
-  {
    "fieldname": "lender_name",
-   "fieldtype": "Link",
-   "label": "Lender Name",
-   "options": "Lender"
+   "fieldtype": "Data",
+   "label": "Lender Name"
   },
   {
    "fieldname": "pos",
@@ -250,7 +208,7 @@
   },
   {
    "fieldname": "sanctioned_loan_amount",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Sanctioned Loan Amount"
   },
   {
@@ -262,12 +220,6 @@
    "fieldname": "total_emis_paid",
    "fieldtype": "Data",
    "label": "Total EMI's Paid"
-  },
-  {
-   "fieldname": "co_applicant",
-   "fieldtype": "Select",
-   "label": "Co-Applicant",
-   "options": "\nYes\nNo"
   },
   {
    "fieldname": "column_break_ubfd",
@@ -290,16 +242,6 @@
    "label": "PAN"
   },
   {
-   "fieldname": "coapplicant_first_name",
-   "fieldtype": "Data",
-   "label": "First Name"
-  },
-  {
-   "fieldname": "coapplicant_last_name",
-   "fieldtype": "Data",
-   "label": "Last Name"
-  },
-  {
    "fieldname": "coapplicant_gender",
    "fieldtype": "Data",
    "label": "Gender"
@@ -308,11 +250,6 @@
    "fieldname": "coapplicant_dob",
    "fieldtype": "Data",
    "label": "DOB"
-  },
-  {
-   "fieldname": "coapplicant_address",
-   "fieldtype": "Data",
-   "label": "Address"
   },
   {
    "fieldname": "coapplicant_monthly_salary",
@@ -330,46 +267,222 @@
    "label": "Does you have a running car loan?"
   },
   {
-   "fieldname": "coapplicant_lender",
-   "fieldtype": "Link",
-   "label": "Lender",
-   "options": "Lender"
-  },
-  {
-   "fieldname": "coapplicant_pos",
-   "fieldtype": "Data",
-   "label": "POS"
-  },
-  {
-   "fieldname": "coapplicant_sanctioned_loan_amount",
-   "fieldtype": "Currency",
-   "label": "Sanctioned Loan Amount"
-  },
-  {
-   "fieldname": "coapplicant_emi",
-   "fieldtype": "Data",
-   "label": "EMI"
-  },
-  {
-   "fieldname": "coapplicant_total_emi_paid",
-   "fieldtype": "Data",
-   "label": "Toatl EMI's Paid"
-  },
-  {
    "depends_on": "eval:doc.co_applicant == \"Yes\"; ",
    "fieldname": "co_applicant_details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "PAN Details"
+  },
+  {
+   "fieldname": "pan_number",
+   "fieldtype": "Data",
+   "label": "PAN Number"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "fieldname": "fathers_name",
+   "fieldtype": "Data",
+   "label": "Fathers Name"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email Id"
+  },
+  {
+   "fieldname": "masked_aadhaar",
+   "fieldtype": "Data",
+   "label": "Masked Aadhaar"
+  },
+  {
+   "fieldname": "column_break_tqqg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "line_1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "fieldname": "line_2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "fieldname": "street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "pan_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "pan_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "pan_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
+  },
+  {
+   "fieldname": "existing_loan_details_section",
    "fieldtype": "Section Break",
+   "label": "Existing Loan Details"
+  },
+  {
+   "fieldname": "column_break_nsni",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "car_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Car Details"
+  },
+  {
+   "fieldname": "coapplicant_tab",
+   "fieldtype": "Tab Break",
    "label": "Co-Applicant Details"
   },
   {
-   "fieldname": "coapplicant_requested_loan_amount",
-   "fieldtype": "Currency",
+   "fieldname": "income_details_section",
+   "fieldtype": "Section Break",
+   "label": "Income Details"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type==\"Salaried\";",
+   "fieldname": "monthly_salary",
+   "fieldtype": "Data",
+   "label": "Monthly Salary"
+  },
+  {
+   "fieldname": "column_break_vzrh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "requested_loan_amount",
+   "fieldtype": "Data",
    "label": "Requested Loan Amount"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type==\"Self Employed\";",
+   "fieldname": "monthly_gross_income",
+   "fieldtype": "Data",
+   "label": "Monthly Gross Income"
+  },
+  {
+   "fieldname": "coapplicant_full_address",
+   "fieldtype": "Small Text",
+   "label": "Full Address"
+  },
+  {
+   "fieldname": "coapplicant_line_1",
+   "fieldtype": "Data",
+   "label": "Line 1"
+  },
+  {
+   "fieldname": "coapplicant_line_2",
+   "fieldtype": "Data",
+   "label": "Line 2"
+  },
+  {
+   "fieldname": "coapplicant_street_name",
+   "fieldtype": "Data",
+   "label": "Street Name"
+  },
+  {
+   "fieldname": "coapplicant_zip",
+   "fieldtype": "Data",
+   "label": "Zip"
+  },
+  {
+   "fieldname": "coapplicant_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "coapplicant_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "coapplicant_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "coapplicant_masked_aadhaar",
+   "fieldtype": "Data",
+   "label": "Masked Aadhaar"
+  },
+  {
+   "fieldname": "coapplicant_email_id",
+   "fieldtype": "Data",
+   "label": "Email Id"
+  },
+  {
+   "fieldname": "coapplicant_full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "fieldname": "bank_statemenr_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Bank Statemenr Details"
+  },
+  {
+   "fieldname": "bank_statement_file",
+   "fieldtype": "Attach",
+   "label": "Bank Statement File"
+  },
+  {
+   "fieldname": "credit_score",
+   "fieldtype": "Data",
+   "label": "Credit Score"
+  },
+  {
+   "fieldname": "column_break_acqa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "monthly_income",
+   "fieldtype": "Data",
+   "label": "Monthly Income"
+  },
+  {
+   "fieldname": "obligations",
+   "fieldtype": "Data",
+   "label": "Obligations"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-21 16:47:49.545474",
+ "modified": "2024-02-29 19:36:00.648366",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
