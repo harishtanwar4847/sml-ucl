@@ -93,26 +93,31 @@ def send_otp(**kwargs):
         if int(data.get("mobile")[0]) < 5:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
-            if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
-                old_user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
-                token_mark_as_used(old_user_token)
-            api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
-            user_token = create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
-            login_consent_doc = frappe.get_doc(
-                    {
-                        "doctype": "User Consent",
-                        "mobile": data.get("mobile"),
-                        "consent": "Login",
-                    }
-                ).insert(ignore_permissions=True)
-            log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
-            sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Send OTP")
-            message = sms_notification_doc.message.format(partner = "Partner", token =  user_token.token)
-            receiver_list = [data.get("mobile")]
-            sms_sent = frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
-            return ucl.responder.respondWithSuccess(
+            if frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile")}):
+                return ucl.responder.respondWithSuccess(
                     message=frappe._("OTP Sent"),
                 )
+            else:
+                if frappe.db.exists("User Token", {"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0}):
+                    old_user_token = frappe.get_last_doc("User Token", filters={"entity" : data.get("mobile"), "token_type": data.get("token_type"), "used": 0})
+                    token_mark_as_used(old_user_token)
+                api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
+                user_token = create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
+                login_consent_doc = frappe.get_doc(
+                        {
+                            "doctype": "User Consent",
+                            "mobile": data.get("mobile"),
+                            "consent": "Login",
+                        }
+                    ).insert(ignore_permissions=True)
+                log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
+                sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Send OTP")
+                message = sms_notification_doc.message.format(partner = "Partner", token =  user_token.token)
+                receiver_list = [data.get("mobile")]
+                sms_sent = frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
+                return ucl.responder.respondWithSuccess(
+                        message=frappe._("OTP Sent"),
+                    )
     except Exception as e:
         api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = "")
         log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
