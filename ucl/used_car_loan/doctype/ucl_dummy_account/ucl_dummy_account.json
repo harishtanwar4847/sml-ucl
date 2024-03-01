@@ -6,8 +6,9 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "mobile_no",
   "token",
-  "mobile_no"
+  "is_active"
  ],
  "fields": [
   {
@@ -21,11 +22,17 @@
    "fieldtype": "Data",
    "label": "Token",
    "length": 4
+  },
+  {
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-01 13:55:17.266443",
+ "modified": "2024-03-01 15:31:42.407233",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Dummy Account",
