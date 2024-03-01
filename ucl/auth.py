@@ -145,12 +145,10 @@ def verify_otp(**kwargs):
         
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
 
-        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile")})
-        print("Summy Account exists :", dummy_account_exists)
+        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
+        ("Summy Account exists :", dummy_account_exists)
         if dummy_account_exists:
             dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
-            print("dummy acc :", dummy_account.as_dict())
-            print(" OTP :", data.get("otp"))
             if data.get("otp") == dummy_account.token:
                 token = dummy_account.token
             else:

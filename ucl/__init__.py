@@ -93,7 +93,7 @@ def send_otp(**kwargs):
         if int(data.get("mobile")[0]) < 5:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
-            if frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile")}):
+            if frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1}):
                 return ucl.responder.respondWithSuccess(
                     message=frappe._("OTP Sent"),
                 )
