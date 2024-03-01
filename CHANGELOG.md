@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.0.3-uat] - 01-03-2024
+
+## Added
+- [Feat : Dummy Account Creation Fix](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/11)
+
 ## [v1.0.3-dev] - 01-03-2024
 
 ## Added
