@@ -137,35 +137,45 @@ def verify_otp(**kwargs):
                     status=422,
                     message=frappe._("Special Characters not allowed."),
                 )
-                
-        token = ucl.verify_user_token(
-            entity=data.get("mobile"), token=data.get("otp"), token_type="Login OTP"
-        )
+
         try:
             user = ucl.__user(data.get("mobile"))
         except:
             user = None
-
+        
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
 
-        if not token:
-            response = "Invalid OTP."
-            message = frappe._(response)
+        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
+        ("Summy Account exists :", dummy_account_exists)
+        if dummy_account_exists:
+            dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
+            if data.get("otp") == dummy_account.token:
+                token = dummy_account.token
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Invalid OTP"), data = data) 
+        else:               
+            token = ucl.verify_user_token(
+                entity=data.get("mobile"), token=data.get("otp"), token_type="Login OTP"
+            )
 
-            if user:
-                LoginAttemptTracker(user_name=user.name).add_failure_attempt()
-                if not user.enabled:
-                    raise ucl.exceptions.UserNotFoundException(
-                        _("User disabled or missing")
-                    )
-            raise ucl.exceptions.FailureException(message)
+            if not token:
+                response = "Invalid OTP."
+                message = frappe._(response)
 
+                if user:
+                    LoginAttemptTracker(user_name=user.name).add_failure_attempt()
+                    if not user.enabled:
+                        raise ucl.exceptions.UserNotFoundException(
+                            _("User disabled or missing")
+                        )
+                raise ucl.exceptions.FailureException(message)
+
+            if token:
+                if token.expiry <= frappe.utils.now_datetime():
+                    response = "OTP Expired"
+
+                    raise ucl.exceptions.FailureException(response)
         if token:
-            if token.expiry <= frappe.utils.now_datetime():
-                response = "OTP Expired"
-
-                raise ucl.exceptions.FailureException(response)
-            
             user_data = {}
             if user:
                 access_token = ucl.create_user_access_token(user.name)
@@ -188,7 +198,9 @@ def verify_otp(**kwargs):
             ucl.add_firebase_token(
                 data.get("firebase_token"), app_version_platform, data.get("mobile")
             )
-            ucl.token_mark_as_used(token)
+            if not dummy_account_exists:
+                print("Aaat aalo")
+                ucl.token_mark_as_used(token)
             response = "OTP Verified" + "\n" + str(data)
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
             return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = user_data if user_data else {})    

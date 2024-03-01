@@ -63,7 +63,7 @@ def verify_pan(**kwargs):
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
-    
+
 
 @frappe.whitelist(allow_guest=True)
 def update_basic_details(**kwargs):
@@ -75,12 +75,6 @@ def update_basic_details(**kwargs):
             {
                 "product" : "required",
                 "mobile" : ["required", "decimal", ucl.validator.rules.LengthRule(10)],
-                "pan_number": "required",
-                "first_name": "required",
-                "last_name": "",
-                "gender": "required",
-                "dob": "required",
-                "address": "required"
         })
         api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = str(data))
         eligibility_doc = frappe.get_doc(
@@ -88,52 +82,72 @@ def update_basic_details(**kwargs):
                 "doctype": "Eligibility Check",
                 "mobile_no": data.get("mobile"),
                 "product": data.get("product"),
-                "pan_number": data.get("pan_number"),
-                "first_name": data.get("first_name"),
-                "last_name": data.get("last_name"),
-                "gender": data.get("gender"),
-                "dob": data.get("dob"),
-                "address": data.get("address")
             }
         ).insert(ignore_permissions=True)
         frappe.db.commit()
         eligibility_doc_name = eligibility_doc.name
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
-        return ucl.responder.respondWithSuccess(message=frappe._("Basic eligibility details updated successfuly"), data={"id": eligibility_doc_name})
+        return ucl.responder.respondWithSuccess(message=frappe._(" Data updated successfuly"), data={"id": eligibility_doc_name})
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
-    
+
 
 @frappe.whitelist(allow_guest=True)
-def update_loan_details(**kwargs):
+def update_pan_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
         user = ucl.__user()
         data = ucl.validate(
             kwargs,
             {
-                "occupation_type": "required",
-                "requested_loan_amount" : "required",
-                "monthly_salary" : "",
-                "monthly_gross_income": ""
+                "id" : "required",
+                "pan_number": "required",
+                "full_name": ["required"],
+                "masked_aadhaar": "",
+                "address_line_1": "",
+                "address_line_2": "",
+                "address_street_name": "",
+                "zip": "",
+                "city": "",
+                "state": "",
+                "country": "",
+                "full_address": "",
+                "email": "",
+                "phone_number": "",
+                "gender": "",
+                "dob": "",
         })
-        api_log_doc = ucl.log_api(method = "Update Loan Details", request_time = datetime.now(), request = str(data))
-        eligibility_dict ={
-                "occupation_type": data.get("occupation_type"),
-                "requested_loan_amount" : data.get("requested_loan_amount"),
-                "monthly_salary" : data.get("monthly_salary"),
-                "monthly_gross_income": data.get("monthly_gross_income")
-        }
-        eligibility_doc = frappe.get_doc("Eligibility Check", "115dd115d6").update(eligibility_dict).save(ignore_permissions = True)
+        api_log_doc = ucl.log_api(method = "Update Eligibility PAN Details", request_time = datetime.now(), request = str(data))
+        eligibility_dict = {
+                "mobile_no": data.get("mobile"),
+                "product": data.get("product"),
+                "pan_number": data.get("pan_number"),
+                "fathers_name": data.get("fathers_name"),
+                "full_name": data.get("full_name"),
+                "masked_aadhaar": data.get("masked_aadhaar"),
+                "line_1": data.get("address_line_1"),
+                "line_2": data.get("address_line_2"),
+                "street_name": data.get("address_street_name"),
+                "zip": data.get("zip"),
+                "pan_city": data.get("city"),
+                "pan_state": data.get("state"),
+                "pan_country": data.get("country"),
+                "full_address": data.get("full_address"),
+                "email_id": data.get("email"),
+                "phone_number": data.get("phone_number"),
+                "gender": data.get("gender"),
+                "dob": data.get("dob")
+            }
+        eligibility_doc = frappe.get_doc("Partner KYC", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
-        return ucl.responder.respondWithSuccess(message=frappe._("Loan details updated successfuly"))
+        return ucl.responder.respondWithSuccess(message=frappe._("Data updated successfuly"), data={"id": data.get("id")})
 
     except ucl.exceptions.APIException as e:
-        api_log_doc = ucl.log_api(method = "Update Loan Details", request_time = datetime.now(), request = "")
+        api_log_doc = ucl.log_api(method = "Update Eligibility PAN Details", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
     
@@ -266,19 +280,8 @@ def update_coapplicant_details(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def register_mobile_no(**kwargs):
+def register_mobile_no(data):
     try:
-        ucl.validate_http_method("POST")
-        user = ucl.__user()
-        data = ucl.validate(
-            kwargs,
-            {
-            "firstName" : "required",
-            "surName" : "required",
-            "mobileNo" : ["required", "decimal", ucl.validator.rules.LengthRule(10)],
-            "reason" : "required"
-
-        })
         ucl_setting = frappe.get_single("UCL Settings")
 
         url = ucl_setting.enhance_match_register
@@ -295,10 +298,10 @@ def register_mobile_no(**kwargs):
             "allowEmailVerify" : 1,
             "allowVoucher" : 1,
             "voucherCode" : "SWITCHMYLOAN8iwnw",
-            "firstName" : data.get("firstName"),
-            "surName" : data.get("surName"),
-            "mobileNo" : data.get("mobileNo"),
-            "reason" : data.get("reason"),
+            "firstName" : data["firstName"],
+            "surName" : data["surName"],
+            "mobileNo" : data["mobileNo"],
+            "reason" : data["reason"],
             "noValidationByPass" : 0,
             "emailConditionalByPass" : 1
         }
@@ -314,19 +317,8 @@ def register_mobile_no(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def generate_mobile_otp(**kwargs):
+def generate_mobile_otp(data):
     try:
-        ucl.validate_http_method("POST")
-        user = ucl.__user()
-        data = ucl.validate(
-            kwargs,
-            {
-            "stgOneHitId" : "required",
-            "stgTwoHitId" : "required",
-            "mobileNo" : "required",
-            "type" : "required"
-
-        })
         ucl_setting = frappe.get_single("UCL Settings")
 
         url = ucl_setting.generate_otp
@@ -335,10 +327,10 @@ def generate_mobile_otp(**kwargs):
         }
     
         payload={
-            "stgOneHitId" : data.get("stgOneHitId"),
-            "stgTwoHitId" : data.get("stgTwoHitId"),
-            "mobileNo" : data.get("mobileNo"),
-            "type" : data.get("type")
+            "stgOneHitId" : data["stgOneHitId"],
+            "stgTwoHitId" : data["stgTwoHitId"],
+            "mobileNo" : data["mobileNo"],
+            "type" : data["type"]
 
         }
         api_log_doc = ucl.log_api(method = "Experian Generate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
@@ -348,6 +340,53 @@ def generate_mobile_otp(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Generate Mobile OTP", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        return e.respond()
+
+
+@frappe.whitelist(allow_guest=True)
+def enhance_match(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        # user = ucl.__user()
+        data = ucl.validate(
+            kwargs,
+            {
+            "id" : "required",
+            "occupation_type": "required",
+            "requested_loan_amount" : "required",
+            "monthly_salary" : "",
+            "monthly_gross_income": "",
+        })
+        api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = str(data))
+        eligibility_dict ={
+                "occupation_type": data.get("occupation_type"),
+                "requested_loan_amount" : data.get("requested_loan_amount"),
+                "monthly_salary" : data.get("monthly_salary"),
+                "monthly_gross_income": data.get("monthly_gross_income")
+        }
+        eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
+        frappe.db.commit()
+        register_data = {
+            "firstName" : eligibility_doc.first_name,
+            "surName" : eligibility_doc.last_name,
+            "mobileNo" : eligibility_doc.mobile_no,
+            "reason" : "Find my credit report"
+        }
+        register = register_mobile_no(register_data)
+        generate_otp_data = {"mobileNo" : data.get("mobileNo"), "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
+
+        generate_otp = generate_mobile_otp(generate_otp_data)
+        if generate_otp["otpGenerationStatus"] == "1":
+            generate_otp["type"] = "CUSTOM"
+            generate_otp["id"] = eligibility_doc.name
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp))
+            return ucl.responder.respondWithSuccess(message = frappe._("Otp Generated Successfully"), data=generate_otp)
+        else:
+            ucl.log_api_response(is_error = 1, error  = generate_otp["errorString"], api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp))
+            return ucl.responder.respondWithFailure(message = frappe._(generate_otp["errorString"]))
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond()
     
@@ -360,9 +399,9 @@ def validate_mobile_otp(**kwargs):
         data = ucl.validate(
             kwargs,
             {
+            "id" : "required",
             "stgOneHitId" : "required",
             "stgTwoHitId" : "required",
-            "mobileNo" : "required",
             "otp": "required",
             "type" : "required"
 
@@ -384,7 +423,8 @@ def validate_mobile_otp(**kwargs):
         }
         api_log_doc = ucl.log_api(method = "Experian Validate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        response = {"id" : data.get("id"), "response" : response.json()}
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
         return response.json()
 
     except ucl.exceptions.APIException as e:
