@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.0.4-dev] - 04-03-2024
+
+## Added
+- [Fix : Dummy account and esign fixes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/12)
+
 ## [v1.0.3-uat] - 01-03-2024
 
 ## Added
