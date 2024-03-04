@@ -3,6 +3,7 @@ import frappe
 import json
 from frappe import _
 from datetime import datetime, timedelta
+import calendar
 from frappe.utils.password import check_password, update_password
 import ucl
 import re
@@ -17,6 +18,7 @@ from random import randint
 import requests
 from ucl import auth
 from io import BytesIO
+from frappe.utils.pdf import get_pdf
 
 
 @frappe.whitelist(allow_guest=True)
@@ -567,13 +569,23 @@ def get_esign_consent():
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return ucl.responder.respondUnauthorized(message=str(e))    
 
-    
+
+def add_suffix(number):
+    if 10 <= number % 100 <= 20:
+        suffix = 'th'
+    else:
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(number % 10, 'th')
+    return str(number) + suffix
 
 @frappe.whitelist(allow_guest=True)
 def esign_request(**kwargs):
     try:
         user = ucl.__user()
         partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC",partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
         ucl.validate_http_method("POST")
 
         data = ucl.validate(
@@ -597,21 +609,56 @@ def esign_request(**kwargs):
                     {
                         "identifier": user.name,
                         "name": partner.partner_name,
-                        "sign_type": "aadhaar",
-                        "reason": "Digio esign test-atriina team"
+                        "sign_type": "aadhaar", 
+                        "reason": "Partner Digital esign"
                     }
                 ],
-                "comment": "Testing",
                 "expire_in_days": 10,
-                "sequential": True,
-                "display_on_page": "last",
+                "display_on_page": "custom",
                 "notify_signers": False,
-                "send_sign_link": False
+                "generate_access_token" : False,
+                "send_sign_link": False,
+                "sign_coordinates": { 
+                    user.name: {
+                        "2": [
+                            {
+                                "llx": 94.67915430267063,
+                                "lly": 704.2652867132866,
+                                "urx": 252.4041790306627,
+                                "ury": 769.6233286713286
+                            }
+                        ]
+                    }
+
+                }
             }
-            esign_file = ucl_setting.digital_agreement
-            response = requests.get(esign_file)
+            doc = {}
+            doc['day_number'] = datetime.now().day
+            doc['day_number'] = add_suffix(doc['day_number'])
+            doc['current_month'] = datetime.now().month
+            doc['month_name'] = calendar.month_name[datetime.now().month]
+            doc['year'] = datetime.now().year
+            if partner_kyc.company_pan_number:
+                name = partner_kyc.company_name
+                address = partner_kyc.company_full_address
+            else:
+                name = partner_kyc.pan_full_name
+                address = partner_kyc.pan_full_address
+            doc['name'] = name
+            doc['address'] = address
+            s3_html_url = ucl_setting.digital_agreement
+
+            # Download HTML content from S3
+            response = requests.get(s3_html_url)
+            html_content = response.text
+
+            agreement = frappe.render_template(
+                html_content, {"doc":doc}
+            )
+            agreement_pdf = get_pdf(agreement)
+
             files = {
-                'file': ("esign_file", BytesIO(response.content), 'application/pdf'),
+                'file': ("esign_file", agreement_pdf, 'application/pdf'),
                 'request': (
                     None,
                     json.dumps(signers_data),
@@ -629,7 +676,6 @@ def esign_request(**kwargs):
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
 
             id = response.json()['id']
-            partner.document_id = id
             partner.save(ignore_permissions = True)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://atriina.com".format(id,user.name)})
 
@@ -679,7 +725,6 @@ def get_esign_details(**kwargs):
         api_log_doc = ucl.log_api(method = "Get Esign Details", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
         return e.respond() 
-
 
 def download_esign_document(document_id):
     try:
