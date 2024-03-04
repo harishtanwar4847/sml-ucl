@@ -291,32 +291,42 @@ def verify_forgot_pin_otp(**kwargs):
             response = "User disabled or missing"
             raise ucl.exceptions.FailureException(_(response))
 
-        try:
-            token = ucl.verify_user_token(
-                entity=user.mobile_no,
-                token=data.get("otp"),
-                token_type="Forgot Pin OTP",
-            )
-        except InvalidUserTokenException:
-            response = "Invalid OTP"
-            raise ucl.exceptions.ForbiddenException(_(response))
+        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
+        ("Summy Account exists :", dummy_account_exists)
+        if dummy_account_exists:
+            dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
+            if data.get("otp") == dummy_account.token:
+                token = dummy_account.token
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Invalid OTP"), data = data)
+        else:
+            try:
+                token = ucl.verify_user_token(
+                    entity=user.mobile_no,
+                    token=data.get("otp"),
+                    token_type="Forgot Pin OTP",
+                )
+            except InvalidUserTokenException:
+                response = "Invalid OTP"
+                raise ucl.exceptions.ForbiddenException(_(response))
 
 
-        if token:
-            if token.expiry <= frappe.utils.now_datetime():
-                response = "OTP Expired"
-                raise ucl.exceptions.FailureException(_(response))
+        if not dummy_account_exists:
+            if token:
+                if token.expiry <= frappe.utils.now_datetime():
+                    response = "OTP Expired"
+                    raise ucl.exceptions.FailureException(_(response))
 
         if data.get("otp") and data.get("new_pin"):
             if data.get("new_pin"):
                 update_password(user.name, data.get("new_pin"))
                 response = "User PIN has been updated."
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
-                ucl.token_mark_as_used(token)
+                if not dummy_account_exists:
+                    ucl.token_mark_as_used(token)
                 return ucl.responder.respondWithSuccess(
                     message=frappe._(response)
                 )
-
 
         elif not data.get("new_pin"):
             response = "Please Enter value for new pin."
