@@ -199,7 +199,6 @@ def verify_otp(**kwargs):
                 data.get("firebase_token"), app_version_platform, data.get("mobile")
             )
             if not dummy_account_exists:
-                print("Aaat aalo")
                 ucl.token_mark_as_used(token)
             response = "OTP Verified" + "\n" + str(data)
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)

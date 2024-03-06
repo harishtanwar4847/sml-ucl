@@ -13,13 +13,17 @@
   "income_details_section",
   "monthly_salary",
   "coapplicant_running_loan",
+  "cibil_score",
+  "coapplicant",
   "column_break_vzrh",
   "monthly_gross_income",
   "requested_loan_amount",
+  "credit_report",
   "pan_details_tab",
   "pan_number",
+  "first_name",
+  "last_name",
   "full_name",
-  "fathers_name",
   "phone_number",
   "email_id",
   "gender",
@@ -34,6 +38,7 @@
   "pan_state",
   "pan_country",
   "full_address",
+  "pan_details_filled",
   "existing_loan_details_section",
   "lender_name",
   "sanctioned_loan_amount",
@@ -57,6 +62,7 @@
   "car_owner",
   "colour",
   "kms_driven",
+  "estimated_value",
   "coapplicant_tab",
   "co_applicant_details_section",
   "coapplicant_occupation_type",
@@ -78,7 +84,7 @@
   "coapplicant_state",
   "coapplicant_country",
   "coapplicant_masked_aadhaar",
-  "bank_statemenr_details_tab",
+  "bank_statement_details_tab",
   "bank_statement_file",
   "credit_score",
   "column_break_acqa",
@@ -264,7 +270,8 @@
   {
    "fieldname": "coapplicant_running_loan",
    "fieldtype": "Select",
-   "label": "Does you have a running car loan?"
+   "label": "Does you have a running car loan?",
+   "options": "\nYes\nNo"
   },
   {
    "depends_on": "eval:doc.co_applicant == \"Yes\"; ",
@@ -285,11 +292,6 @@
    "fieldname": "full_name",
    "fieldtype": "Data",
    "label": "Full Name"
-  },
-  {
-   "fieldname": "fathers_name",
-   "fieldtype": "Data",
-   "label": "Fathers Name"
   },
   {
    "fieldname": "phone_number",
@@ -451,11 +453,6 @@
    "label": "Full Name"
   },
   {
-   "fieldname": "bank_statemenr_details_tab",
-   "fieldtype": "Tab Break",
-   "label": "Bank Statemenr Details"
-  },
-  {
    "fieldname": "bank_statement_file",
    "fieldtype": "Attach",
    "label": "Bank Statement File"
@@ -478,11 +475,53 @@
    "fieldname": "obligations",
    "fieldtype": "Data",
    "label": "Obligations"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "pan_details_filled",
+   "fieldtype": "Check",
+   "label": "Pan Details Filled"
+  },
+  {
+   "fieldname": "bank_statement_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Bank Statement Details"
+  },
+  {
+   "fieldname": "cibil_score",
+   "fieldtype": "Data",
+   "label": "Cibil Score"
+  },
+  {
+   "fieldname": "credit_report",
+   "fieldtype": "Long Text",
+   "label": "Credit Report"
+  },
+  {
+   "fieldname": "estimated_value",
+   "fieldtype": "Data",
+   "label": "Estimated Value"
+  },
+  {
+   "fieldname": "coapplicant",
+   "fieldtype": "Select",
+   "label": "Coapplicant",
+   "options": "\n1\n2"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-29 19:36:00.648366",
+ "modified": "2024-03-06 22:26:35.184108",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

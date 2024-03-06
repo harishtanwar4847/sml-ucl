@@ -58,8 +58,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Source",
-   "options": "\nDirect\nDealer\nDSA",
-   "reqd": 1
+   "options": "\nDirect\nDealer\nDSA"
   },
   {
    "default": "NA",
@@ -155,8 +154,7 @@
    "fieldname": "vehicle_owned",
    "fieldtype": "Select",
    "label": "Vehicle Owned",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "depends_on": "eval:doc.vehicle_owned == \"Yes\";",
@@ -284,7 +282,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-22 18:22:29.344021",
+ "modified": "2024-03-06 22:13:28.463204",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",

@@ -31,6 +31,7 @@ __version__ = "1.0.4-uat"
 user_token_expiry_map = {
     "Login OTP": 10,
     "Forgot Pin OTP": 10,
+    "Eligibility OTP": 10
 }
 
 class ValidationError(Exception):
