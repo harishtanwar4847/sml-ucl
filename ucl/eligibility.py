@@ -54,11 +54,6 @@ def verify_eligibility_otp(**kwargs):
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
-    except frappe.SecurityException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
-        return ucl.respondUnauthorized(message=str(e))
 
 
 @frappe.whitelist(allow_guest=True)
