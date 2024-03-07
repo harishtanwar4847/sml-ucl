@@ -6,7 +6,8 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "state"
+  "state",
+  "experian_code"
  ],
  "fields": [
   {
@@ -17,11 +18,16 @@
    "label": "State",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "experian_code",
+   "fieldtype": "Data",
+   "label": "Experian Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-10 17:24:48.337887",
+ "modified": "2024-03-06 18:31:17.001092",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "State",

@@ -109,7 +109,7 @@
   },
   {
    "fieldname": "requested_loan_amount",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Requested Loan Amount",
    "reqd": 1
   },
@@ -163,7 +163,7 @@
   {
    "depends_on": "eval:doc.sub_product == \"BT+Top Up\";",
    "fieldname": "principal_outstanding",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Principal Outstanding",
    "mandatory_depends_on": "eval:doc.sub_product == \"BT+Top Up\";"
   },
@@ -250,21 +250,21 @@
   {
    "depends_on": "eval:doc.occupation_type == \"Salaried\";",
    "fieldname": "monthly_income",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Monthly Income",
    "mandatory_depends_on": "eval:doc.occupation_type == \"Salaried\";"
   },
   {
    "depends_on": "eval:doc.occupation_type == \"Self Employed\";",
    "fieldname": "obligations",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Obligations",
    "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-06 20:47:36.275701",
+ "modified": "2024-03-07 18:57:20.312171",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
