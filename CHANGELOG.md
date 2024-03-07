@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.0.5-dev] - 07-03-2024
+
+## Added
+- [Feat : Lead Capture APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/14)
+
 ## [v1.0.4-uat] - 04-03-2024
 
 ## Added
