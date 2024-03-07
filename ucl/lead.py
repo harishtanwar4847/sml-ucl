@@ -89,7 +89,7 @@ def verify_lead_otp(**kwargs):
 def lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("8888888861")
+        user = ucl.__user()
         partner = ucl.__partner(user.name)
 
         data = ucl.validate(
@@ -163,17 +163,17 @@ def lead_details(**kwargs):
 def update_lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        # user = ucl.__user()
-        # partner = ucl.__partner(user.name)
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,{
             "id": ["required"],
-            "vehicle_owned": ["required"],
+            "vehicle_owned": "",
             "make": "",
             "model": "",
             "insurance_expiry_date": "",
-            "total_existing_obligations": ["required"],
+            "total_existing_obligations": "",
             "existing_lender": "",
             "existing_banker": "",
             "principal_outstanding": "",

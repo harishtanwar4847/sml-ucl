@@ -47,7 +47,7 @@ def mobile_check(**kwargs):
 def verify_pan(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user("8888888861")
+        user = ucl.__user()
         data = ucl.validate(
             kwargs,
             {
