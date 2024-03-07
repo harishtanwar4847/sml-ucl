@@ -24,13 +24,15 @@ from frappe.core.doctype.sms_settings.sms_settings import (
 import html_to_json
 
 
-__version__ = "1.0.4-uat"
+__version__ = "1.0.5-dev"
 
 
 
 user_token_expiry_map = {
     "Login OTP": 10,
     "Forgot Pin OTP": 10,
+    "Lead OTP": 10,
+    "Eligibility OTP": 10,
 }
 
 class ValidationError(Exception):
@@ -103,6 +105,7 @@ def send_otp(**kwargs):
                     token_mark_as_used(old_user_token)
                 api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
                 user_token = create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
+                print(user_token.as_dict())
                 login_consent_doc = frappe.get_doc(
                         {
                             "doctype": "User Consent",

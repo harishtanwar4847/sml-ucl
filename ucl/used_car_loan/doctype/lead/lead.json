@@ -12,10 +12,7 @@
   "partner_code",
   "mobile_number",
   "pan_number",
-  "first_name",
-  "middle_name",
-  "last_name",
-  "applicant_name",
+  "full_name",
   "gender",
   "dob",
   "line_1",
@@ -30,8 +27,8 @@
   "aadhar",
   "column_break_qgqn",
   "occupation_type",
-  "net_take_home_salary",
-  "profit",
+  "monthly_income",
+  "obligations",
   "requested_loan_amount",
   "vehicle_owned",
   "make",
@@ -50,7 +47,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Sub Product",
-   "options": "\nNew Car Purchase\nUsed Car Purchase\nRefinance\nBT+Top Up",
+   "options": "\nNew Car\nUsed Car Purchase\nRefinance\nBT+Top Up",
    "reqd": 1
   },
   {
@@ -58,7 +55,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Source",
-   "options": "\nDirect\nDealer\nDSA",
+   "options": "\nDirect\nPartner",
    "reqd": 1
   },
   {
@@ -80,27 +77,6 @@
    "fieldtype": "Data",
    "label": "PAN Number",
    "reqd": 1
-  },
-  {
-   "fieldname": "first_name",
-   "fieldtype": "Data",
-   "label": "First Name",
-   "reqd": 1
-  },
-  {
-   "fieldname": "middle_name",
-   "fieldtype": "Data",
-   "label": "Middle Name"
-  },
-  {
-   "fieldname": "last_name",
-   "fieldtype": "Data",
-   "label": "Last Name"
-  },
-  {
-   "fieldname": "applicant_name",
-   "fieldtype": "Data",
-   "label": "Applicant Name"
   },
   {
    "fieldname": "address",
@@ -132,20 +108,6 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.occupation_type == \"Salaried\";",
-   "fieldname": "net_take_home_salary",
-   "fieldtype": "Currency",
-   "label": "Net take home salary (Monthly)",
-   "mandatory_depends_on": "eval:doc.occupation_type == \"Salaried\";"
-  },
-  {
-   "depends_on": "eval:doc.occupation_type == \"Self Employed\";",
-   "fieldname": "profit",
-   "fieldtype": "Currency",
-   "label": "Profit (Monthly Average)",
-   "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
-  },
-  {
    "fieldname": "requested_loan_amount",
    "fieldtype": "Currency",
    "label": "Requested Loan Amount",
@@ -155,8 +117,7 @@
    "fieldname": "vehicle_owned",
    "fieldtype": "Select",
    "label": "Vehicle Owned",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "depends_on": "eval:doc.vehicle_owned == \"Yes\";",
@@ -228,7 +189,7 @@
   },
   {
    "fieldname": "dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB",
    "reqd": 1
   },
@@ -280,11 +241,30 @@
    "hidden": 1,
    "label": "Series",
    "options": "LEAD-.YYYY.-"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type == \"Salaried\";",
+   "fieldname": "monthly_income",
+   "fieldtype": "Currency",
+   "label": "Monthly Income",
+   "mandatory_depends_on": "eval:doc.occupation_type == \"Salaried\";"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type == \"Self Employed\";",
+   "fieldname": "obligations",
+   "fieldtype": "Currency",
+   "label": "Obligations",
+   "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-22 18:22:29.344021",
+ "modified": "2024-03-06 20:47:36.275701",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",

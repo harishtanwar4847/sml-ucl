@@ -47,7 +47,7 @@ def mobile_check(**kwargs):
 def verify_pan(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user()
+        user = ucl.__user("8888888861")
         data = ucl.validate(
             kwargs,
             {
@@ -55,9 +55,9 @@ def verify_pan(**kwargs):
         })
         pan_plus_response = auth.pan_plus(data.get("pan_number"))
         if pan_plus_response["code"] == 200 and pan_plus_response["sub_code"] == "SUCCESS":
-            return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=pan_plus_response.json()['data'])
+            return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=pan_plus_response)
         else:
-            return ucl.responder.respondWithFailure(message=frappe._("Pan Verification Failed"), data=pan_plus_response.json())
+            return ucl.responder.respondWithFailure(message=frappe._("Pan Verification Failed"), data=pan_plus_response)
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
