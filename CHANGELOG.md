@@ -3,7 +3,7 @@
 ## [v1.0.6-dev] - 07-03-2024
 
 ## Added
-- [Feat : Lead Capture minor changes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/16)
+- [Feat : Update lead changes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/16)
 
 ## [v1.0.5-dev] - 07-03-2024
 
