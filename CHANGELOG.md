@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.0.7-dev] - 07-03-2024
+
+## Added
+- [Feat : Eligibility check APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/17)
+
 ## [v1.0.6-dev] - 07-03-2024
 
 ## Added
