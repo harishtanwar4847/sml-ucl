@@ -292,7 +292,6 @@ def verify_forgot_pin_otp(**kwargs):
             raise ucl.exceptions.FailureException(_(response))
 
         dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
-        ("Summy Account exists :", dummy_account_exists)
         if dummy_account_exists:
             dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
             if data.get("otp") == dummy_account.token:
