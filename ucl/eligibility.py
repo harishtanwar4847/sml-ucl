@@ -10,7 +10,6 @@ from .exceptions import *
 import requests
 import base64
 import xmltodict
-import xml.etree.ElementTree as ET
 import json
 from html import unescape
 
