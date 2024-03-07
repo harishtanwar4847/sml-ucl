@@ -23,7 +23,7 @@
   },
   {
    "fieldname": "response",
-   "fieldtype": "Small Text",
+   "fieldtype": "Long Text",
    "label": "Response",
    "read_only": 1
   },
@@ -71,7 +71,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-27 15:12:48.692539",
+ "modified": "2024-03-07 18:00:07.362479",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "API Log",
