@@ -101,7 +101,7 @@
    "fieldname": "product",
    "fieldtype": "Select",
    "label": "Product",
-   "options": "\nNew Car Purchase\nUsed Car Purchase\nLoan Against Car"
+   "options": "\nNew Car\nPreowned Car\nLoan Against Car"
   },
   {
    "fieldname": "mobile_no",
@@ -521,7 +521,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-07 19:53:11.689138",
+ "modified": "2024-03-08 15:28:43.809447",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

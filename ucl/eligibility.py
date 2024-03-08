@@ -476,8 +476,14 @@ def enhance_match(**kwargs):
                 "reason" : "Find my credit report",
                 "match": "enhance"
             }
-            register = register_mobile_no(register_data)
-            generate_otp_data = {"mobileNo" : eligibility_doc.mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
+            if register_data["firstName"] != "" and register_data["surName"] != "" and register_data["mobileNo"] != "":
+                register = register_mobile_no(register_data)
+                generate_otp_data = {"mobileNo" : eligibility_doc.mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
+            else:
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+                return ucl.responder.respondWithFailure(message = frappe._("Details required for enhance match not found"))
+ 
+
         else:
             eligibility_dict ={
                     "coapplicant_occupation_type": data.get("occupation_type"),
@@ -494,9 +500,13 @@ def enhance_match(**kwargs):
                 "reason" : "Find my credit report",
                 "match": "enhance"
             }
-            register = register_mobile_no(register_data)
-            generate_otp_data = {"mobileNo" : eligibility_doc.coapplicant_mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
-
+            if register_data["firstName"] != "" and register_data["surName"] != "" and register_data["mobileNo"] != "":
+                register = register_mobile_no(register_data)
+                generate_otp_data = {"mobileNo" : eligibility_doc.coapplicant_mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
+            else:
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+                return ucl.responder.respondWithFailure(message = frappe._("Details required for enhance match not found"))
+ 
         generate_otp = generate_mobile_otp(generate_otp_data)
         if generate_otp["otpGenerationStatus"] == "1":
             generate_otp["type"] = "CUSTOM"
@@ -541,8 +551,13 @@ def full_match(id,coapplicant):
                 "reason" : "Find my credit report",
                 "match": "full"
             }
-            register = register_mobile_no(register_data)
-            generate_otp_data = {"mobileNo" : eligibility_doc.mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "NORMAL"}
+            if register_data["firstName"] != "" and register_data["surName"] != "" and register_data["mobileNo"] != "":
+                register = register_mobile_no(register_data)
+                generate_otp_data = {"mobileNo" : eligibility_doc.mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "NORMAL"}
+            else:
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+                return ucl.responder.respondWithFailure(message = frappe._("Details required for full match not found"))
+ 
         else:
             gender = 0
             if eligibility_doc.coapplicant_gender == "Male":
@@ -567,9 +582,13 @@ def full_match(id,coapplicant):
                 "reason" : "Find my credit report",
                 "match": "full"
             }
-            register = register_mobile_no(register_data)
-            generate_otp_data = {"mobileNo" : eligibility_doc.coapplicant_mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "NORMAL"}
-
+            if register_data["firstName"] != "" and register_data["surName"] != "" and register_data["mobileNo"] != "":
+                register = register_mobile_no(register_data)
+                generate_otp_data = {"mobileNo" : eligibility_doc.coapplicant_mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "NORMAL"}
+            else:
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+                return ucl.responder.respondWithFailure(message = frappe._("Details required for full match not found"))
+ 
         generate_otp = generate_mobile_otp(generate_otp_data)
         if generate_otp["otpGenerationStatus"] == "1":
             generate_otp["type"] = "NORMAL"
@@ -660,9 +679,9 @@ def bre_offers(**kwargs):
             "id" : "required"
         })
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
-        if eligibility_doc.product == "New Car Purchase":
+        if eligibility_doc.product == "New Car":
             lead = frappe.new_doc("Lead")
-            lead.sub_product = eligibility_doc.product
+            lead.sub_product = "New Car"
             lead.partner_code = ""
             lead.mobile_number = eligibility_doc.mobile_no
             lead.occupation_type = eligibility_doc.occupation_type
