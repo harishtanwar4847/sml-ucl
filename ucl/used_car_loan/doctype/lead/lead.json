@@ -47,7 +47,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Sub Product",
-   "options": "\nNew Car\nUsed Car Purchase\nRefinance\nBT+Top Up",
+   "options": "\nNew Car\nPreowned Car\nRefinance\nBT+Top Up",
    "reqd": 1
   },
   {
@@ -55,8 +55,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Source",
-   "options": "\nDirect\nPartner",
-   "reqd": 1
+   "options": "\nDirect\nPartner"
   },
   {
    "default": "NA",
@@ -264,7 +263,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-07 18:57:20.312171",
+ "modified": "2024-03-08 11:44:43.205933",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
