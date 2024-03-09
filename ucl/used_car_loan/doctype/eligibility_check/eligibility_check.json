@@ -89,7 +89,10 @@
   "credit_score",
   "column_break_acqa",
   "monthly_income",
-  "obligations"
+  "obligations",
+  "offers_tab",
+  "offers_section",
+  "offers"
  ],
  "fields": [
   {
@@ -517,11 +520,26 @@
    "fieldtype": "Select",
    "label": "Coapplicant",
    "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "offers_section",
+   "fieldtype": "Section Break",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers",
+   "fieldtype": "Long Text",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers_tab",
+   "fieldtype": "Tab Break",
+   "label": "Offers"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-08 15:28:43.809447",
+ "modified": "2024-03-09 13:29:14.107661",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

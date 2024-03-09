@@ -15,47 +15,6 @@ from html import unescape
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_eligibility_otp(**kwargs):
-    try:
-        user = ucl.__user()
-        ucl.validate_http_method("POST")
-
-        data = ucl.validate(
-            kwargs,
-            {
-                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
-                "otp": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
-            },
-        )
-        
-        api_log_doc = ucl.log_api(method = "Eligibility Verify OTP", request_time = datetime.now(), request = str(data))      
-        token = ucl.verify_user_token(
-                entity=data.get("mobile"), token=data.get("otp"), token_type="Eligibility OTP"
-        )
-
-        if not token:
-            response = "Invalid OTP."
-            message = frappe._(response)
-            raise ucl.exceptions.FailureException(message)
-
-        if token:
-            if token.expiry <= frappe.utils.now_datetime():
-                response = "OTP Expired"
-                raise ucl.exceptions.FailureException(response)
-        if token:
-            ucl.token_mark_as_used(token)
-            response = "OTP Verified" + "\n" + str(data)
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
-            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"))    
-
-    except ucl.exceptions.APIException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
-        return e.respond()
-
-
-@frappe.whitelist(allow_guest=True)
 def update_basic_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
@@ -787,6 +746,8 @@ def bre_offers(**kwargs):
             response = requests.request("POST", url, headers=headers, json=payload)
             api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
             if response.status_code == 200:
+                eligibility_doc.offers = str(response.json())
+                eligibility_doc.save(ignore_permissions = True)
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
                 return ucl.responder.respondWithSuccess(message=frappe._("Offers Successfully Generated"), data=response.json()['offers'])
             else:
