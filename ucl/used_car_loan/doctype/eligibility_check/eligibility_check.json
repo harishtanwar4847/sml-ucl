@@ -12,6 +12,7 @@
   "occupation_type",
   "income_details_section",
   "monthly_salary",
+  "other_income",
   "coapplicant_running_loan",
   "cibil_score",
   "coapplicant",
@@ -535,11 +536,16 @@
    "fieldname": "salary_slip",
    "fieldtype": "Attach",
    "label": "Salary Slip"
+  },
+  {
+   "fieldname": "other_income",
+   "fieldtype": "Data",
+   "label": "Other Income"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-09 18:47:13.816963",
+ "modified": "2024-03-09 19:34:09.481120",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
