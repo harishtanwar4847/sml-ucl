@@ -53,10 +53,8 @@
   "model",
   "variant",
   "on_road_price",
-  "bank_statement",
-  "salary_slip",
-  "column_break_eqry",
   "manufacturing_year",
+  "column_break_eqry",
   "month",
   "city",
   "car_owner",
@@ -68,6 +66,8 @@
   "coapplicant_occupation_type",
   "coapplicant_mobile_no",
   "coapplicant_pan",
+  "coapplicant_first_name",
+  "coapplicant_last_name",
   "coapplicant_full_name",
   "coapplicant_email_id",
   "coapplicant_gender",
@@ -86,7 +86,7 @@
   "coapplicant_masked_aadhaar",
   "bank_statement_details_tab",
   "bank_statement_file",
-  "credit_score",
+  "salary_slip",
   "column_break_acqa",
   "monthly_income",
   "obligations",
@@ -150,16 +150,6 @@
    "fieldname": "on_road_price",
    "fieldtype": "Data",
    "label": "On Road Price"
-  },
-  {
-   "fieldname": "bank_statement",
-   "fieldtype": "Attach",
-   "label": "Bank Statement"
-  },
-  {
-   "fieldname": "salary_slip",
-   "fieldtype": "Attach",
-   "label": "Salary Slip"
   },
   {
    "fieldname": "column_break_eqry",
@@ -277,7 +267,7 @@
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:doc.co_applicant == \"Yes\"; ",
+   "depends_on": "eval:doc.coapplicant == \"Yes\"; ",
    "fieldname": "co_applicant_details_section",
    "fieldtype": "Section Break"
   },
@@ -461,11 +451,6 @@
    "label": "Bank Statement File"
   },
   {
-   "fieldname": "credit_score",
-   "fieldtype": "Data",
-   "label": "Credit Score"
-  },
-  {
    "fieldname": "column_break_acqa",
    "fieldtype": "Column Break"
   },
@@ -535,11 +520,26 @@
    "fieldname": "offers_tab",
    "fieldtype": "Tab Break",
    "label": "Offers"
+  },
+  {
+   "fieldname": "coapplicant_first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "coapplicant_last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Attach",
+   "label": "Salary Slip"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-09 13:29:14.107661",
+ "modified": "2024-03-09 18:47:13.816963",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

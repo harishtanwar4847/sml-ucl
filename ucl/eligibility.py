@@ -106,6 +106,8 @@ def update_pan_details(**kwargs):
             {
                 "id" : "required",
                 "pan_number": "required",
+                "first_name": ["required"],
+                "last_name": ["required"],
                 "full_name": ["required"],
                 "masked_aadhaar": "",
                 "address_line_1": "",
@@ -127,6 +129,8 @@ def update_pan_details(**kwargs):
                 "product": data.get("product"),
                 "pan_number": data.get("pan_number"),
                 "fathers_name": data.get("fathers_name"),
+                "first_name": data.get("first_name"),
+                "last_name": data.get("last_name"),
                 "full_name": data.get("full_name"),
                 "masked_aadhaar": data.get("masked_aadhaar"),
                 "line_1": data.get("address_line_1"),
