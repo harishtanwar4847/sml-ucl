@@ -722,8 +722,10 @@ def bre_offers(**kwargs):
             coapplicant_profile = eligibility_doc.coapplicant_occupation_type
             if eligibility_doc.coapplicant_occupation_type == "Salaried":
                 coapplicant_income = eligibility_doc.coapplicant_monthly_salary
-            else:
+            if eligibility_doc.coapplicant_occupation_type == "Self Employed":
                 coapplicant_income = eligibility_doc.coapplicant_monthly_gross_income
+            else:
+                coapplicant_income = 0
             creditreport = eligibility_doc.credit_report
         
             payload={
