@@ -416,7 +416,7 @@ def enhance_match(**kwargs):
             {
             "id" : "required",
             "occupation_type": "required",
-            "requested_loan_amount" : "required",
+            "requested_loan_amount" : "",
             "monthly_salary" : "",
             "monthly_gross_income": "",
             "coapplicant": "decimal|between:0,1"
