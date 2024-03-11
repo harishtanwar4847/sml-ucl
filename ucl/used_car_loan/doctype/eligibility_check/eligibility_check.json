@@ -204,7 +204,7 @@
   {
    "fieldname": "pos",
    "fieldtype": "Data",
-   "label": "POS"
+   "label": "Outstanding Loan Amount"
   },
   {
    "fieldname": "sanctioned_loan_amount",
@@ -545,7 +545,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-11 14:28:40.645772",
+ "modified": "2024-03-11 14:33:10.074976",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
