@@ -173,9 +173,8 @@ def update_existing_loan_details(**kwargs):
                 "pos": "required",
                 "sanctioned_loan_amount": "",
                 "emi": "",
-                "total_emis_paid": "",
-                "co_applicant": ""
-        })
+                "total_emis_paid": ""
+            })
         api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = str(data))
         eligibility_dict ={
                 "running_loan": data.get("running_loan"),
@@ -183,8 +182,7 @@ def update_existing_loan_details(**kwargs):
                 "pos": data.get("pos"),
                 "sanctioned_loan_amount": data.get("sanctioned_loan_amount"),
                 "emi": data.get("emi"),
-                "total_emis_paid": data.get("total_emis_paid"),
-                "co_applicant": data.get("co_applicant")
+                "total_emis_paid": data.get("total_emis_paid")
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
@@ -290,7 +288,8 @@ def update_coapplicant_details(**kwargs):
                 "coapplicant_state": data.get("state"),
                 "coapplicant_country": data.get("country"),
                 "coapplicant_masked_aadhaar": data.get("aadhaar"),
-                "coapplicant_full_address": data.get("address")
+                "coapplicant_full_address": data.get("address"),
+                "coapplicant": "Yes"
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()

@@ -268,7 +268,6 @@
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:doc.coapplicant == \"Yes\"; ",
    "fieldname": "co_applicant_details_section",
    "fieldtype": "Section Break"
   },
@@ -479,6 +478,7 @@
    "default": "0",
    "fieldname": "pan_details_filled",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Pan Details Filled"
   },
   {
@@ -545,7 +545,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-09 19:34:09.481120",
+ "modified": "2024-03-11 14:28:40.645772",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
