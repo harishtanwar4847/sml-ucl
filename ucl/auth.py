@@ -665,6 +665,29 @@ def get_partner_list():
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return ucl.responder.respondUnauthorized(message=str(e))
     
+
+@frappe.whitelist(allow_guest=True)
+def get_associate_list():
+    try:
+        try:
+            associate = ucl.associate_list()
+            return ucl.responder.respondWithSuccess(
+                    message=frappe._("List"), data=associate
+                )
+            
+        except NotFoundException:
+            raise ucl.exceptions.PartnerNotFoundException()
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return ucl.responder.respondUnauthorized(message=str(e))
+    
 """@frappe.whitelist(allow_guest=True)
 def terms_of_use_nd_privacy_policy():
     try:
@@ -883,9 +906,13 @@ def rc_advance(**kwargs):
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
         response = requests.request("GET",url, headers=headers, json = payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        if response.json()['code'] == 200:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json()['data'])
+        else:
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            return ucl.responder.respondWithFailure(message=frappe._(response.json()['message']))
 
-        return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json()['data'])
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")

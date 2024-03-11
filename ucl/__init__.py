@@ -600,6 +600,19 @@ def partner_list():
     res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
     return res
 
+def associate_list():
+    user = __user()
+    partner = frappe.get_all("Partner", filters = {"user_id": user.name}, fields = ["name"])
+    print(partner)
+    if len(partner) == 0:
+        raise NotFoundException
+    else:
+        res = frappe.get_all("Partner", filters = {"associate" : 1, "parent_partner_code": partner[0]['name']}, fields = ["name","partner_name"])
+        if len(res) == 0:
+            res = []
+        res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
+        return res
+
 @frappe.whitelist()
 def authorize_deepvue():
     try:
