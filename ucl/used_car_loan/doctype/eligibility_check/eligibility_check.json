@@ -75,6 +75,7 @@
   "coapplicant_dob",
   "coapplicant_monthly_salary",
   "coapplicant_monthly_gross_income",
+  "coapplicant_obligation",
   "column_break_ubfd",
   "coapplicant_full_address",
   "coapplicant_line_1",
@@ -541,11 +542,16 @@
    "fieldname": "other_income",
    "fieldtype": "Data",
    "label": "Other Income"
+  },
+  {
+   "fieldname": "coapplicant_obligation",
+   "fieldtype": "Data",
+   "label": "Coapplicant Obligation"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-11 14:33:10.074976",
+ "modified": "2024-03-11 18:08:47.692978",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

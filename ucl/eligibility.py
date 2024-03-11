@@ -419,6 +419,7 @@ def enhance_match(**kwargs):
             "requested_loan_amount" : "",
             "monthly_salary" : "",
             "monthly_gross_income": "",
+            "obligation": "",
             "coapplicant": "decimal|between:0,1"
         })
         api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = str(data))
@@ -427,7 +428,8 @@ def enhance_match(**kwargs):
                     "occupation_type": data.get("occupation_type"),
                     "requested_loan_amount" : data.get("requested_loan_amount"),
                     "monthly_salary" : data.get("monthly_salary"),
-                    "monthly_gross_income": data.get("monthly_gross_income")
+                    "monthly_gross_income": data.get("monthly_gross_income"),
+                    "obligations": data.get("obligation")
             }
             eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
             frappe.db.commit()
@@ -451,7 +453,8 @@ def enhance_match(**kwargs):
                     "coapplicant_occupation_type": data.get("occupation_type"),
                     "coapplicant_requested_loan_amount" : data.get("requested_loan_amount"),
                     "coapplicant_monthly_salary" : data.get("monthly_salary"),
-                    "coapplicant_monthly_gross_income": data.get("monthly_gross_income")
+                    "coapplicant_monthly_gross_income": data.get("monthly_gross_income"),
+                    "coapplicant_obligation": data.get("obligation")
             }
             eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
             frappe.db.commit()
