@@ -12,14 +12,19 @@
   "occupation_type",
   "income_details_section",
   "monthly_salary",
+  "other_income",
   "coapplicant_running_loan",
+  "cibil_score",
+  "coapplicant",
   "column_break_vzrh",
   "monthly_gross_income",
   "requested_loan_amount",
+  "credit_report",
   "pan_details_tab",
   "pan_number",
+  "first_name",
+  "last_name",
   "full_name",
-  "fathers_name",
   "phone_number",
   "email_id",
   "gender",
@@ -34,6 +39,7 @@
   "pan_state",
   "pan_country",
   "full_address",
+  "pan_details_filled",
   "existing_loan_details_section",
   "lender_name",
   "sanctioned_loan_amount",
@@ -48,26 +54,28 @@
   "model",
   "variant",
   "on_road_price",
-  "bank_statement",
-  "salary_slip",
-  "column_break_eqry",
   "manufacturing_year",
+  "column_break_eqry",
   "month",
   "city",
   "car_owner",
   "colour",
   "kms_driven",
+  "estimated_value",
   "coapplicant_tab",
   "co_applicant_details_section",
   "coapplicant_occupation_type",
   "coapplicant_mobile_no",
   "coapplicant_pan",
+  "coapplicant_first_name",
+  "coapplicant_last_name",
   "coapplicant_full_name",
   "coapplicant_email_id",
   "coapplicant_gender",
   "coapplicant_dob",
   "coapplicant_monthly_salary",
   "coapplicant_monthly_gross_income",
+  "coapplicant_obligation",
   "column_break_ubfd",
   "coapplicant_full_address",
   "coapplicant_line_1",
@@ -78,12 +86,15 @@
   "coapplicant_state",
   "coapplicant_country",
   "coapplicant_masked_aadhaar",
-  "bank_statemenr_details_tab",
+  "bank_statement_details_tab",
   "bank_statement_file",
-  "credit_score",
+  "salary_slip",
   "column_break_acqa",
   "monthly_income",
-  "obligations"
+  "obligations",
+  "offers_tab",
+  "offers_section",
+  "offers"
  ],
  "fields": [
   {
@@ -95,7 +106,7 @@
    "fieldname": "product",
    "fieldtype": "Select",
    "label": "Product",
-   "options": "\nNew Car Purchase\nUsed Car Purchase\nLoan Against Car"
+   "options": "\nNew Car\nPreowned Car\nLoan Against Car"
   },
   {
    "fieldname": "mobile_no",
@@ -139,18 +150,8 @@
   },
   {
    "fieldname": "on_road_price",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "On Road Price"
-  },
-  {
-   "fieldname": "bank_statement",
-   "fieldtype": "Attach",
-   "label": "Bank Statement"
-  },
-  {
-   "fieldname": "salary_slip",
-   "fieldtype": "Attach",
-   "label": "Salary Slip"
   },
   {
    "fieldname": "column_break_eqry",
@@ -168,7 +169,7 @@
   },
   {
    "fieldname": "city",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "City",
    "options": "City"
   },
@@ -204,7 +205,7 @@
   {
    "fieldname": "pos",
    "fieldtype": "Data",
-   "label": "POS"
+   "label": "Outstanding Loan Amount"
   },
   {
    "fieldname": "sanctioned_loan_amount",
@@ -253,21 +254,21 @@
   },
   {
    "fieldname": "coapplicant_monthly_salary",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Monthly Salary"
   },
   {
    "fieldname": "coapplicant_monthly_gross_income",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Monthly Gross Income"
   },
   {
    "fieldname": "coapplicant_running_loan",
    "fieldtype": "Select",
-   "label": "Does you have a running car loan?"
+   "label": "Does you have a running car loan?",
+   "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:doc.co_applicant == \"Yes\"; ",
    "fieldname": "co_applicant_details_section",
    "fieldtype": "Section Break"
   },
@@ -285,11 +286,6 @@
    "fieldname": "full_name",
    "fieldtype": "Data",
    "label": "Full Name"
-  },
-  {
-   "fieldname": "fathers_name",
-   "fieldtype": "Data",
-   "label": "Fathers Name"
   },
   {
    "fieldname": "phone_number",
@@ -451,19 +447,9 @@
    "label": "Full Name"
   },
   {
-   "fieldname": "bank_statemenr_details_tab",
-   "fieldtype": "Tab Break",
-   "label": "Bank Statemenr Details"
-  },
-  {
    "fieldname": "bank_statement_file",
    "fieldtype": "Attach",
    "label": "Bank Statement File"
-  },
-  {
-   "fieldname": "credit_score",
-   "fieldtype": "Data",
-   "label": "Credit Score"
   },
   {
    "fieldname": "column_break_acqa",
@@ -478,11 +464,94 @@
    "fieldname": "obligations",
    "fieldtype": "Data",
    "label": "Obligations"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "pan_details_filled",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Pan Details Filled"
+  },
+  {
+   "fieldname": "bank_statement_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Bank Statement Details"
+  },
+  {
+   "fieldname": "cibil_score",
+   "fieldtype": "Data",
+   "label": "Cibil Score"
+  },
+  {
+   "fieldname": "credit_report",
+   "fieldtype": "Long Text",
+   "label": "Credit Report"
+  },
+  {
+   "fieldname": "estimated_value",
+   "fieldtype": "Data",
+   "label": "Estimated Value"
+  },
+  {
+   "fieldname": "coapplicant",
+   "fieldtype": "Select",
+   "label": "Coapplicant",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "offers_section",
+   "fieldtype": "Section Break",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers",
+   "fieldtype": "Long Text",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers_tab",
+   "fieldtype": "Tab Break",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "coapplicant_first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "coapplicant_last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Attach",
+   "label": "Salary Slip"
+  },
+  {
+   "fieldname": "other_income",
+   "fieldtype": "Data",
+   "label": "Other Income"
+  },
+  {
+   "fieldname": "coapplicant_obligation",
+   "fieldtype": "Data",
+   "label": "Coapplicant Obligation"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-29 19:36:00.648366",
+ "modified": "2024-03-11 18:19:45.116980",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

@@ -1,5 +1,35 @@
 # Changelog
 
+## [v1.0.9-uat] - 12-03-2024
+
+## Added
+- [Feat : Eligibility check APIs fixes and Lead APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/20)
+
+## [v1.0.9-dev] - 12-03-2024
+
+## Added
+- [Feat : Eligibility check APIs fixes and Lead APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/19)
+
+## [v1.0.8-dev] - 08-03-2024
+
+## Added
+- [Feat : Eligibility check APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/18)
+
+## [v1.0.7-dev] - 07-03-2024
+
+## Added
+- [Feat : Eligibility check APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/17)
+
+## [v1.0.6-dev] - 07-03-2024
+
+## Added
+- [Feat : Update lead changes](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/16)
+
+## [v1.0.5-dev] - 07-03-2024
+
+## Added
+- [Feat : Lead Capture APIs](https://github.com/atrina-technologies-pvt-ltd/sml-ucl/pull/14)
+
 ## [v1.0.4-uat] - 04-03-2024
 
 ## Added

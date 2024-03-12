@@ -146,7 +146,6 @@ def verify_otp(**kwargs):
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
 
         dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
-        ("Summy Account exists :", dummy_account_exists)
         if dummy_account_exists:
             dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
             if data.get("otp") == dummy_account.token:
@@ -199,11 +198,79 @@ def verify_otp(**kwargs):
                 data.get("firebase_token"), app_version_platform, data.get("mobile")
             )
             if not dummy_account_exists:
-                print("Aaat aalo")
                 ucl.token_mark_as_used(token)
             response = "OTP Verified" + "\n" + str(data)
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
             return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"), data = user_data if user_data else {})    
+
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return ucl.respondUnauthorized(message=str(e))
+    
+
+@frappe.whitelist(allow_guest=True)
+def verify_utility_otp(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+
+        data = ucl.validate(
+            kwargs,
+            {
+                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
+                "otp": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
+                "token_type" : "required"
+            },
+        )
+
+        try:
+            user = ucl.__user(data.get("mobile"))
+        except:
+            user = None
+        
+        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
+
+        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
+        if dummy_account_exists:
+            dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
+            if data.get("otp") == dummy_account.token:
+                token = dummy_account.token
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Invalid OTP"), data = data) 
+        else:               
+            token = ucl.verify_user_token(
+                entity=data.get("mobile"), token=data.get("otp"), token_type=data.get("token_type")
+            )
+
+            if not token:
+                response = "Invalid OTP."
+                message = frappe._(response)
+
+                if user:
+                    LoginAttemptTracker(user_name=user.name).add_failure_attempt()
+                    if not user.enabled:
+                        raise ucl.exceptions.UserNotFoundException(
+                            _("User disabled or missing")
+                        )
+                raise ucl.exceptions.FailureException(message)
+
+            if token:
+                if token.expiry <= frappe.utils.now_datetime():
+                    response = "OTP Expired"
+
+                    raise ucl.exceptions.FailureException(response)
+            
+            if not dummy_account_exists:
+                ucl.token_mark_as_used(token)
+            response = "OTP Verified" + "\n" + str(data)
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
+            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"))    
 
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
@@ -292,7 +359,6 @@ def verify_forgot_pin_otp(**kwargs):
             raise ucl.exceptions.FailureException(_(response))
 
         dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
-        ("Summy Account exists :", dummy_account_exists)
         if dummy_account_exists:
             dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
             if data.get("otp") == dummy_account.token:
@@ -599,6 +665,29 @@ def get_partner_list():
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return ucl.responder.respondUnauthorized(message=str(e))
     
+
+@frappe.whitelist(allow_guest=True)
+def get_associate_list():
+    try:
+        try:
+            associate = ucl.associate_list()
+            return ucl.responder.respondWithSuccess(
+                    message=frappe._("List"), data=associate
+                )
+            
+        except NotFoundException:
+            raise ucl.exceptions.PartnerNotFoundException()
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return ucl.responder.respondUnauthorized(message=str(e))
+    
 """@frappe.whitelist(allow_guest=True)
 def terms_of_use_nd_privacy_policy():
     try:
@@ -817,9 +906,13 @@ def rc_advance(**kwargs):
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
         response = requests.request("GET",url, headers=headers, json = payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        if response.json()['code'] == 200:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json()['data'])
+        else:
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            return ucl.responder.respondWithFailure(message=frappe._(response.json()['message']))
 
-        return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response.json()['data'])
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")

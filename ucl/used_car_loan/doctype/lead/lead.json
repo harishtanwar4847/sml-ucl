@@ -12,10 +12,9 @@
   "partner_code",
   "mobile_number",
   "pan_number",
+  "full_name",
   "first_name",
-  "middle_name",
   "last_name",
-  "applicant_name",
   "gender",
   "dob",
   "line_1",
@@ -30,8 +29,8 @@
   "aadhar",
   "column_break_qgqn",
   "occupation_type",
-  "net_take_home_salary",
-  "profit",
+  "monthly_income",
+  "obligations",
   "requested_loan_amount",
   "vehicle_owned",
   "make",
@@ -50,7 +49,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Sub Product",
-   "options": "\nNew Car Purchase\nUsed Car Purchase\nRefinance\nBT+Top Up",
+   "options": "\nNew Car\nPreowned Car\nRefinance\nBT+Top Up",
    "reqd": 1
   },
   {
@@ -58,8 +57,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Source",
-   "options": "\nDirect\nDealer\nDSA",
-   "reqd": 1
+   "options": "\nDirect\nPartner"
   },
   {
    "default": "NA",
@@ -82,27 +80,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "first_name",
-   "fieldtype": "Data",
-   "label": "First Name",
-   "reqd": 1
-  },
-  {
-   "fieldname": "middle_name",
-   "fieldtype": "Data",
-   "label": "Middle Name"
-  },
-  {
-   "fieldname": "last_name",
-   "fieldtype": "Data",
-   "label": "Last Name"
-  },
-  {
-   "fieldname": "applicant_name",
-   "fieldtype": "Data",
-   "label": "Applicant Name"
-  },
-  {
    "fieldname": "address",
    "fieldtype": "Data",
    "label": "Full Address",
@@ -117,8 +94,7 @@
   {
    "fieldname": "aadhar",
    "fieldtype": "Data",
-   "label": "Aadhar",
-   "reqd": 1
+   "label": "Aadhar"
   },
   {
    "fieldname": "column_break_qgqn",
@@ -132,22 +108,8 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.occupation_type == \"Salaried\";",
-   "fieldname": "net_take_home_salary",
-   "fieldtype": "Currency",
-   "label": "Net take home salary (Monthly)",
-   "mandatory_depends_on": "eval:doc.occupation_type == \"Salaried\";"
-  },
-  {
-   "depends_on": "eval:doc.occupation_type == \"Self Employed\";",
-   "fieldname": "profit",
-   "fieldtype": "Currency",
-   "label": "Profit (Monthly Average)",
-   "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
-  },
-  {
    "fieldname": "requested_loan_amount",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Requested Loan Amount",
    "reqd": 1
   },
@@ -155,8 +117,7 @@
    "fieldname": "vehicle_owned",
    "fieldtype": "Select",
    "label": "Vehicle Owned",
-   "options": "\nYes\nNo",
-   "reqd": 1
+   "options": "\nYes\nNo"
   },
   {
    "depends_on": "eval:doc.vehicle_owned == \"Yes\";",
@@ -202,7 +163,7 @@
   {
    "depends_on": "eval:doc.sub_product == \"BT+Top Up\";",
    "fieldname": "principal_outstanding",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Principal Outstanding",
    "mandatory_depends_on": "eval:doc.sub_product == \"BT+Top Up\";"
   },
@@ -223,56 +184,48 @@
   {
    "fieldname": "gender",
    "fieldtype": "Data",
-   "label": "Gender",
-   "reqd": 1
+   "label": "Gender"
   },
   {
    "fieldname": "dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB",
    "reqd": 1
   },
   {
    "fieldname": "line_1",
    "fieldtype": "Data",
-   "label": "Line 1",
-   "reqd": 1
+   "label": "Line 1"
   },
   {
    "fieldname": "line_2",
    "fieldtype": "Data",
-   "label": "Line 2",
-   "reqd": 1
+   "label": "Line 2"
   },
   {
    "fieldname": "street",
    "fieldtype": "Data",
-   "label": "Street",
-   "reqd": 1
+   "label": "Street"
   },
   {
    "fieldname": "zip",
    "fieldtype": "Data",
-   "label": "Zip",
-   "reqd": 1
+   "label": "Zip"
   },
   {
    "fieldname": "city",
    "fieldtype": "Data",
-   "label": "City",
-   "reqd": 1
+   "label": "City"
   },
   {
    "fieldname": "state",
    "fieldtype": "Data",
-   "label": "State",
-   "reqd": 1
+   "label": "State"
   },
   {
    "fieldname": "country",
    "fieldtype": "Data",
-   "label": "Country",
-   "reqd": 1
+   "label": "Country"
   },
   {
    "fieldname": "naming_series",
@@ -280,11 +233,40 @@
    "hidden": 1,
    "label": "Series",
    "options": "LEAD-.YYYY.-"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type == \"Salaried\";",
+   "fieldname": "monthly_income",
+   "fieldtype": "Data",
+   "label": "Monthly Income",
+   "mandatory_depends_on": "eval:doc.occupation_type == \"Salaried\";"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type == \"Self Employed\";",
+   "fieldname": "obligations",
+   "fieldtype": "Data",
+   "label": "Obligations",
+   "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-22 18:22:29.344021",
+ "modified": "2024-03-12 11:56:04.422481",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",

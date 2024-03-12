@@ -24,13 +24,15 @@ from frappe.core.doctype.sms_settings.sms_settings import (
 import html_to_json
 
 
-__version__ = "1.0.4-uat"
+__version__ = "1.0.9-uat"
 
 
 
 user_token_expiry_map = {
     "Login OTP": 10,
     "Forgot Pin OTP": 10,
+    "Lead OTP": 10,
+    "Eligibility OTP": 10,
 }
 
 class ValidationError(Exception):
@@ -597,6 +599,19 @@ def partner_list():
         res = []
     res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
     return res
+
+def associate_list():
+    user = __user()
+    partner = frappe.get_all("Partner", filters = {"user_id": user.name}, fields = ["name"])
+    print(partner)
+    if len(partner) == 0:
+        raise NotFoundException
+    else:
+        res = frappe.get_all("Partner", filters = {"associate" : 1, "parent_partner_code": partner[0]['name']}, fields = ["name","partner_name"])
+        if len(res) == 0:
+            res = []
+        res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
+        return res
 
 @frappe.whitelist()
 def authorize_deepvue():

@@ -228,12 +228,12 @@
   },
   {
    "fieldname": "ex_showroom_price",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Ex-Showroom Price"
   },
   {
    "fieldname": "on_road_price",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "On-Road Price"
   },
   {
@@ -248,7 +248,7 @@
   },
   {
    "fieldname": "estimated_value",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Estimated Value"
   },
   {
@@ -259,7 +259,7 @@
   },
   {
    "fieldname": "principal_outstanding",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Principal Outstanding"
   },
   {
@@ -279,7 +279,7 @@
   },
   {
    "fieldname": "sanctioned_amount",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Sanctioned Amount"
   },
   {
@@ -290,7 +290,7 @@
   },
   {
    "fieldname": "requested_loan_amount",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Requested Loan Amount",
    "reqd": 1
   },
@@ -379,7 +379,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-25 12:50:15.987280",
+ "modified": "2024-03-07 18:58:54.415868",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Loan Application",
