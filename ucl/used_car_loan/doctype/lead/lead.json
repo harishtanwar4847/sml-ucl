@@ -13,6 +13,8 @@
   "mobile_number",
   "pan_number",
   "full_name",
+  "first_name",
+  "last_name",
   "gender",
   "dob",
   "line_1",
@@ -250,11 +252,21 @@
    "fieldtype": "Data",
    "label": "Obligations",
    "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-12 10:49:33.059904",
+ "modified": "2024-03-12 11:56:04.422481",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
