@@ -335,7 +335,7 @@ def register_mobile_no(data):
             output_date_str = input_date_date.strftime("%d-%m-%Y")
             parsed_date = datetime.strptime(output_date_str, "%d-%m-%Y")
             formatted_date = parsed_date.strftime("%d-%b-%Y")
-
+        
             payload={
                 "clientName" : "SWITCH_FM",
                 "allowInput" : 1,
@@ -350,7 +350,7 @@ def register_mobile_no(data):
                 "firstName" : data["firstName"],
                 "middleName" : "",
                 "surName" : data["surName"],
-                "dateOfBirth"  : formatted_date,
+                "dateOfBirth" : formatted_date,
                 "gender" : data['gender'],
                 "mobileNo" : data["mobileNo"],
                 "telephoneNo" :"",
@@ -603,28 +603,42 @@ def validate_mobile_otp(**kwargs):
         }
         api_log_doc = ucl.log_api(method = "Experian Validate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
         response = requests.request("POST", url, headers=headers, data=payload)
-        message = "success"
+        message = response.json()
         if data.get("type") == "CUSTOM" and response.json()['errorString'] == "consumer record not found":
-            full_match(data.get("id"), data.get("coapplicant"))
-            message = "Dear Customer, we are not able to fetch your bureau report via enhanced match hence we are redirecting to full match"
-        if response.json()['showHtmlReportForCreditReport'] == None:
-            eligibility_doc.cibil_score = -1
-            eligibility_doc.save(ignore_permissions=True)
+            return full_match(data.get("id"), data.get("coapplicant"))
+        if response.json()['errorString'] == None or response.json()['errorString'] == "consumer record not found":
+            if response.json()['showHtmlReportForCreditReport'] == None:
+                if data.get("coapplicant") == 0:
+                    eligibility_doc.cibil_score = -1
+                    eligibility_doc.save(ignore_permissions=True)
+                else:
+                    eligibility_doc.coapplicant_cibil_score = -1
+                    eligibility_doc.save(ignore_permissions=True)
+            else:
+                xml_data = response.json()['showHtmlReportForCreditReport']
+                decoded_xml_data = unescape(xml_data)
+                xml_dict = xmltodict.parse(decoded_xml_data)
+                json_data = json.dumps(xml_dict, indent=2)
+                json_dict = json.loads(json_data)
+                if data.get("coapplicant") == 0:
+                    eligibility_doc.credit_report = json_data
+                    score = json_dict['INProfileResponse']['SCORE']['BureauScore']
+                    eligibility_doc.cibil_score = score
+                    eligibility_doc.save(ignore_permissions=True)
+                else:
+                    eligibility_doc.coapplicant_credit_report = json_data
+                    score = json_dict['INProfileResponse']['SCORE']['BureauScore']
+                    eligibility_doc.coapplicant_cibil_score = score
+                    eligibility_doc.save(ignore_permissions=True)
+
+            response = {"id" : data.get("id"), "response" : response.json()}
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+            return ucl.responder.respondWithSuccess(message = frappe._(message['errorString']), data=response)
+
         else:
-            xml_data = response.json()['showHtmlReportForCreditReport']
-            decoded_xml_data = unescape(xml_data)
-            xml_dict = xmltodict.parse(decoded_xml_data)
-            json_data = json.dumps(xml_dict, indent=2)
-            json_dict = json.loads(json_data)
-            eligibility_doc.credit_report = json_data
-            score = json_dict['INProfileResponse']['SCORE']['BureauScore']
-            eligibility_doc.cibil_score = score
-            eligibility_doc.save(ignore_permissions=True)
-
-
-        response = {"id" : data.get("id"), "response" : response.json()}
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-        return response
+            response = {"id" : data.get("id"), "response" : response.json()}
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+            return ucl.responder.respondWithFailure(message = frappe._(message['errorString']), data=response)
 
 
     except ucl.exceptions.APIException as e:
