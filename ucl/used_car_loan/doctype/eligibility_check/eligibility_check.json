@@ -44,9 +44,12 @@
   "lender_name",
   "sanctioned_loan_amount",
   "total_emis_paid",
+  "sanctioned_tenure",
   "column_break_nsni",
+  "tenure_served",
   "pos",
   "emi",
+  "current_rate_of_interest",
   "car_details_tab",
   "car_details_section",
   "brand",
@@ -559,11 +562,26 @@
    "fieldname": "coapplicant_credit_report",
    "fieldtype": "Long Text",
    "label": "Coapplicant Credit Report"
+  },
+  {
+   "fieldname": "current_rate_of_interest",
+   "fieldtype": "Data",
+   "label": "Current Rate of Interest"
+  },
+  {
+   "fieldname": "sanctioned_tenure",
+   "fieldtype": "Data",
+   "label": "Sanctioned Tenure"
+  },
+  {
+   "fieldname": "tenure_served",
+   "fieldtype": "Data",
+   "label": "Tenure Served"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-12 15:37:51.399954",
+ "modified": "2024-03-12 18:14:35.894029",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

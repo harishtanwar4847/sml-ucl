@@ -169,8 +169,9 @@ def update_existing_loan_details(**kwargs):
                 "lender_name": "",
                 "pos": "required",
                 "sanctioned_loan_amount": "",
-                "emi": "",
-                "total_emis_paid": ""
+                "sanctioned_tenure": "",
+                "tenure_served": "",
+                "current_rate_of_interest": ""
             })
         api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = str(data))
         eligibility_dict ={
@@ -178,8 +179,9 @@ def update_existing_loan_details(**kwargs):
                 "lender_name": data.get("lender_name"),
                 "pos": data.get("pos"),
                 "sanctioned_loan_amount": data.get("sanctioned_loan_amount"),
-                "emi": data.get("emi"),
-                "total_emis_paid": data.get("total_emis_paid")
+                "sanctioned_tenure": data.get("sanctioned_tenure"),
+                "tenure_served": data.get("tenure_served"),
+                "current_rate_of_interest" : data.get("current_rate_of_interest")
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
