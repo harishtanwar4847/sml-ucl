@@ -92,8 +92,7 @@
   {
    "fieldname": "aadhar",
    "fieldtype": "Data",
-   "label": "Aadhar",
-   "reqd": 1
+   "label": "Aadhar"
   },
   {
    "fieldname": "column_break_qgqn",
@@ -183,8 +182,7 @@
   {
    "fieldname": "gender",
    "fieldtype": "Data",
-   "label": "Gender",
-   "reqd": 1
+   "label": "Gender"
   },
   {
    "fieldname": "dob",
@@ -195,44 +193,37 @@
   {
    "fieldname": "line_1",
    "fieldtype": "Data",
-   "label": "Line 1",
-   "reqd": 1
+   "label": "Line 1"
   },
   {
    "fieldname": "line_2",
    "fieldtype": "Data",
-   "label": "Line 2",
-   "reqd": 1
+   "label": "Line 2"
   },
   {
    "fieldname": "street",
    "fieldtype": "Data",
-   "label": "Street",
-   "reqd": 1
+   "label": "Street"
   },
   {
    "fieldname": "zip",
    "fieldtype": "Data",
-   "label": "Zip",
-   "reqd": 1
+   "label": "Zip"
   },
   {
    "fieldname": "city",
    "fieldtype": "Data",
-   "label": "City",
-   "reqd": 1
+   "label": "City"
   },
   {
    "fieldname": "state",
    "fieldtype": "Data",
-   "label": "State",
-   "reqd": 1
+   "label": "State"
   },
   {
    "fieldname": "country",
    "fieldtype": "Data",
-   "label": "Country",
-   "reqd": 1
+   "label": "Country"
   },
   {
    "fieldname": "naming_series",
@@ -263,7 +254,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-08 11:44:43.205933",
+ "modified": "2024-03-12 10:49:33.059904",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",

@@ -125,10 +125,7 @@ def update_pan_details(**kwargs):
         })
         api_log_doc = ucl.log_api(method = "Update Eligibility PAN Details", request_time = datetime.now(), request = str(data))
         eligibility_dict = {
-                "mobile_no": data.get("mobile"),
-                "product": data.get("product"),
                 "pan_number": data.get("pan_number"),
-                "fathers_name": data.get("fathers_name"),
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name"),
                 "full_name": data.get("full_name"),
