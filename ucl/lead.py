@@ -16,74 +16,6 @@ def dup_entry_check(product, mobile, loan_amt):
         raise ucl.exceptions.FailureException(message=message)
 
 
-@frappe.whitelist(allow_guest=True)
-def verify_lead_otp(**kwargs):
-    try:
-        ucl.validate_http_method("POST")
-
-        data = ucl.validate(
-            kwargs,
-            {
-                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
-                "otp": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
-            },
-        )
-
-        try:
-            user = ucl.__user(data.get("mobile"))
-        except:
-            user = None
-        
-        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = str(data))
-
-        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
-        if dummy_account_exists:
-            dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
-            if data.get("otp") == dummy_account.token:
-                token = dummy_account.token
-            else:
-                return ucl.responder.respondWithFailure(message=frappe._("Invalid OTP"), data = data) 
-        else:               
-            token = ucl.verify_user_token(
-                entity=data.get("mobile"), token=data.get("otp"), token_type="Lead OTP"
-            )
-
-            if not token:
-                response = "Invalid OTP."
-                message = frappe._(response)
-
-                if user:
-                    LoginAttemptTracker(user_name=user.name).add_failure_attempt()
-                    if not user.enabled:
-                        raise ucl.exceptions.UserNotFoundException(
-                            _("User disabled or missing")
-                        )
-                raise ucl.exceptions.FailureException(message)
-
-            if token:
-                print("Expiry :", token.expiry)
-                if token.expiry <= frappe.utils.now_datetime():
-                    response = "OTP Expired"
-
-                    raise ucl.exceptions.FailureException(response)
-            
-            if not dummy_account_exists:
-                ucl.token_mark_as_used(token)
-            response = "OTP Verified" + "\n" + str(data)
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
-            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"))    
-
-    except ucl.exceptions.APIException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
-        return e.respond()
-    except frappe.SecurityException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
-        return ucl.respondUnauthorized(message=str(e))
-
 
 @frappe.whitelist(allow_guest=True)
 def lead_details(**kwargs):
@@ -95,23 +27,25 @@ def lead_details(**kwargs):
         data = ucl.validate(
             kwargs,{
             "sub_product": "",
-            "source": ["required"],
+            "source": "",
             "partner_code": "",
             "mobile_number": ["required"],
             "pan_number": ["required"],
-            "full_name": ["required"],
-            "gender": ["required"],
+            "first_name": ["required"],
+            "last_name": ["required"],
+            "full_name": "",
+            "gender": "",
             "dob": ["required"],
-            "line_1": ["required"],
-            "line_2": ["required"],
-            "street": ["required"],
-            "zip": ["required"],
-            "city": ["required"],
-            "state": ["required"],
-            "country": ["required"],
-            "address": ["required"],
+            "line_1": "",
+            "line_2": "",
+            "street": "",
+            "zip": "",
+            "city": "",
+            "state": "",
+            "country": "",
+            "address": "",
             "email_id": ["required"],
-            "aadhar": ["required"],
+            "aadhar": "",
             "occupation_type": ["required"],
             "monthly_income": "",
             "obligations": "",
@@ -127,6 +61,8 @@ def lead_details(**kwargs):
             "partner_code": data.get("partner_code"),
             "mobile_number": data.get("mobile_number"),
             "pan_number": data.get("pan_number"),
+            "first_name": data.get("first_name"),
+            "last_name": data.get("last_name"),
             "full_name": data.get("full_name"),
             "gender": data.get("gender"),
             "dob": data.get("dob"),

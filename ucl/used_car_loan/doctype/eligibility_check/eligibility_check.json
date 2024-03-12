@@ -12,6 +12,7 @@
   "occupation_type",
   "income_details_section",
   "monthly_salary",
+  "other_income",
   "coapplicant_running_loan",
   "cibil_score",
   "coapplicant",
@@ -53,10 +54,8 @@
   "model",
   "variant",
   "on_road_price",
-  "bank_statement",
-  "salary_slip",
-  "column_break_eqry",
   "manufacturing_year",
+  "column_break_eqry",
   "month",
   "city",
   "car_owner",
@@ -68,12 +67,15 @@
   "coapplicant_occupation_type",
   "coapplicant_mobile_no",
   "coapplicant_pan",
+  "coapplicant_first_name",
+  "coapplicant_last_name",
   "coapplicant_full_name",
   "coapplicant_email_id",
   "coapplicant_gender",
   "coapplicant_dob",
   "coapplicant_monthly_salary",
   "coapplicant_monthly_gross_income",
+  "coapplicant_obligation",
   "column_break_ubfd",
   "coapplicant_full_address",
   "coapplicant_line_1",
@@ -86,10 +88,13 @@
   "coapplicant_masked_aadhaar",
   "bank_statement_details_tab",
   "bank_statement_file",
-  "credit_score",
+  "salary_slip",
   "column_break_acqa",
   "monthly_income",
-  "obligations"
+  "obligations",
+  "offers_tab",
+  "offers_section",
+  "offers"
  ],
  "fields": [
   {
@@ -149,16 +154,6 @@
    "label": "On Road Price"
   },
   {
-   "fieldname": "bank_statement",
-   "fieldtype": "Attach",
-   "label": "Bank Statement"
-  },
-  {
-   "fieldname": "salary_slip",
-   "fieldtype": "Attach",
-   "label": "Salary Slip"
-  },
-  {
    "fieldname": "column_break_eqry",
    "fieldtype": "Column Break"
   },
@@ -174,7 +169,7 @@
   },
   {
    "fieldname": "city",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "City",
    "options": "City"
   },
@@ -210,7 +205,7 @@
   {
    "fieldname": "pos",
    "fieldtype": "Data",
-   "label": "POS"
+   "label": "Outstanding Loan Amount"
   },
   {
    "fieldname": "sanctioned_loan_amount",
@@ -274,7 +269,6 @@
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:doc.co_applicant == \"Yes\"; ",
    "fieldname": "co_applicant_details_section",
    "fieldtype": "Section Break"
   },
@@ -458,11 +452,6 @@
    "label": "Bank Statement File"
   },
   {
-   "fieldname": "credit_score",
-   "fieldtype": "Data",
-   "label": "Credit Score"
-  },
-  {
    "fieldname": "column_break_acqa",
    "fieldtype": "Column Break"
   },
@@ -490,6 +479,7 @@
    "default": "0",
    "fieldname": "pan_details_filled",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Pan Details Filled"
   },
   {
@@ -517,11 +507,51 @@
    "fieldtype": "Select",
    "label": "Coapplicant",
    "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "offers_section",
+   "fieldtype": "Section Break",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers",
+   "fieldtype": "Long Text",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "offers_tab",
+   "fieldtype": "Tab Break",
+   "label": "Offers"
+  },
+  {
+   "fieldname": "coapplicant_first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fieldname": "coapplicant_last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "salary_slip",
+   "fieldtype": "Attach",
+   "label": "Salary Slip"
+  },
+  {
+   "fieldname": "other_income",
+   "fieldtype": "Data",
+   "label": "Other Income"
+  },
+  {
+   "fieldname": "coapplicant_obligation",
+   "fieldtype": "Data",
+   "label": "Coapplicant Obligation"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-08 15:28:43.809447",
+ "modified": "2024-03-11 18:19:45.116980",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

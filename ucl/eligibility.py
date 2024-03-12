@@ -15,47 +15,6 @@ from html import unescape
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_eligibility_otp(**kwargs):
-    try:
-        user = ucl.__user()
-        ucl.validate_http_method("POST")
-
-        data = ucl.validate(
-            kwargs,
-            {
-                "mobile": ["required", "decimal", ucl.validator.rules.LengthRule(10)],
-                "otp": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
-            },
-        )
-        
-        api_log_doc = ucl.log_api(method = "Eligibility Verify OTP", request_time = datetime.now(), request = str(data))      
-        token = ucl.verify_user_token(
-                entity=data.get("mobile"), token=data.get("otp"), token_type="Eligibility OTP"
-        )
-
-        if not token:
-            response = "Invalid OTP."
-            message = frappe._(response)
-            raise ucl.exceptions.FailureException(message)
-
-        if token:
-            if token.expiry <= frappe.utils.now_datetime():
-                response = "OTP Expired"
-                raise ucl.exceptions.FailureException(response)
-        if token:
-            ucl.token_mark_as_used(token)
-            response = "OTP Verified" + "\n" + str(data)
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
-            return ucl.responder.respondWithSuccess(message=frappe._("OTP Verified"))    
-
-    except ucl.exceptions.APIException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
-        return e.respond()
-
-
-@frappe.whitelist(allow_guest=True)
 def update_basic_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
@@ -147,6 +106,8 @@ def update_pan_details(**kwargs):
             {
                 "id" : "required",
                 "pan_number": "required",
+                "first_name": ["required"],
+                "last_name": ["required"],
                 "full_name": ["required"],
                 "masked_aadhaar": "",
                 "address_line_1": "",
@@ -164,10 +125,9 @@ def update_pan_details(**kwargs):
         })
         api_log_doc = ucl.log_api(method = "Update Eligibility PAN Details", request_time = datetime.now(), request = str(data))
         eligibility_dict = {
-                "mobile_no": data.get("mobile"),
-                "product": data.get("product"),
                 "pan_number": data.get("pan_number"),
-                "fathers_name": data.get("fathers_name"),
+                "first_name": data.get("first_name"),
+                "last_name": data.get("last_name"),
                 "full_name": data.get("full_name"),
                 "masked_aadhaar": data.get("masked_aadhaar"),
                 "line_1": data.get("address_line_1"),
@@ -210,9 +170,8 @@ def update_existing_loan_details(**kwargs):
                 "pos": "required",
                 "sanctioned_loan_amount": "",
                 "emi": "",
-                "total_emis_paid": "",
-                "co_applicant": ""
-        })
+                "total_emis_paid": ""
+            })
         api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = str(data))
         eligibility_dict ={
                 "running_loan": data.get("running_loan"),
@@ -220,8 +179,7 @@ def update_existing_loan_details(**kwargs):
                 "pos": data.get("pos"),
                 "sanctioned_loan_amount": data.get("sanctioned_loan_amount"),
                 "emi": data.get("emi"),
-                "total_emis_paid": data.get("total_emis_paid"),
-                "co_applicant": data.get("co_applicant")
+                "total_emis_paid": data.get("total_emis_paid")
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
@@ -327,7 +285,8 @@ def update_coapplicant_details(**kwargs):
                 "coapplicant_state": data.get("state"),
                 "coapplicant_country": data.get("country"),
                 "coapplicant_masked_aadhaar": data.get("aadhaar"),
-                "coapplicant_full_address": data.get("address")
+                "coapplicant_full_address": data.get("address"),
+                "coapplicant": "Yes"
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
         frappe.db.commit()
@@ -372,7 +331,9 @@ def register_mobile_no(data):
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             input_date = data['dateOfBirth']
-            parsed_date = datetime.strptime(input_date, "%d-%m-%Y")
+            input_date_date = datetime.strptime(input_date, "%Y-%m-%d")
+            output_date_str = input_date_date.strftime("%d-%m-%Y")
+            parsed_date = datetime.strptime(output_date_str, "%d-%m-%Y")
             formatted_date = parsed_date.strftime("%d-%b-%Y")
 
             payload={
@@ -454,9 +415,10 @@ def enhance_match(**kwargs):
             {
             "id" : "required",
             "occupation_type": "required",
-            "requested_loan_amount" : "required",
+            "requested_loan_amount" : "",
             "monthly_salary" : "",
             "monthly_gross_income": "",
+            "obligation": "",
             "coapplicant": "decimal|between:0,1"
         })
         api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = str(data))
@@ -465,7 +427,8 @@ def enhance_match(**kwargs):
                     "occupation_type": data.get("occupation_type"),
                     "requested_loan_amount" : data.get("requested_loan_amount"),
                     "monthly_salary" : data.get("monthly_salary"),
-                    "monthly_gross_income": data.get("monthly_gross_income")
+                    "monthly_gross_income": data.get("monthly_gross_income"),
+                    "obligations": data.get("obligation")
             }
             eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
             frappe.db.commit()
@@ -489,7 +452,8 @@ def enhance_match(**kwargs):
                     "coapplicant_occupation_type": data.get("occupation_type"),
                     "coapplicant_requested_loan_amount" : data.get("requested_loan_amount"),
                     "coapplicant_monthly_salary" : data.get("monthly_salary"),
-                    "coapplicant_monthly_gross_income": data.get("monthly_gross_income")
+                    "coapplicant_monthly_gross_income": data.get("monthly_gross_income"),
+                    "coapplicant_obligation": data.get("obligation")
             }
             eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
             frappe.db.commit()
@@ -759,8 +723,10 @@ def bre_offers(**kwargs):
             coapplicant_profile = eligibility_doc.coapplicant_occupation_type
             if eligibility_doc.coapplicant_occupation_type == "Salaried":
                 coapplicant_income = eligibility_doc.coapplicant_monthly_salary
-            else:
+            if eligibility_doc.coapplicant_occupation_type == "Self Employed":
                 coapplicant_income = eligibility_doc.coapplicant_monthly_gross_income
+            else:
+                coapplicant_income = 0
             creditreport = eligibility_doc.credit_report
         
             payload={
@@ -787,6 +753,8 @@ def bre_offers(**kwargs):
             response = requests.request("POST", url, headers=headers, json=payload)
             api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
             if response.status_code == 200:
+                eligibility_doc.offers = str(response.json())
+                eligibility_doc.save(ignore_permissions = True)
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
                 return ucl.responder.respondWithSuccess(message=frappe._("Offers Successfully Generated"), data=response.json()['offers'])
             else:
