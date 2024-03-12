@@ -331,7 +331,9 @@ def register_mobile_no(data):
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             input_date = data['dateOfBirth']
-            parsed_date = datetime.strptime(input_date, "%d-%m-%Y")
+            input_date_date = datetime.strptime(input_date, "%Y-%m-%d")
+            output_date_str = input_date_date.strftime("%d-%m-%Y")
+            parsed_date = datetime.strptime(output_date_str, "%d-%m-%Y")
             formatted_date = parsed_date.strftime("%d-%b-%Y")
 
             payload={
