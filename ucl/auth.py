@@ -916,6 +916,9 @@ def rc_advance(**kwargs):
             owner = rc_response.json()['data']['owner_number']
             make = ""
             model = ""
+            city = ""
+            variant_list = []
+            color_list = []
 
             url = ucl_setting.ibb_url
             make_payload = {
