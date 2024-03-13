@@ -628,12 +628,12 @@ def validate_mobile_otp(**kwargs):
                 json_data = json.dumps(xml_dict, indent=2)
                 json_dict = json.loads(json_data)
                 if data.get("coapplicant") == 0:
-                    eligibility_doc.credit_report = json_data
+                    eligibility_doc.credit_report = xml_data
                     score = json_dict['INProfileResponse']['SCORE']['BureauScore']
                     eligibility_doc.cibil_score = score
                     eligibility_doc.save(ignore_permissions=True)
                 else:
-                    eligibility_doc.coapplicant_credit_report = json_data
+                    eligibility_doc.coapplicant_credit_report = xml_data
                     score = json_dict['INProfileResponse']['SCORE']['BureauScore']
                     eligibility_doc.coapplicant_cibil_score = score
                     eligibility_doc.save(ignore_permissions=True)
@@ -719,7 +719,7 @@ def bre_offers(**kwargs):
                 carvalue = eligibility_doc.estimated_value
             else:
                 carvalue = 0
-            if eligibility_doc.product == "Used Car Purchase":
+            if eligibility_doc.product == "Preowned Car":
                 product = "Re-Purchase"
             else:
                 product = "Bt-TopUp"
