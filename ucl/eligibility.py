@@ -374,9 +374,9 @@ def register_mobile_no(data):
                 "novalidationbypass" : 0 
             }
 
-        api_log_doc = ucl.log_api(method = "Experian Register Mobile No", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+        api_log_doc = ucl.log_api(method = "Experian Register Mobile No", request_time = datetime.now(), request = str(payload), url=str(url), headers=str(headers))
         response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
         return response.json()
 
     except ucl.exceptions.APIException as e:
@@ -402,9 +402,9 @@ def generate_mobile_otp(data):
             "type" : data["type"]
 
         }
-        api_log_doc = ucl.log_api(method = "Experian Generate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+        api_log_doc = ucl.log_api(method = "Experian Generate Mobile No OTP", request_time = datetime.now(), request = str(payload), url=str(url), headers=str(headers))
         response = requests.request("POST", url, headers=headers, data=payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
         return response.json()
 
     except ucl.exceptions.APIException as e:
@@ -608,7 +608,7 @@ def validate_mobile_otp(**kwargs):
             "type" : data.get("type")
 
         }
-        api_log_doc = ucl.log_api(method = "Experian Validate Mobile No OTP", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+        api_log_doc = ucl.log_api(method = "Experian Validate Mobile No OTP", request_time = datetime.now(), request = str(data), url=str(url), headers=str(headers))
         response = requests.request("POST", url, headers=headers, data=payload)
         message = response.json()
         if data.get("type") == "CUSTOM" and response.json()['errorString'] == "consumer record not found":
@@ -638,14 +638,14 @@ def validate_mobile_otp(**kwargs):
                     eligibility_doc.coapplicant_cibil_score = score
                     eligibility_doc.save(ignore_permissions=True)
 
-            response = {"id" : data.get("id"), "response" : response.json()}
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-            return ucl.responder.respondWithSuccess(message = frappe._(message['errorString']), data=response)
+            validate_response = {"id" : data.get("id"), "response" : response.json()}
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(validate_response), status_code=response.status_code)
+            return ucl.responder.respondWithSuccess(message = frappe._(message['errorString']), data=validate_response)
 
         else:
-            response = {"id" : data.get("id"), "response" : response.json()}
-            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
-            return ucl.responder.respondWithFailure(message = frappe._(message['errorString']), data=response)
+            validate_response = {"id" : data.get("id"), "response" : response.json()}
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = str(validate_response), status_code=response.status_code)
+            return ucl.responder.respondWithFailure(message = frappe._(message['errorString']), data=validate_response)
 
 
     except ucl.exceptions.APIException as e:
@@ -772,13 +772,14 @@ def bre_offers(**kwargs):
             }
 
             response = requests.request("POST", url, headers=headers, json=payload)
-            api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+            api_log_doc = ucl.log_api(method = "BRE Offers", request_time = datetime.now(), request = str(payload), url= str(url), headers= str(headers))
             if response.status_code == 200:
                 eligibility_doc.offers = str(response.json())
                 eligibility_doc.save(ignore_permissions = True)
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
                 return ucl.responder.respondWithSuccess(message=frappe._("Offers Successfully Generated"), data=response.json()['offers'])
             else:
+                ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
     except ucl.exceptions.APIException as e:
@@ -856,14 +857,14 @@ def create_workorder(**kwargs):
             'client-secret': ucl_setting.glib_client_secret,
         }
         response = requests.request("POST", url, headers=headers)
-        api_log_doc = ucl.log_api(method = "Glib create workorder", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Glib create workorder", request_time = datetime.now(), request = str(data), url=str(url), headers=str(headers), path_params="personal_salaried")
         if response.status_code == 201:        
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             id = response.json()['id']
             add_bank_statement(id,data.get("id"))
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
 
@@ -896,13 +897,13 @@ def add_bank_statement(id,eligibility_id):
         #     'file': ('file_name.txt', open('/home/dell/Downloads/bank_statement.pdf', 'rb'), 'text/plain'),
         # }
         response = requests.request("POST", url, headers=headers, data=payload, files=files)
-        api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("Workorder id" + id + "Eligibility Id : " + eligibility_id), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             process_workorder(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
        
     except ucl.exceptions.APIException as e:
@@ -921,14 +922,14 @@ def process_workorder(id):
             'client-secret': ucl_setting.glib_client_secret,
         }
         response = requests.request("POST", url, headers=headers)
-        api_log_doc = ucl.log_api(method = "Glib process workorder", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Glib process workorder", request_time = datetime.now(), request =str("Workorder id" + id ), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             retrieve_workorder(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
         else:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Process Workorder", request_time = datetime.now(), request = "")
@@ -946,13 +947,13 @@ def retrieve_workorder(id):
             'client-secret': ucl_setting.glib_client_secret,
         }
         response = requests.request("GET", url, headers=headers)
-        api_log_doc = ucl.log_api(method = "Glib retrieve workorder", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Glib retrieve workorder", request_time = datetime.now(), request = str("Workorder id " + id), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             # download_report(id)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
         
     except ucl.exceptions.APIException as e:
@@ -974,16 +975,14 @@ def download_report(**kwargs):
         ucl_setting = frappe.get_single("UCL Settings")
         url = ucl_setting.download_report.format(id=data.get("workorder_id"))
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
-        print(url)
         headers = {
             'client-id': ucl_setting.glib_client_id,
             'client-secret': ucl_setting.glib_client_secret,
         }
         response = requests.get(url=url, headers=headers)
-        print(response)
-        api_log_doc = ucl.log_api(method = "Glib download report", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Glib download report", request_time = datetime.now(), request = str(data), url= str(url), headers=str(headers))
         if response.status_code == 200:     
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=response.status_code)
             details = response.json()['Summary - Fixed Income / Obligation']
             for i in details:
                 if i['Type'] == "Salary":
@@ -1008,7 +1007,7 @@ def download_report(**kwargs):
             frappe.db.commit()
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
 
     except ucl.exceptions.APIException as e:
@@ -1131,9 +1130,9 @@ def ibb(**kwargs):
                 eligibility_doc.estimated_value = response.json()['retail']['marketprice']
                 eligibility_doc.save(ignore_permissions = True)
         
-        api_log_doc = ucl.log_api(method = "IBB {} API".format(data.get("for")), request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
+        api_log_doc = ucl.log_api(method = "IBB {} API".format(data.get("for")), request_time = datetime.now(), request = str(payload), url= str(url))          
         if response.status_code == 200:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=details)
         else:
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)

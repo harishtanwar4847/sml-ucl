@@ -313,13 +313,13 @@ def generateResponse(is_success=True, status=200, message=None, data={}, error=N
         response["data"] = data
     return response
 
-def log_api(method, request_time, request):
+def log_api(method, request_time, request, url=None, headers= None, path_params = None):
     try:
         method = method
         request_time = request_time
         request = request
         log = frappe.get_doc(
-            dict(doctype="API Log", api_name = method, request_time = datetime.now(), request = request)
+            dict(doctype="API Log", api_name = method, request_time = datetime.now(), request = request, api_url = url, api_headers = headers, path_params = path_params)
         ).insert(ignore_permissions=True)
         frappe.db.commit()
 
@@ -331,12 +331,13 @@ def log_api(method, request_time, request):
             title=_("API Log Error"),
         )
 
-def log_api_response(is_error, error, api_log_doc, api_type, response):
+def log_api_response(is_error, error, api_log_doc, api_type, response, status_code = None):
     api_log_doc.response_time = datetime.now()
     api_log_doc.api_type = api_type
     api_log_doc.response = response
     api_log_doc.is_error = is_error
     api_log_doc.error = error
+    api_log_doc.api_status_code = status_code
     api_log_doc.save(ignore_permissions=True)
     frappe.db.commit()
 
@@ -622,7 +623,7 @@ def authorize_deepvue():
         url = "https://production.deepvue.tech/v1/authorize"
         payload = {"client_id" : ucl_setting.deepvue_client_id, "client_secret" : ucl_setting.deepvue_client_secret}
         headers = {'Content-Type' : 'application/x-www-form-urlencoded',}
-        api_log_doc = ucl.log_api(method = "Deepvue Authorize", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(payload)))
+        api_log_doc = ucl.log_api(method = "Deepvue Authorize", request_time = datetime.now(), request = str(payload), url = str(url), headers = str(headers))
         response = requests.request("POST",url, headers=headers, data = payload)
 
         if response.status_code == 200:
@@ -631,7 +632,7 @@ def authorize_deepvue():
             frappe.db.commit()
         else:
             return RespondWithFailureException()
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code = response.status_code)
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Authorize deepvue", request_time = datetime.now(), request = "")
@@ -648,7 +649,7 @@ def authorize_ibb():
             "username":"switchmyloan@ibb.com", 
             "password":"{m78YzqE8_+o" 
         }
-        api_log_doc = ucl.log_api(method = "IBB Authorize", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload)))
+        api_log_doc = ucl.log_api(method = "IBB Authorize", request_time = datetime.now(), request = str(payload), url = str(url))
         response = requests.request("POST",url, data = payload)
 
         if response.status_code == 200:
@@ -657,7 +658,7 @@ def authorize_ibb():
             frappe.db.commit()
         else:
             return RespondWithFailureException()
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code = response.status_code)
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Authorize IBB", request_time = datetime.now(), request = "")

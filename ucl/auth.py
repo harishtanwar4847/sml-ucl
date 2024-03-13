@@ -717,10 +717,13 @@ def pan_plus(pan_number):
     
         payload={}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
-        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+        api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(pan_number), url = str(url), headers = str(headers), path_params= str(pan_number))
         response = requests.request("GET", url, headers=headers, data=payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()))
-        return response.json()
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=str(response.json()['code']))
+        if response.json()['code'] == 200:
+            return response.json()
+        else:
+            raise ucl.exceptions.NotFoundException(message = frappe._(response.json()['message']))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
@@ -766,7 +769,7 @@ def pan_ocr(**kwargs):
             url = ucl_setting.pan_ocr
             headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
 
-            api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+            api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(payload), url = str(url), headers=str(headers))
             ocr_response = requests.request("POST", url, headers=headers, json=payload)
 
             if ocr_response.json()['code'] == 200:
@@ -783,7 +786,7 @@ def pan_ocr(**kwargs):
                         response = pan_plus_response["data"]
                         response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
                         response["pan_type"] = ocr_response.json()['data']["pan_type"]
-                        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+                        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code="200")
                         return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
 
                 else:
@@ -791,14 +794,14 @@ def pan_ocr(**kwargs):
                     partner_kyc.save(ignore_permissions=True)
                     frappe.db.commit()
                     response = ocr_response.json()
-                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=response.json()['code'])
                     return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
             else:
                 partner_kyc.company_pan_file = ""
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
                 response = ocr_response.json()
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response))
+                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=response.json()['code'])
                 return ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
             
         else:
@@ -854,7 +857,7 @@ def aadhaar_ocr(**kwargs):
         url = ucl_setting.aadhaar_ocr 
         
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
-        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers)))
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str(payload), url = str(url), headers=str(headers))
 
         response = requests.request("POST", url, headers=headers, json=payload)
         if response.json()['code'] == 200:
@@ -869,7 +872,7 @@ def aadhaar_ocr(**kwargs):
                 partner_kyc.aadhaar_back  = ""
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code']))
                 return ucl.responder.respondWithFailure(message=frappe._("Please Upload a valid Aadhaar Card."), data=response.json()['data'])
 
         else:
@@ -877,10 +880,10 @@ def aadhaar_ocr(**kwargs):
             partner_kyc.aadhaar_back  = ""
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code']))
             return ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
 
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text) 
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code'])) 
     
         return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
 
@@ -904,7 +907,7 @@ def rc_advance(**kwargs):
         url = ucl_setting.rc_advance.format(rc_number =data.get("rc_number"))
         payload = {}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
-        api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(data)))
+        api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str(data), url = str(url), headers=str(headers), path_params=str(data.get("rc_number")))
         rc_response = requests.request("GET",url, headers=headers, json = payload)
         if rc_response.json()['code'] == 200:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text)
@@ -931,7 +934,7 @@ def rc_advance(**kwargs):
             if make_response.json()['status'] == 200:
                 make_list = make_response.json()['make']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=response.json()['status'])
                 raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
             
             for i in make_list:
@@ -949,7 +952,7 @@ def rc_advance(**kwargs):
             if model_response.json()['status'] == 200:
                 model_list = model_response.json()['model']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=response.json()['status'])
                 raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
             for i in model_list:
                 if maker_model[0] in i:
@@ -963,7 +966,7 @@ def rc_advance(**kwargs):
             if city_response.json()['status'] == 200:
                 city_list = city_response.json()['city']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=response.json()['status'])
                 raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
             
             for i in city_list:
@@ -983,7 +986,7 @@ def rc_advance(**kwargs):
             if variant_response.json()['status'] == 200:
                 variant_list = variant_response.json()['variant']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=response.json()['status'])
                 raise ucl.exceptions.NotFoundException(message=frappe._(variant_response.json()['message']))
 
             color_payload = {
@@ -994,7 +997,7 @@ def rc_advance(**kwargs):
             if color_response.json()['status'] == 200:
                 color_list = color_response.json()['color']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.json()['status'])
                 raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
 
             response = { 
@@ -1011,7 +1014,7 @@ def rc_advance(**kwargs):
 
             return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response)
         else:
-            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text)
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(rc_response.json()['message']))
 
     except ucl.exceptions.APIException as e:
@@ -1037,10 +1040,10 @@ def penny_drop(beneficiary_account_no,beneficiary_ifsc):
         "Authorization": f"Basic {base64_credentials}",
         "Content-Type": "application/json"
         }
-        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + str(payload)))
+        api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str(payload), url=str(url), headers=str(headers) )
         
         response = requests.request("POST",url, headers=headers, json = payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
 
         return response.json()
 
