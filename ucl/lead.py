@@ -29,7 +29,7 @@ def lead_details(**kwargs):
             "sub_product": "",
             "source": "",
             "partner_code": "",
-            "mobile_number": ["required"],
+            "mobile_number": ["required",  "decimal", ucl.validator.rules.LengthRule(10)],
             "pan_number": ["required"],
             "first_name": ["required"],
             "last_name": ["required"],
@@ -52,42 +52,45 @@ def lead_details(**kwargs):
             "requested_loan_amount": ["required"]
         })
         api_log_doc = ucl.log_api(method = "Save Lead Details", request_time = datetime.now(), request = str(data))
-        dup_entry_check(product=data.get("sub_product"), mobile=data.get("mobile_number"), loan_amt=data.get("requested_loan_amount"))
+        if int(data.get("mobile_number")[0]) < 5:
+            return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
+        else:
+            dup_entry_check(product=data.get("sub_product"), mobile=data.get("mobile_number"), loan_amt=data.get("requested_loan_amount"))
 
-        lead = frappe.get_doc({
-            "doctype": "Lead",
-            "sub_product": data.get("sub_product"),
-            "source": data.get("source"),
-            "partner_code": data.get("partner_code"),
-            "mobile_number": data.get("mobile_number"),
-            "pan_number": data.get("pan_number"),
-            "first_name": data.get("first_name"),
-            "last_name": data.get("last_name"),
-            "full_name": data.get("full_name"),
-            "gender": data.get("gender"),
-            "dob": data.get("dob"),
-            "line_1": data.get("line_1"),
-            "line_2": data.get("line_2"),
-            "street": data.get("street"),
-            "zip": data.get("zip"),
-            "city": data.get("city"),
-            "state": data.get("state"),
-            "country": data.get("country"),
-            "address": data.get("address"),
-            "email_id": data.get("email_id"),
-            "aadhar": data.get("aadhar"),
-            "occupation_type": data.get("occupation_type"),
-            "monthly_income": data.get("monthly_income"),
-            "obligations": data.get("obligations"),
-            "requested_loan_amount": data.get("requested_loan_amount"),
-        }).insert(ignore_permissions=True)
-        frappe.db.commit()
-        
-        message = "Lead details saved successfully"
-        response = {"message" : message, "id" : lead.name}
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
+            lead = frappe.get_doc({
+                "doctype": "Lead",
+                "sub_product": data.get("sub_product"),
+                "source": data.get("source"),
+                "partner_code": data.get("partner_code"),
+                "mobile_number": data.get("mobile_number"),
+                "pan_number": data.get("pan_number"),
+                "first_name": data.get("first_name"),
+                "last_name": data.get("last_name"),
+                "full_name": data.get("full_name"),
+                "gender": data.get("gender"),
+                "dob": data.get("dob"),
+                "line_1": data.get("line_1"),
+                "line_2": data.get("line_2"),
+                "street": data.get("street"),
+                "zip": data.get("zip"),
+                "city": data.get("city"),
+                "state": data.get("state"),
+                "country": data.get("country"),
+                "address": data.get("address"),
+                "email_id": data.get("email_id"),
+                "aadhar": data.get("aadhar"),
+                "occupation_type": data.get("occupation_type"),
+                "monthly_income": data.get("monthly_income"),
+                "obligations": data.get("obligations"),
+                "requested_loan_amount": data.get("requested_loan_amount"),
+            }).insert(ignore_permissions=True)
+            frappe.db.commit()
             
-        return ucl.responder.respondWithSuccess(message=frappe._("Success"), data=response)
+            message = "Lead details saved successfully"
+            response = {"message" : message, "id" : lead.name}
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
+                
+            return ucl.responder.respondWithSuccess(message=frappe._("Success"), data=response)
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Lead details", request_time = datetime.now(), request = "")

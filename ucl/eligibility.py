@@ -26,46 +26,49 @@ def update_basic_details(**kwargs):
                 "mobile" : ["required", "decimal", ucl.validator.rules.LengthRule(10)],
         })
         api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = str(data))
-        if frappe.db.exists("Lead", {"mobile_number" : data.get("mobile")}):
-            lead = frappe.get_last_doc("Lead", filters={"mobile_number" : data.get("mobile")})
-            eligibility_doc = frappe.get_doc(
-                {
-                    "doctype": "Eligibility Check",
-                    "mobile_no": data.get("mobile"),
-                    "product": data.get("product"),
-                    "pan_number": lead.pan_number,
-                    "first_name": lead.first_name,
-                    "last_name": lead.last_name,
-                    "full_name": lead.applicant_name,
-                    "line_1": lead.line_1,
-                    "line_2": lead.line_2,
-                    "zip": lead.zip,
-                    "pan_city": lead.city,
-                    "pan_state": lead.state,
-                    "pan_country": lead.country,
-                    "street_name": lead.street,
-                    "gender": lead.gender,
-                    "dob": lead.dob,
-                    "full_address": lead.address,
-                    "email_id": lead.email_id,
-                    "masked_aadhaar": lead.aadhar,
-                    "pan_details_filled": 1
-                }
-            ).insert(ignore_permissions=True)
-            frappe.db.commit()
-        
+        if int(data.get("mobile")[0]) < 5:
+            return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
-            eligibility_doc = frappe.get_doc(
-                {
-                    "doctype": "Eligibility Check",
-                    "mobile_no": data.get("mobile"),
-                    "product": data.get("product"),
-                }
-            ).insert(ignore_permissions=True)
-            frappe.db.commit()
-        eligibility_doc_name = eligibility_doc.name
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
-        return ucl.responder.respondWithSuccess(message=frappe._(" Data updated successfuly"), data={"id": eligibility_doc_name,"details": eligibility_doc.as_dict()})
+            if frappe.db.exists("Lead", {"mobile_number" : data.get("mobile")}):
+                lead = frappe.get_last_doc("Lead", filters={"mobile_number" : data.get("mobile")})
+                eligibility_doc = frappe.get_doc(
+                    {
+                        "doctype": "Eligibility Check",
+                        "mobile_no": data.get("mobile"),
+                        "product": data.get("product"),
+                        "pan_number": lead.pan_number,
+                        "first_name": lead.first_name,
+                        "last_name": lead.last_name,
+                        "full_name": lead.applicant_name,
+                        "line_1": lead.line_1,
+                        "line_2": lead.line_2,
+                        "zip": lead.zip,
+                        "pan_city": lead.city,
+                        "pan_state": lead.state,
+                        "pan_country": lead.country,
+                        "street_name": lead.street,
+                        "gender": lead.gender,
+                        "dob": lead.dob,
+                        "full_address": lead.address,
+                        "email_id": lead.email_id,
+                        "masked_aadhaar": lead.aadhar,
+                        "pan_details_filled": 1
+                    }
+                ).insert(ignore_permissions=True)
+                frappe.db.commit()
+            
+            else:
+                eligibility_doc = frappe.get_doc(
+                    {
+                        "doctype": "Eligibility Check",
+                        "mobile_no": data.get("mobile"),
+                        "product": data.get("product"),
+                    }
+                ).insert(ignore_permissions=True)
+                frappe.db.commit()
+            eligibility_doc_name = eligibility_doc.name
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+            return ucl.responder.respondWithSuccess(message=frappe._(" Data updated successfuly"), data={"id": eligibility_doc_name,"details": eligibility_doc.as_dict()})
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = "")
