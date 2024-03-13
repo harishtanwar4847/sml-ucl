@@ -174,6 +174,7 @@ def update_existing_loan_details(**kwargs):
                 "sanctioned_loan_amount": "",
                 "sanctioned_tenure": "",
                 "tenure_served": "",
+                "emi": "",
                 "current_rate_of_interest": ""
             })
         api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = str(data))
@@ -184,6 +185,7 @@ def update_existing_loan_details(**kwargs):
                 "sanctioned_loan_amount": data.get("sanctioned_loan_amount"),
                 "sanctioned_tenure": data.get("sanctioned_tenure"),
                 "tenure_served": data.get("tenure_served"),
+                "emi": data.get("emi"),
                 "current_rate_of_interest" : data.get("current_rate_of_interest")
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
@@ -721,8 +723,8 @@ def bre_offers(**kwargs):
                 product = "Re-Purchase"
             else:
                 product = "Bt-TopUp"
-            if eligibility_doc.total_emis_paid:
-                emipaid = eligibility_doc.total_emis_paid
+            if eligibility_doc.tenure_served:
+                emipaid = eligibility_doc.tenure_served
             else:
                 emipaid = 0
             manufactureyear = eligibility_doc.manufacturing_year
@@ -1022,7 +1024,7 @@ def ibb(**kwargs):
         ucl.validate_http_method("POST")
         data = ucl.validate(
             kwargs,{
-            "id" : "required",
+            "id" : "",
             "for" : "required",
             "year": "", 
             "month": "", 
@@ -1122,11 +1124,12 @@ def ibb(**kwargs):
             }
             response = requests.request("POST", url, data=payload)
             details=response.json()['retail']
-            eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
-            eligibility_doc.estimated_value = response.json()['retail']['marketprice']
-            eligibility_doc.save(ignore_permissions = True)
-
-
+            if data.get("id") == "":
+                return ucl.responder.respondWithFailure(message=frappe._("Eligibility Check ID required"))
+            else:
+                eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
+                eligibility_doc.estimated_value = response.json()['retail']['marketprice']
+                eligibility_doc.save(ignore_permissions = True)
         
         api_log_doc = ucl.log_api(method = "IBB {} API".format(data.get("for")), request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(payload) + "\n" ))          
         if response.status_code == 200:

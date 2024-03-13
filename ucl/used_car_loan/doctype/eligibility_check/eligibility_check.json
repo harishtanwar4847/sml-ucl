@@ -43,10 +43,9 @@
   "existing_loan_details_section",
   "lender_name",
   "sanctioned_loan_amount",
-  "total_emis_paid",
   "sanctioned_tenure",
-  "column_break_nsni",
   "tenure_served",
+  "column_break_nsni",
   "pos",
   "emi",
   "current_rate_of_interest",
@@ -220,12 +219,7 @@
   {
    "fieldname": "emi",
    "fieldtype": "Data",
-   "label": "EMI"
-  },
-  {
-   "fieldname": "total_emis_paid",
-   "fieldtype": "Data",
-   "label": "Total EMI's Paid"
+   "label": "EMI Amount"
   },
   {
    "fieldname": "column_break_ubfd",
@@ -581,7 +575,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-12 18:14:35.894029",
+ "modified": "2024-03-13 12:35:57.753210",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
