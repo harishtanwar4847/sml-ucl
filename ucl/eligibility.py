@@ -178,6 +178,10 @@ def update_existing_loan_details(**kwargs):
                 "current_rate_of_interest": ""
             })
         api_log_doc = ucl.log_api(method = "Update Existing Loan Details", request_time = datetime.now(), request = str(data))
+        if data.get("running_loan") == "Yes":
+            if data.get("lender_name") == "" or data.get("pos") == "" or data.get("sanctioned_loan_amount") == "" or data.get("sanctioned_tenure") == "" or data.get("tenure_served") == "" or data.get("emi") == "" or data.get("current_rate_of_interest") == "":
+                return ucl.responder.respondWithFailure(message = frappe._("Please fill all the details as you have selected running car loan as Yes"))
+
         eligibility_dict ={
                 "running_loan": data.get("running_loan"),
                 "lender_name": data.get("lender_name"),
@@ -227,7 +231,7 @@ def update_car_details(**kwargs):
                 "registration_number": data.get("registration_number"),
                 "model": data.get("model"),
                 "variant": data.get("variant"),
-                "on_road_price": data.get("on_road_price"),
+                "estimated_value": data.get("on_road_price"),
                 "manufacturing_year": data.get("manufacturing_year"),
                 "month": data.get("month"),
                 "city": data.get("city"),
@@ -338,7 +342,12 @@ def register_mobile_no(data):
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             input_date = data['dateOfBirth']
-            input_date_date = datetime.strptime(input_date, "%Y-%m-%d")
+            date_pattern_str1 = r'^\d{4}-\d{2}-\d{2}$'
+            date_pattern_str2 = r'^\d{2}-\d{2}-\d{4}$'
+            if re.match(date_pattern_str1, input_date):
+                input_date_date = datetime.strptime(input_date, "%Y-%m-%d")
+            elif re.match(date_pattern_str2, input_date):
+                input_date_date = datetime.strptime(input_date, "%d-%m-%Y")
             output_date_str = input_date_date.strftime("%d-%m-%Y")
             parsed_date = datetime.strptime(output_date_str, "%d-%m-%Y")
             formatted_date = parsed_date.strftime("%d-%b-%Y")
@@ -714,7 +723,15 @@ def bre_offers(**kwargs):
                 netincome = eligibility_doc.monthly_salary
             else:
                 netincome = eligibility_doc.monthly_gross_income
-            dob = eligibility_doc.dob
+            input_date = eligibility_doc.dob
+            date_pattern_str1 = r'^\d{4}-\d{2}-\d{2}$'
+            date_pattern_str2 = r'^\d{2}-\d{2}-\d{4}$'
+            if re.match(date_pattern_str1, input_date):
+                input_date_date = datetime.strptime(input_date, "%Y-%m-%d")
+            elif re.match(date_pattern_str2, input_date):
+                input_date_date = datetime.strptime(input_date, "%d-%m-%Y")
+            output_date_str = input_date_date.strftime("%d-%m-%Y")
+            dob = output_date_str
             if eligibility_doc.estimated_value:
                 carvalue = eligibility_doc.estimated_value
             else:
@@ -893,9 +910,6 @@ def add_bank_statement(id,eligibility_id):
         files = {
             'file': ('bank_statement.pdf', response.content, 'application/pdf'),
         }
-        # files = {
-        #     'file': ('file_name.txt', open('/home/dell/Downloads/bank_statement.pdf', 'rb'), 'text/plain'),
-        # }
         response = requests.request("POST", url, headers=headers, data=payload, files=files)
         api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("Workorder id" + id + "Eligibility Id : " + eligibility_id), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
@@ -980,7 +994,7 @@ def download_report(**kwargs):
             'client-secret': ucl_setting.glib_client_secret,
         }
         response = requests.get(url=url, headers=headers)
-        api_log_doc = ucl.log_api(method = "Glib download report", request_time = datetime.now(), request = str(data), url= str(url), headers=str(headers))
+        api_log_doc = ucl.log_api(method = "Glib download report", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
         if response.status_code == 200:     
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=response.status_code)
             details = response.json()['Summary - Fixed Income / Obligation']
@@ -1045,7 +1059,8 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             }
             response = requests.request("POST", url, data=payload)
-            details=response.json()['year']
+            if response.status_code == 200:
+                details=response.json()['year']
 
         elif data.get("for") == "month":
             payload = {
@@ -1054,8 +1069,8 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             }
             response = requests.request("POST", url, data=payload)
-            details=response.json()['month']
-
+            if response.status_code == 200:
+                details=response.json()['month']
 
         elif data.get("for") == "make":
             payload = {
@@ -1065,7 +1080,8 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             }
             response = requests.request("POST", url, data=payload)
-            details=response.json()['make']
+            if response.status_code == 200:
+                details=response.json()['make']
         
         elif data.get("for") == "model":
             payload = {
@@ -1076,7 +1092,8 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             } 
             response = requests.request("POST", url, data=payload)
-            details=response.json()['model']  
+            if response.status_code == 200:
+                details=response.json()['model']  
             
         elif data.get("for") == "variant":
             payload = {
@@ -1088,7 +1105,8 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             }  
             response = requests.request("POST", url, data=payload)
-            details=response.json()['variant'] 
+            if response.status_code == 200:
+                details=response.json()['variant'] 
 
         elif data.get("for") == "location":
             payload = {
@@ -1096,7 +1114,8 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             } 
             response = requests.request("POST", url, data=payload)
-            details=response.json()['city']
+            if response.status_code == 200:
+                details=response.json()['city']
 
         elif data.get("for") == "color":
             payload = {
@@ -1104,10 +1123,11 @@ def ibb(**kwargs):
             "access_token": ucl_setting.ibb_token 
             }
             response = requests.request("POST", url, data=payload)
-            details=response.json()['color'] 
+            if response.status_code == 200:
+                details=response.json()['color'] 
             
 
-        else:
+        elif data.get("for") == "comprehensivePrice":
             payload = {
                 "for": "comprehensivePrice", 
                 "year": data.get("year"), 
@@ -1122,20 +1142,26 @@ def ibb(**kwargs):
                 "access_token": ucl_setting.ibb_token 
             }
             response = requests.request("POST", url, data=payload)
-            details=response.json()['retail']
+            if response.status_code == 200:
+                details=response.json()['retail']['bestprice']
+                l= []
+                l.append(str(details))
+                details = l
             if data.get("id") == "":
                 return ucl.responder.respondWithFailure(message=frappe._("Eligibility Check ID required"))
-            else:
-                eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
-                eligibility_doc.estimated_value = response.json()['retail']['marketprice']
-                eligibility_doc.save(ignore_permissions = True)
+            
+        else:
+            api_log_doc = ucl.log_api(method = "IBB API".format(data.get("for")), request_time = datetime.now(), request = "") 
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "You passed invalid value in for")
+            return ucl.responder.respondWithFailure(message=frappe._("You passed invalid value in for"))
+
         
         api_log_doc = ucl.log_api(method = "IBB {} API".format(data.get("for")), request_time = datetime.now(), request = str(payload), url= str(url))          
         if response.status_code == 200:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=details)
         else:
-            return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
+            return ucl.responder.respondWithFailure(message=frappe._(response.json()['message']))
         
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "IBB", request_time = datetime.now(), request = "")
