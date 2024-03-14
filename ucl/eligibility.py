@@ -170,7 +170,7 @@ def update_existing_loan_details(**kwargs):
                 "id": "required",
                 "running_loan": "",
                 "lender_name": "",
-                "pos": "required",
+                "pos": "",
                 "sanctioned_loan_amount": "",
                 "sanctioned_tenure": "",
                 "tenure_served": "",
