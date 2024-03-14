@@ -144,3 +144,26 @@ def update_lead_details(**kwargs):
         api_log_doc = ucl.log_api(method = "Update lead details", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def all_lead_details():
+    try:
+        try:
+            associate = ucl.lead_dashboard_list()
+            return ucl.responder.respondWithSuccess(
+                    message=frappe._("success"), data=associate
+                )
+            
+        except NotFoundException:
+            raise ucl.exceptions.PartnerNotFoundException()
+    except ucl.exceptions.APIException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
+    except frappe.SecurityException as e:
+        frappe.db.rollback()
+        api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return ucl.responder.respondUnauthorized(message=str(e))
