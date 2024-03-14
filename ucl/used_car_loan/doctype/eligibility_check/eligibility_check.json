@@ -77,6 +77,7 @@
   "coapplicant_monthly_salary",
   "coapplicant_monthly_gross_income",
   "coapplicant_obligation",
+  "coapplicant_pan_details_filled",
   "column_break_ubfd",
   "coapplicant_full_address",
   "coapplicant_line_1",
@@ -565,11 +566,18 @@
    "fieldname": "tenure_served",
    "fieldtype": "Data",
    "label": "Tenure Served"
+  },
+  {
+   "default": "0",
+   "fieldname": "coapplicant_pan_details_filled",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Coapplicant Pan Details Filled"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-13 15:10:52.178689",
+ "modified": "2024-03-14 12:34:46.356606",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

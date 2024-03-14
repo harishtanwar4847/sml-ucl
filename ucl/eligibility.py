@@ -249,7 +249,62 @@ def update_car_details(**kwargs):
         api_log_doc = ucl.log_api(method = "Update Car Details", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return e.respond()
-    
+
+
+@frappe.whitelist(allow_guest=True)
+def update_coapplicant_basic_details(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        data = ucl.validate(
+            kwargs,
+            {
+                "id": "required",
+                "mobile": "required"
+        })
+        api_log_doc = ucl.log_api(method = "Update Coapplicant Basic Details", request_time = datetime.now(), request = str(data))
+        if int(data.get("mobile")[0]) < 5:
+            return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
+        else:
+            if frappe.db.exists("Lead", {"mobile_number" : data.get("mobile")}):
+                lead = frappe.get_last_doc("Lead", filters={"mobile_number" : data.get("mobile")})
+                
+                eligibility_dict ={
+                        "coapplicant_mobile_no": data.get("mobile"),
+                        "coapplicant_pan": lead.pan_number,
+                        "coapplicant_first_name": lead.first_name,
+                        "coapplicant_last_name": lead.last_name,
+                        "coapplicant_full_name": lead.applicant_name,
+                        "coapplicant_email_id": lead.email_id,
+                        "coapplicant_gender": lead.gender,
+                        "coapplicant_dob": lead.dob,
+                        "coapplicant_line_1": lead.line_1,
+                        "coapplicant_line_2": lead.line_2,
+                        "coapplicant_street_name": lead.street,
+                        "coapplicant_zip": lead.zip,
+                        "coapplicant_city": lead.city,
+                        "coapplicant_state": lead.state,
+                        "coapplicant_country": lead.country,
+                        "coapplicant_masked_aadhaar": lead.aadhar,
+                        "coapplicant_full_address": lead.address,
+                        "coapplicant_pan_details_filled": 1
+                }
+                eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
+
+            else:
+                eligibility_dict ={
+                        "coapplicant_mobile_no": data.get("mobile"),
+                        "coapplicant_pan_details_filled": 0
+                }
+                eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
+            frappe.db.commit()
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+            return ucl.responder.respondWithSuccess(message=frappe._("Coapplicant basic details updated successfuly"), data={"id": eligibility_doc.name,"details": eligibility_doc.as_dict()})
+
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Update Coapplicant Details", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
 
 @frappe.whitelist(allow_guest=True)
 def update_coapplicant_details(**kwargs):
@@ -260,7 +315,6 @@ def update_coapplicant_details(**kwargs):
             kwargs,
             {
                 "id": "required",
-                "mobile_no": "",
                 "pan_number": "required",
                 "first_name": "required",
                 "last_name": "",
@@ -280,7 +334,6 @@ def update_coapplicant_details(**kwargs):
         })
         api_log_doc = ucl.log_api(method = "Update Coapplicant Details", request_time = datetime.now(), request = str(data))
         eligibility_dict ={
-                "coapplicant_mobile_no": data.get("mobile_no"),
                 "coapplicant_pan": data.get("pan_number"),
                 "coapplicant_first_name": data.get("first_name"),
                 "coapplicant_last_name": data.get("last_name"),
