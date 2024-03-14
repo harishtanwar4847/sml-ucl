@@ -191,8 +191,9 @@ def verify_otp(**kwargs):
                         "last_name":user.last_name,
                         "email":user.name,
                         "token":access_token,
-                        "role":userRole,
-                        "is_pin_set":is_pin_set
+                        "role":frappe.get_roles(user.name),
+                        "is_pin_set":is_pin_set,
+                        "user_role":userRole
                     }
                 if "Partner" in frappe.get_roles(user.name) or "Partner Associate" in frappe.get_roles(user.name):
                     partner = ucl.__partner(user.name)
