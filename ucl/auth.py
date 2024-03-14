@@ -991,9 +991,6 @@ def rc_advance(**kwargs):
                 if location[0] in i:
                     city = i
 
-            if not city:
-                city = city_list
-
             variant_payload = {
                 "for": "variant", 
                 "year": year, 
@@ -1021,17 +1018,31 @@ def rc_advance(**kwargs):
                 ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.json()['status'])
                 raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
 
-            response = { 
-                "year": year, 
-                "month": str(int(month)),
-                "make" : make,
-                "model" : model,
-                "city" : city,
-                "owner_number" : owner,
-                "variant" : variant_list,
-                "color" : color_list
+            if not city:
+                response = { 
+                    "year": year, 
+                    "month": str(int(month)),
+                    "make" : make,
+                    "model" : model,
+                    "city" : city,
+                    "owner_number" : owner,
+                    "variant" : variant_list,
+                    "color" : color_list,
+                    "city_list": city_list
 
-            }
+                }
+            else:
+                response = { 
+                    "year": year, 
+                    "month": str(int(month)),
+                    "make" : make,
+                    "model" : model,
+                    "city" : city,
+                    "owner_number" : owner,
+                    "variant" : variant_list,
+                    "color" : color_list
+
+                }
 
             return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response)
         else:
