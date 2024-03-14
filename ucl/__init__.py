@@ -614,6 +614,15 @@ def associate_list():
             res = []
         res = [{'partner_code': entry.pop('name'), 'partner_name': entry['partner_name']} for entry in res]
         return res
+    
+def lead_dashboard_list():
+    user = __user()
+    lead = frappe.get_all("Lead", filters= {"owner": user.name}, fields = ["name", "mobile_number", "email_id", "full_name", "pan_number", "workflow_state"])
+    if len(lead) == 0:
+        raise NotFoundException
+    else:
+        dict = {"lead_list": lead}
+        return dict
 
 @frappe.whitelist()
 def authorize_deepvue():
