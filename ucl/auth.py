@@ -178,12 +178,21 @@ def verify_otp(**kwargs):
             user_data = {}
             if user:
                 access_token = ucl.create_user_access_token(user.name)
+                if frappe.db.exists("Employee Pin Set", {"employee": user.name, "is_pin_set": 1}):
+                    is_pin_set = 1
+                else:
+                    is_pin_set = 0
+                if "Partner" in frappe.get_roles(user.name) or "Partner Associate" in frappe.get_roles(user.name):
+                    userRole = "Partner"
+                else:
+                    userRole = "SML Employee"
                 user_data = {
                         "first_name":user.first_name,
                         "last_name":user.last_name,
                         "email":user.name,
                         "token":access_token,
-                        "role":frappe.get_roles(user.name)
+                        "role":userRole,
+                        "is_pin_set":is_pin_set
                     }
                 if "Partner" in frappe.get_roles(user.name) or "Partner Associate" in frappe.get_roles(user.name):
                     partner = ucl.__partner(user.name)
@@ -309,6 +318,14 @@ def set_pin(**kwargs):
         if data.get("pin"):
             if data.get("pin"):
                 update_password(user.name, data.get("pin"))
+                if not frappe.db.exists("Employee Pin Set", {"employee": user.name}):
+                    employee_doc = frappe.get_doc(
+                            {
+                                "doctype": "Employee Pin Set",
+                                "employee": user.name,
+                                "is_pin_set": 1
+                            }
+                        ).insert(ignore_permissions=True)
                 if frappe.db.exists("Partner", {"user_id" : user.name}):
                     partner = ucl.__partner(user.name)
                     partner.is_pin_set = 1
@@ -973,6 +990,9 @@ def rc_advance(**kwargs):
             for i in city_list:
                 if location[0] in i:
                     city = i
+
+            if not city:
+                city = city_list
 
             variant_payload = {
                 "for": "variant", 
