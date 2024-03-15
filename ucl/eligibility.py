@@ -113,6 +113,7 @@ def update_pan_details(**kwargs):
                 "last_name": ["required"],
                 "full_name": ["required"],
                 "masked_aadhaar": "",
+                "flat_no": "",
                 "address_line_1": "",
                 "address_line_2": "",
                 "address_street_name": "",
@@ -133,6 +134,7 @@ def update_pan_details(**kwargs):
                 "last_name": data.get("last_name"),
                 "full_name": data.get("full_name"),
                 "masked_aadhaar": data.get("masked_aadhaar"),
+                "flat_no": data.get("flat_no"),
                 "line_1": data.get("address_line_1"),
                 "line_2": data.get("address_line_2"),
                 "street_name": data.get("address_street_name"),
@@ -322,6 +324,7 @@ def update_coapplicant_details(**kwargs):
                 "email": "",
                 "gender": "required",
                 "dob": "required",
+                "flat_no": "",
                 "line_1": "",
                 "line_2": "",
                 "street": "",
@@ -341,6 +344,7 @@ def update_coapplicant_details(**kwargs):
                 "coapplicant_email_id": data.get("email"),
                 "coapplicant_gender": data.get("gender"),
                 "coapplicant_dob": data.get("dob"),
+                "coapplicant_flat_no": data.get("flat_no"),
                 "coapplicant_line_1": data.get("line_1"),
                 "coapplicant_line_2": data.get("line_2"),
                 "coapplicant_street_name": data.get("street"),
@@ -425,7 +429,7 @@ def register_mobile_no(data):
                 "telephoneNo" :"",
                 "telephoneType" : "",
                 "email" : data['email'],
-                "flatno" : "01",
+                "flatno" : data['flatNo'],
                 "buildingName" : "",
                 "roadName" : "",
                 "city" : data['city'],
@@ -581,6 +585,7 @@ def full_match(id,coapplicant):
                 "gender": gender,
                 "pan" : eligibility_doc.pan_number,
                 "aadhaar" : eligibility_doc.masked_aadhaar,
+                "flatNo": eligibility_doc.flat_no,
                 "reason" : "Find my credit report",
                 "match": "full"
             }
@@ -612,6 +617,7 @@ def full_match(id,coapplicant):
                 "gender": gender,
                 "pan" : eligibility_doc.coapplicant_pan,
                 "aadhaar" : eligibility_doc.coapplicant_masked_aadhaar,
+                "flatNo": eligibility_doc.coapplicant_flat_no,
                 "reason" : "Find my credit report",
                 "match": "full"
             }
@@ -872,12 +878,14 @@ def update_bank_statement(**kwargs):
             {
                 "id": "required",
                 "document1": ["required"],
-                "extension" : ["required"]
+                "extension" : ["required"],
+                "password": ""
         })
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
         file_name = "{}_{}.{}".format(eligibility_doc.name,"bank_statement",data.get("extension")).replace(" ", "-")
         file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Eligibility Check",attached_to_name=eligibility_doc.name,attached_to_field="bank_statement_file")
         eligibility_doc.bank_statement_file = file_url
+        eligibility_doc.file_password = data.get("password")
         eligibility_doc.save(ignore_permissions=True)
         frappe.db.commit()
         return ucl.responder.respondWithSuccess(message=frappe._("Bank Statement Uploaded Successfully."))

@@ -31,6 +31,7 @@
   "dob",
   "masked_aadhaar",
   "column_break_tqqg",
+  "flat_no",
   "line_1",
   "line_2",
   "street_name",
@@ -80,6 +81,7 @@
   "coapplicant_pan_details_filled",
   "column_break_ubfd",
   "coapplicant_full_address",
+  "coapplicant_flat_no",
   "coapplicant_line_1",
   "coapplicant_line_2",
   "coapplicant_street_name",
@@ -580,11 +582,21 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "File Password"
+  },
+  {
+   "fieldname": "flat_no",
+   "fieldtype": "Data",
+   "label": "Flat No"
+  },
+  {
+   "fieldname": "coapplicant_flat_no",
+   "fieldtype": "Data",
+   "label": "Coapplicant Flat No"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-15 13:18:45.384116",
+ "modified": "2024-03-15 13:46:57.974259",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
