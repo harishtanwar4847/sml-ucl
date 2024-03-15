@@ -94,7 +94,7 @@ def lead_details(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Lead details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -119,7 +119,6 @@ def update_lead_details(**kwargs):
             "make": "",
             "model": "",
             "insurance_expiry_date": "",
-            "total_existing_obligations": "",
             "existing_lender": "",
             "existing_banker": "",
             "principal_outstanding": "",
@@ -133,7 +132,6 @@ def update_lead_details(**kwargs):
             "make": data.get("make"),
             "model": data.get("model"),
             "insurance_expiry_date": data.get("insurance_expiry_date"),
-            "total_existing_obligations": data.get("total_existing_obligations"),
             "existing_lender": data.get("existing_lender"),
             "existing_banker": data.get("existing_banker"),
             "principal_outstanding": data.get("principal_outstanding"),
@@ -149,7 +147,7 @@ def update_lead_details(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update lead details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -167,10 +165,10 @@ def all_lead_details():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
