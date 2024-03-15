@@ -80,11 +80,11 @@ def verify_email(**kwargs):
 
     except (ucl.ValidationError, ucl.ServerError) as e:
         api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(status=e.http_status_code, message=str(e))
     except Exception as e:
         api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(is_success=False, error=e)
     
 
@@ -104,11 +104,11 @@ def request_verification_email():
         return ucl.generateResponse(message=frappe._("Verification email sent"))
     except (ucl.ValidationError, ucl.ServerError) as e:
         api_log_doc = ucl.log_api(method = "Request Verification Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(status=e.http_status_code, message=str(e))
     except Exception as e:
         api_log_doc = ucl.log_api(method = "Request Verification Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(is_success=False, error=e)"""
     
 
@@ -151,6 +151,7 @@ def verify_otp(**kwargs):
             if data.get("otp") == dummy_account.token:
                 token = dummy_account.token
             else:
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
                 return ucl.responder.respondWithFailure(message=frappe._("Invalid OTP"), data = data) 
         else:               
             token = ucl.verify_user_token(
@@ -167,6 +168,7 @@ def verify_otp(**kwargs):
                         raise ucl.exceptions.UserNotFoundException(
                             _("User disabled or missing")
                         )
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
                 raise ucl.exceptions.FailureException(message)
 
             if token:
@@ -216,12 +218,12 @@ def verify_otp(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.respondUnauthorized(message=str(e))
     
 
@@ -285,12 +287,12 @@ def verify_utility_otp(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.respondUnauthorized(message=str(e))
 
 @frappe.whitelist(allow_guest=True)
@@ -348,7 +350,7 @@ def set_pin(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
     
@@ -421,7 +423,7 @@ def verify_forgot_pin_otp(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -514,12 +516,12 @@ def login(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
     
 
@@ -561,12 +563,12 @@ def get_user_details(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get User Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get User Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
 
 
@@ -584,12 +586,12 @@ def get_lender_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lender List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lender List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))  
 
 @frappe.whitelist(allow_guest=True)
@@ -606,12 +608,12 @@ def get_bank_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Bank List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Bank List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))      
     
 @frappe.whitelist(allow_guest=True)
@@ -628,12 +630,12 @@ def get_pincode_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Pincode List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Pincode List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))    
 
 @frappe.whitelist(allow_guest=True)
@@ -650,12 +652,12 @@ def get_employer_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Employer List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Employer List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))        
 
 @frappe.whitelist(allow_guest=True)
@@ -675,12 +677,12 @@ def get_partner_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
     
 
@@ -698,12 +700,12 @@ def get_associate_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Associate List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Associate List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
     
     
@@ -724,7 +726,7 @@ def terms_of_use_nd_privacy_policy():
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Terms of use and privacy policy", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()"""
     
 @frappe.whitelist(allow_guest=True)
@@ -746,7 +748,7 @@ def pan_plus(pan_number):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
 
     
@@ -796,8 +798,10 @@ def pan_ocr(**kwargs):
 
                 if id_number and ocr_response.json()['data']["pan_type"]:
                     if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
+                        ucl.log_api_response(is_error = 1, error  = "Please upload a valid Company Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
                         raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
                     elif data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] != "Individual":
+                        ucl.log_api_response(is_error = 1, error  = "Please upload a valid Individual Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
                         raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
                     else:
                         pan_plus_response = pan_plus(id_number)
@@ -813,14 +817,14 @@ def pan_ocr(**kwargs):
                     partner_kyc.save(ignore_permissions=True)
                     frappe.db.commit()
                     response = ocr_response.json()
-                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=response.json()['code'])
+                    ucl.log_api_response(is_error = 1, error  = str(ocr_response.json()["message"]), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
                     return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
             else:
                 partner_kyc.company_pan_file = ""
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
                 response = ocr_response.json()
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=response.json()['code'])
+                ucl.log_api_response(is_error = 1, error  = str(ocr_response.json()["message"]), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
             
         else:
@@ -828,12 +832,12 @@ def pan_ocr(**kwargs):
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
             api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(data))
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly")
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly", status_code="200")
             return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"))
     
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
     
@@ -891,7 +895,7 @@ def aadhaar_ocr(**kwargs):
                 partner_kyc.aadhaar_back  = ""
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code']))
+                ucl.log_api_response(is_error = 1, error  = "Please Upload a valid Aadhaar Card.", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._("Please Upload a valid Aadhaar Card."), data=response.json()['data'])
 
         else:
@@ -899,16 +903,16 @@ def aadhaar_ocr(**kwargs):
             partner_kyc.aadhaar_back  = ""
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code']))
+            ucl.log_api_response(is_error = 1, error  = response.json()["message"], api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
 
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code'])) 
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code) 
     
         return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -953,7 +957,7 @@ def rc_advance(**kwargs):
             if make_response.json()['status'] == 200:
                 make_list = make_response.json()['make']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=response.json()['status'])
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=response.status_code)
                 raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
             
             for i in make_list:
@@ -971,7 +975,7 @@ def rc_advance(**kwargs):
             if model_response.json()['status'] == 200:
                 model_list = model_response.json()['model']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=response.json()['status'])
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=response.status_code)
                 raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
             for i in model_list:
                 if maker_model[0] in i:
@@ -985,7 +989,7 @@ def rc_advance(**kwargs):
             if city_response.json()['status'] == 200:
                 city_list = city_response.json()['city']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=response.json()['status'])
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=response.status_code)
                 raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
             
             for i in city_list:
@@ -1005,7 +1009,7 @@ def rc_advance(**kwargs):
             if variant_response.json()['status'] == 200:
                 variant_list = variant_response.json()['variant']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=response.json()['status'])
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=response.status_code)
                 raise ucl.exceptions.NotFoundException(message=frappe._(variant_response.json()['message']))
 
             color_payload = {
@@ -1016,7 +1020,7 @@ def rc_advance(**kwargs):
             if color_response.json()['status'] == 200:
                 color_list = color_response.json()['color']
             else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.json()['status'])
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.status_code)
                 raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
 
             if not city:
@@ -1052,7 +1056,7 @@ def rc_advance(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -1076,11 +1080,15 @@ def penny_drop(beneficiary_account_no,beneficiary_ifsc):
         api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str(payload), url=str(url), headers=str(headers) )
         
         response = requests.request("POST",url, headers=headers, json = payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
+        if response.status_code == 200:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
 
-        return response.json()
+            return response.json()
+        else:
+            ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
+            raise ucl.exceptions.FailureException(frappe._(response.json()['message'] if response.json()['message'] else response.json()['error_msg']))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()

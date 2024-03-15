@@ -7,36 +7,41 @@
  "engine": "InnoDB",
  "field_order": [
   "sub_product",
-  "naming_series",
-  "source",
-  "partner_code",
   "mobile_number",
-  "pan_number",
-  "full_name",
   "first_name",
   "last_name",
+  "requested_loan_amount",
+  "status",
+  "caller_name",
+  "column_break_qgqn",
+  "source",
+  "partner_code",
+  "naming_series",
+  "occupation_type",
+  "monthly_income",
+  "obligations",
+  "pan_details_tab",
+  "pan_number",
+  "full_name",
   "gender",
   "dob",
-  "line_1",
+  "email_id",
+  "aadhar",
+  "address",
+  "column_break_dlkr",
   "line_2",
+  "line_1",
   "street",
   "zip",
   "city",
   "state",
   "country",
-  "address",
-  "email_id",
-  "aadhar",
-  "column_break_qgqn",
-  "occupation_type",
-  "monthly_income",
-  "obligations",
-  "requested_loan_amount",
+  "loan_details_tab",
   "vehicle_owned",
   "make",
   "model",
   "insurance_expiry_date",
-  "total_existing_obligations",
+  "column_break_vmtn",
   "existing_lender",
   "existing_banker",
   "principal_outstanding",
@@ -81,7 +86,7 @@
   },
   {
    "fieldname": "address",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Full Address",
    "reqd": 1
   },
@@ -139,12 +144,6 @@
    "fieldtype": "Date",
    "label": "Insurance Expiry Date",
    "mandatory_depends_on": "eval:doc.vehicle_owned == \"Yes\";"
-  },
-  {
-   "default": "0",
-   "fieldname": "total_existing_obligations",
-   "fieldtype": "Int",
-   "label": "Total Existing Obligations"
   },
   {
    "depends_on": "eval:doc.total_existing_obligations != 0 || doc.sub_product == \"BT+Top Up\";",
@@ -260,11 +259,40 @@
    "fieldname": "last_name",
    "fieldtype": "Data",
    "label": "Last Name"
+  },
+  {
+   "fieldname": "pan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "PAN Details"
+  },
+  {
+   "fieldname": "column_break_dlkr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "loan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Loan Details"
+  },
+  {
+   "fieldname": "column_break_vmtn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nOpen\nCall Done\nPartial Docs Received\nComplete Docs Received\nLender Selection\nLogged In\nDecisioned\nPost Sanction Docs\nPost Sanction Queried\nDisbursed To SML\nComplete RTO Docs Received\nDisbursed To Existing Lender\nExisting Lender NOC Received\nDisbursed To Customer\nDisbursed To Dealer/Seller\nPDD Received"
+  },
+  {
+   "fieldname": "caller_name",
+   "fieldtype": "Data",
+   "label": "Caller Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-12 15:39:34.277881",
+ "modified": "2024-03-15 16:40:20.682245",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
