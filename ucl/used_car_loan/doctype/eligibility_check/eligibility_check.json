@@ -92,6 +92,7 @@
   "coapplicant_credit_report",
   "bank_statement_details_tab",
   "bank_statement_file",
+  "file_password",
   "salary_slip",
   "column_break_acqa",
   "monthly_income",
@@ -573,11 +574,17 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Coapplicant Pan Details Filled"
+  },
+  {
+   "fieldname": "file_password",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "File Password"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-14 12:34:46.356606",
+ "modified": "2024-03-15 13:18:45.384116",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

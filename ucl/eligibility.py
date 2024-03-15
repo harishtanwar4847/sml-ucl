@@ -847,7 +847,11 @@ def bre_offers(**kwargs):
                 eligibility_doc.offers = str(response.json())
                 eligibility_doc.save(ignore_permissions = True)
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
-                return ucl.responder.respondWithSuccess(message=frappe._("Offers Successfully Generated"), data=response.json()['offers'])
+                if response.json()['offers']:
+                    return ucl.responder.respondWithSuccess(message=frappe._("Offers Successfully Generated"), data=response.json()['offers'])
+                else:
+                    return ucl.responder.respondWithSuccess(message=frappe._(response.json()['message']))
+
             else:
                 ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
@@ -1214,6 +1218,7 @@ def ibb(**kwargs):
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=details)
         else:
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(response.json()['message']))
         
     except ucl.exceptions.APIException as e:
