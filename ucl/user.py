@@ -601,7 +601,7 @@ def esign_request(**kwargs):
         headers = {
             "authorization": f"Basic {base64_credentials}",
         }
-        api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str(data), url=str(url), headers= str(headers))
         if data.get("consent") == 1:
 
             signers_data = {
@@ -673,7 +673,7 @@ def esign_request(**kwargs):
                             "consent": "E-sign",
                         }
                     ).insert(ignore_permissions=True)
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
 
             id = response.json()['id']
             partner.save(ignore_permissions = True)
@@ -713,9 +713,9 @@ def get_esign_details(**kwargs):
 
         response = requests.get(url, headers=headers, data=data)
        
-        api_log_doc = ucl.log_api(method = "Get Esign details", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" ))
+        api_log_doc = ucl.log_api(method = "Get Esign details", request_time = datetime.now(), request = str(data), url=str(url), headers=str(headers))
         
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
         if response.status_code == 200:
             if json.loads(response.text)["agreement_status"] == "completed":
                 download_esign_document(data.get("document_id"))
@@ -760,7 +760,7 @@ def download_esign_document(document_id):
         partner.digital_agreement = file.file_url
         partner.kyc_digital_agreement_linked = 1
         partner.save(ignore_permissions = True)
-        api_log_doc = ucl.log_api(method = "Download Esign document", request_time = datetime.now(), request = str("URL" + str(url)+ "\n"+ str(headers) + "\n" + document_id))
+        api_log_doc = ucl.log_api(method = "Download Esign document", request_time = datetime.now(), request = str(payload) , url= str(url), headers = str(headers), path_params = str(document_id))
         
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "success")
 

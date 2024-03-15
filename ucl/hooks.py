@@ -150,10 +150,12 @@ scheduler_events = {
 	# 	"ucl.tasks.monthly"
 	# ],
     "cron" : {
-        "0 0 * * *": [
-            "ucl.authorize_deepvue",
-            "ucl.authorize_ibb"
+        "1 0 * * *": [
+            "ucl.authorize_deepvue"
         ],  # At 12:00 AM
+        "5 0 * * *": [
+            "ucl.authorize_ibb"
+        ]
 	},
 }
 
