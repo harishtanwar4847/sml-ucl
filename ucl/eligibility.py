@@ -1268,7 +1268,7 @@ def ibb(**kwargs):
         
         api_log_doc = ucl.log_api(method = "IBB {} API".format(data.get("for")), request_time = datetime.now(), request = str(payload), url= str(url))          
         if response.status_code == 200:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json(), status_code=response.status_code), status_code=response.status_code)
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data=details)
         else:
             ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
