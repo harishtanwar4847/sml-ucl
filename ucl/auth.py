@@ -950,15 +950,18 @@ def rc_advance(**kwargs):
                 "access_token": ucl_setting.ibb_token 
             }
             make_response = requests.request("POST", url, data=make_payload)
-            if make_response.json()['status'] == 200:
-                make_list = make_response.json()['make']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
-            
-            for i in make_list:
-                if maker_description[0] in i:
-                    make = i
+            if make_response.json():
+                if make_response.json()['status'] == 200:
+                    make_list = make_response.json()['make']
+                else: 
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=response.json()['status'])
+                    raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
+                
+                for i in make_list:
+                    if maker_description[0] in i:
+                        make = i
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
             model_payload = {
                 "for": "model",  
@@ -968,29 +971,35 @@ def rc_advance(**kwargs):
                 "access_token": ucl_setting.ibb_token 
             }
             model_response = requests.request("POST", url, data=model_payload)
-            if model_response.json()['status'] == 200:
-                model_list = model_response.json()['model']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
-            for i in model_list:
-                if maker_model[0] in i:
-                    model = i
+            if model_response.json():
+                if model_response.json()['status'] == 200:
+                    model_list = model_response.json()['model']
+                else: 
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=response.json()['status'])
+                    raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
+                for i in model_list:
+                    if maker_model[0] in i:
+                        model = i
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
             city_payload = {
                 "for": "city",
                 "access_token": ucl_setting.ibb_token 
             }
             city_response = requests.request("POST", url, data=city_payload)
-            if city_response.json()['status'] == 200:
-                city_list = city_response.json()['city']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
-            
-            for i in city_list:
-                if location[0] in i:
-                    city = i
+            if city_response.json():
+                if city_response.json()['status'] == 200:
+                    city_list = city_response.json()['city']
+                else: 
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=response.json()['status'])
+                    raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
+                
+                for i in city_list:
+                    if location[0] in i:
+                        city = i
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
             variant_payload = {
                 "for": "variant", 
@@ -1001,23 +1010,28 @@ def rc_advance(**kwargs):
                 "access_token": ucl_setting.ibb_token 
             }
             variant_response = requests.request("POST", url, data=variant_payload)
-
-            if variant_response.json()['status'] == 200:
-                variant_list = variant_response.json()['variant']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(variant_response.json()['message']))
+            if variant_response.json():
+                if variant_response.json()['status'] == 200:
+                    variant_list = variant_response.json()['variant']
+                else: 
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=response.json()['status'])
+                    raise ucl.exceptions.NotFoundException(message=frappe._(variant_response.json()['message']))
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
             color_payload = {
                 "for": "color",
                 "access_token": ucl_setting.ibb_token 
             }
             color_response = requests.request("POST", url, data=color_payload)
-            if color_response.json()['status'] == 200:
-                color_list = color_response.json()['color']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
+            if color_response.json():
+                if color_response.json()['status'] == 200:
+                    color_list = color_response.json()['color']
+                else: 
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.json()['status'])
+                    raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
             if not city:
                 response = { 

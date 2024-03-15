@@ -605,7 +605,6 @@ def partner_list():
 def associate_list():
     user = __user()
     partner = frappe.get_all("Partner", filters = {"user_id": user.name}, fields = ["name"])
-    print(partner)
     if len(partner) == 0:
         raise NotFoundException
     else:

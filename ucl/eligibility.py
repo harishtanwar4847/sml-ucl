@@ -12,6 +12,9 @@ import base64
 import xmltodict
 import json
 from html import unescape
+import requests
+import io
+import PyPDF2
 
 
 @frappe.whitelist(allow_guest=True)
@@ -944,7 +947,7 @@ def create_workorder(**kwargs):
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             id = response.json()['id']
             add_bank_statement(id,data.get("id"))
-            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+            # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
@@ -972,15 +975,32 @@ def add_bank_statement(id,eligibility_id):
         eligibility_doc = frappe.get_doc("Eligibility Check", eligibility_id)
         bank_file = eligibility_doc.bank_statement_file
         response = requests.get(bank_file)
+        password = eligibility_doc.file_password
+        if response.status_code == 200:
+            pdf_data = io.BytesIO(response.content)
+            reader = PyPDF2.PdfReader(pdf_data)
+            if reader.is_encrypted:
+                try:
+                    reader.decrypt(password)
+                    output_stream = io.BytesIO()
+                    writer = PyPDF2.PdfWriter()
+                    for page_num in range(len(reader.pages)):
+                        writer.add_page(reader.pages[page_num])
+                    writer.write(output_stream)
+                    content =  output_stream.getvalue()
+                except Exception as e:
+                    return ucl.responder.respondWithFailure(message=frappe._("Incorrect Password for Bank Statement File"))
+            else:
+                content =  pdf_data.getvalue()
         files = {
-            'file': ('bank_statement.pdf', response.content, 'application/pdf'),
+            'file': ('bank_statement.pdf', content, 'application/pdf'),
         }
         response = requests.request("POST", url, headers=headers, data=payload, files=files)
         api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("Workorder id" + id + "Eligibility Id : " + eligibility_id), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             process_workorder(id)
-            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+            # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
@@ -1005,7 +1025,7 @@ def process_workorder(id):
         if response.status_code == 200:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             retrieve_workorder(id)
-            return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
+            # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
@@ -1125,7 +1145,11 @@ def ibb(**kwargs):
             }
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['year']
+                if response.json():
+                    details=response.json()['year']
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
 
         elif data.get("for") == "month":
             payload = {
@@ -1135,7 +1159,10 @@ def ibb(**kwargs):
             }
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['month']
+                if response.json():
+                    details=response.json()['month']
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
         elif data.get("for") == "make":
             payload = {
@@ -1146,8 +1173,11 @@ def ibb(**kwargs):
             }
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['make']
-        
+                if response.json():
+                    details=response.json()['make']
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
         elif data.get("for") == "model":
             payload = {
             "for": "model", 
@@ -1158,7 +1188,10 @@ def ibb(**kwargs):
             } 
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['model']  
+                if response.json():
+                    details=response.json()['model']  
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
             
         elif data.get("for") == "variant":
             payload = {
@@ -1171,7 +1204,10 @@ def ibb(**kwargs):
             }  
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['variant'] 
+                if response.json():
+                    details=response.json()['variant'] 
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
         elif data.get("for") == "location":
             payload = {
@@ -1180,7 +1216,10 @@ def ibb(**kwargs):
             } 
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['city']
+                if response.json():
+                    details=response.json()['city']
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
         elif data.get("for") == "color":
             payload = {
@@ -1189,9 +1228,11 @@ def ibb(**kwargs):
             }
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['color'] 
+                if response.json():
+                    details=response.json()['color'] 
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
             
-
         elif data.get("for") == "comprehensivePrice":
             payload = {
                 "for": "comprehensivePrice", 
@@ -1208,10 +1249,14 @@ def ibb(**kwargs):
             }
             response = requests.request("POST", url, data=payload)
             if response.status_code == 200:
-                details=response.json()['retail']['bestprice']
-                l= []
-                l.append(str(details))
-                details = l
+                if response.json():
+                    details=response.json()['retail']['bestprice']
+                    l= []
+                    l.append(str(details))
+                    details = l
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
             if data.get("id") == "":
                 return ucl.responder.respondWithFailure(message=frappe._("Eligibility Check ID required"))
             

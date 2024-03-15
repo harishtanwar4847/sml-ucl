@@ -103,7 +103,14 @@ def update_lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
         user = ucl.__user()
-        partner = ucl.__partner(user.name)
+        user_roles = frappe.db.get_values(
+            "Has Role", {"parent": user.name, "parenttype": "User"}, ["role"]
+        )
+        user_role = []
+        for i in list(user_roles):
+            user_role.append(i[0])
+        if "Partner" in user_role or "Partner Associate" in user_role:
+            partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,{
