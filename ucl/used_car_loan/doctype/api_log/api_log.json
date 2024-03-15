@@ -9,10 +9,15 @@
   "api_type",
   "is_error",
   "error",
-  "request",
-  "response",
   "request_time",
-  "response_time"
+  "response_time",
+  "api_status_code",
+  "column_break_whyx",
+  "api_url",
+  "api_headers",
+  "path_params",
+  "request",
+  "response"
  ],
  "fields": [
   {
@@ -67,11 +72,39 @@
    "fieldtype": "Code",
    "label": "Error",
    "read_only": 1
+  },
+  {
+   "fieldname": "api_status_code",
+   "fieldtype": "Data",
+   "label": "API Status Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_whyx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "api_url",
+   "fieldtype": "Data",
+   "label": "API URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "api_headers",
+   "fieldtype": "Small Text",
+   "label": "API Headers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "path_params",
+   "fieldtype": "Data",
+   "label": "Path Params",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-07 18:00:07.362479",
+ "modified": "2024-03-13 12:31:01.788833",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "API Log",

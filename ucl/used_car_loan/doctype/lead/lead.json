@@ -247,11 +247,9 @@
    "mandatory_depends_on": "eval:doc.occupation_type == \"Salaried\";"
   },
   {
-   "depends_on": "eval:doc.occupation_type == \"Self Employed\";",
    "fieldname": "obligations",
    "fieldtype": "Data",
-   "label": "Obligations",
-   "mandatory_depends_on": "eval:doc.occupation_type == \"Self Employed\";"
+   "label": "Obligations (Percent)"
   },
   {
    "fieldname": "first_name",
@@ -266,7 +264,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-12 11:56:04.422481",
+ "modified": "2024-03-12 15:39:34.277881",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
