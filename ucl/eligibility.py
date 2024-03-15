@@ -1136,7 +1136,8 @@ def ibb(**kwargs):
         },
         )
         ucl_setting = frappe.get_single("UCL Settings")
-        url = ucl_setting.ibb_url
+        # url = ucl_setting.ibb_url
+        url = "https://api2.stageibb.com/api/SwitchMyLoan"
 
         if data.get("for") == "year":
             payload = {
