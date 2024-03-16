@@ -1072,7 +1072,7 @@ def rc_advance(**kwargs):
                 ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._(rc_response.json()['message']))
         else:
-            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=response.status_code)
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=rc_response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(rc_response.json()['message']))
 
     except ucl.exceptions.APIException as e:
