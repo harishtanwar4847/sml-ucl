@@ -65,7 +65,6 @@
    "options": "\nDirect\nPartner"
   },
   {
-   "default": "NA",
    "fetch_if_empty": 1,
    "fieldname": "partner_code",
    "fieldtype": "Link",
