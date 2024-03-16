@@ -519,7 +519,7 @@ def enhance_match(**kwargs):
                 register = register_mobile_no(register_data)
                 generate_otp_data = {"mobileNo" : eligibility_doc.mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
             else:
-                ucl.log_api_response(is_error = 1, error  = "Details required for enhance match not found", api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=register.status_code)
+                ucl.log_api_response(is_error = 1, error  = "Details required for enhance match not found", api_log_doc = api_log_doc, api_type = "Third Party", response = "")
                 return ucl.responder.respondWithFailure(message = frappe._("Details required for enhance match not found"))
  
 
@@ -544,7 +544,7 @@ def enhance_match(**kwargs):
                 register = register_mobile_no(register_data)
                 generate_otp_data = {"mobileNo" : eligibility_doc.coapplicant_mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "CUSTOM"}
             else:
-                ucl.log_api_response(is_error = 1, error  = "Details required for enhance match not found", api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=register.status_code)
+                ucl.log_api_response(is_error = 1, error  = "Details required for enhance match not found", api_log_doc = api_log_doc, api_type = "Third Party", response = "")
                 return ucl.responder.respondWithFailure(message = frappe._("Details required for enhance match not found"))
  
         generate_otp = generate_mobile_otp(generate_otp_data)
@@ -554,7 +554,7 @@ def enhance_match(**kwargs):
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp))
             return ucl.responder.respondWithSuccess(message = frappe._("Otp Generated Successfully"), data=generate_otp)
         else:
-            ucl.log_api_response(is_error = 1, error  = generate_otp["errorString"], api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp), status_code=generate_otp.status_code)
+            ucl.log_api_response(is_error = 1, error  = generate_otp["errorString"], api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp))
             return ucl.responder.respondWithFailure(message = frappe._(generate_otp["errorString"]))
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = "")
@@ -596,7 +596,7 @@ def full_match(id,coapplicant):
                 register = register_mobile_no(register_data)
                 generate_otp_data = {"mobileNo" : eligibility_doc.mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "NORMAL"}
             else:
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=register.status_code)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
                 return ucl.responder.respondWithFailure(message = frappe._("Details required for full match not found"))
  
         else:
@@ -628,17 +628,17 @@ def full_match(id,coapplicant):
                 register = register_mobile_no(register_data)
                 generate_otp_data = {"mobileNo" : eligibility_doc.coapplicant_mobile_no, "stgOneHitId":register["stgOneHitId"], "stgTwoHitId":register["stgTwoHitId"], "type" : "NORMAL"}
             else:
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=register.status_code)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
                 return ucl.responder.respondWithFailure(message = frappe._("Details required for full match not found"))
  
         generate_otp = generate_mobile_otp(generate_otp_data)
         if generate_otp["otpGenerationStatus"] == "1":
             generate_otp["type"] = "NORMAL"
             generate_otp["id"] = eligibility_doc.name
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp), status_code=generate_otp.status_code)
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp))
             return ucl.responder.respondWithSuccess(message = frappe._("Dear Customer, we are not able to fetch your bureau report via enhanced match hence we are redirecting to full match"), data=generate_otp)
         else:
-            ucl.log_api_response(is_error = 1, error  = generate_otp["errorString"], api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp), status_code=generate_otp.status_code)
+            ucl.log_api_response(is_error = 1, error  = generate_otp["errorString"], api_log_doc = api_log_doc, api_type = "Third Party", response = str(generate_otp))
             return ucl.responder.respondWithFailure(message = frappe._(generate_otp["errorString"]))
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Full Match", request_time = datetime.now(), request = "")
