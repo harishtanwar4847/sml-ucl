@@ -97,7 +97,6 @@
   "file_password",
   "salary_slip",
   "column_break_acqa",
-  "monthly_income",
   "obligations",
   "offers_tab",
   "offers_section",
@@ -453,11 +452,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "monthly_income",
-   "fieldtype": "Data",
-   "label": "Monthly Income"
-  },
-  {
    "fieldname": "obligations",
    "fieldtype": "Data",
    "label": "Obligations (Percent)"
@@ -557,9 +551,8 @@
   },
   {
    "fieldname": "current_rate_of_interest",
-   "fieldtype": "Float",
-   "label": "Current Rate of Interest",
-   "precision": "2"
+   "fieldtype": "Data",
+   "label": "Current Rate of Interest"
   },
   {
    "fieldname": "sanctioned_tenure",
@@ -597,7 +590,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-18 14:47:17.872006",
+ "modified": "2024-03-18 15:37:07.104471",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
