@@ -941,6 +941,7 @@ def rc_advance(**kwargs):
                 month = rc_response.json()['data']['registration_date'].split("-")[1]
                 maker_description = rc_response.json()['data']['maker_description'].split()
                 maker_model = rc_response.json()['data']['maker_model'].split()
+                print(maker_model)
                 location = rc_response.json()['data']['registered_at'].split()
                 owner = rc_response.json()['data']['owner_number']
                 make = ""
@@ -979,6 +980,7 @@ def rc_advance(**kwargs):
                     "access_token": ucl_setting.ibb_token 
                 }
                 model_response = requests.request("POST", url, data=model_payload)
+                print(model_response.text)
                 if model_response.json():
                     if model_response.status_code == 200:
                         model_list = model_response.json()['model']
@@ -986,7 +988,7 @@ def rc_advance(**kwargs):
                         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=model_response.status_code)
                         raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
                     for i in model_list:
-                        if maker_model[0] in i:
+                        if maker_model[0] in i or maker_model[1] in i:
                             model = i
                 else:
                     return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
