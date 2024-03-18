@@ -336,7 +336,7 @@ def update_coapplicant_details(**kwargs):
                 "state": "",
                 "country": "",
                 "aadhaar":"",
-                "address": "required",
+                "address": "",
         })
         api_log_doc = ucl.log_api(method = "Update Coapplicant Details", request_time = datetime.now(), request = str(data))
         eligibility_dict ={

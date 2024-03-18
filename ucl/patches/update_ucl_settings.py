@@ -6,6 +6,9 @@ def execute():
 
     las_settings.update(
         {
+            "sml_website" : "www.switchmyloan.in",
+            "sml_contact_number" : "+91 7365060606",
+            "sml_email_id" : "info@switchmyloan.in",
             "deepvue_client_id": "live_switchmyloan",
             "deepvue_client_secret": "66cb63695be3cb53f991cb907ab6c2d1fdd7d8d651fb834f48fe5a171ec41b2a",
             "digio_client_id": "AIXIC9J5YKIYDGBTN9LG19TGBRGUYJ38",

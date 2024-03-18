@@ -89,8 +89,12 @@ def lead_details(**kwargs):
                 "occupation_type": data.get("occupation_type"),
                 "monthly_income": data.get("monthly_income"),
                 "obligations": data.get("obligations"),
-                "requested_loan_amount": data.get("requested_loan_amount"),
-            }).insert(ignore_permissions=True)
+                "requested_loan_amount": data.get("requested_loan_amount")
+            })
+            if data.get("sub_product") == "New Car":
+                lead.status = "Open"
+                lead.workflow_state = "Open"
+            lead.save(ignore_permissions=True)
             frappe.db.commit()
             
             message = "Lead details saved successfully"
@@ -144,6 +148,8 @@ def update_lead_details(**kwargs):
             "principal_outstanding": data.get("principal_outstanding"),
             "rate_of_interest": data.get("rate_of_interest"),
             "tenure_serviced": data.get("tenure_serviced"),
+            "status" : "Open",
+            "workflow_state" : "Open"
         }
         lead_doc = frappe.get_doc("Lead", data.get("id")).update(lead).save(ignore_permissions = True)
         

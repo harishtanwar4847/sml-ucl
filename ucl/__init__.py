@@ -105,13 +105,14 @@ def send_otp(**kwargs):
                     token_mark_as_used(old_user_token)
                 api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
                 user_token = create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
-                login_consent_doc = frappe.get_doc(
-                        {
-                            "doctype": "User Consent",
-                            "mobile": data.get("mobile"),
-                            "consent": "Login",
-                        }
-                    ).insert(ignore_permissions=True)
+                if data.get("token_type") == "Login OTP":
+                    login_consent_doc = frappe.get_doc(
+                            {
+                                "doctype": "User Consent",
+                                "mobile": data.get("mobile"),
+                                "consent": "Login",
+                            }
+                        ).insert(ignore_permissions=True)
                 log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
                 sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Send OTP")
                 message = sms_notification_doc.message.format(partner = "Partner", token =  user_token.token)
