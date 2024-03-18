@@ -619,10 +619,10 @@ def lead_dashboard_list():
     user = __user()
     lead = frappe.get_all("Lead", filters= {"owner": user.name}, fields = ["name", "mobile_number", "email_id", "full_name", "pan_number", "workflow_state", "sub_product"])
     if len(lead) == 0:
-        raise NotFoundException
+        dict = {"lead_list": lead}
     else:
         dict = {"lead_list": lead}
-        return dict
+    return dict
 
 @frappe.whitelist()
 def authorize_deepvue():

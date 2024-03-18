@@ -180,8 +180,3 @@ def all_lead_details():
         api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
-    except frappe.SecurityException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
-        return ucl.responder.respondUnauthorized(message=str(e))
