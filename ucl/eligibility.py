@@ -29,7 +29,7 @@ def update_basic_details(**kwargs):
                 "mobile" : ["required", "decimal", ucl.validator.rules.LengthRule(10)],
         })
         api_log_doc = ucl.log_api(method = "Update Basic Details", request_time = datetime.now(), request = str(data))
-        if int(data.get("mobile")[0]) < 5:
+        if int(data.get("mobile")[0]) < 6:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             if frappe.db.exists("Lead", {"mobile_number" : data.get("mobile")}):
@@ -131,31 +131,35 @@ def update_pan_details(**kwargs):
                 "dob": "",
         })
         api_log_doc = ucl.log_api(method = "Update Eligibility PAN Details", request_time = datetime.now(), request = str(data))
-        eligibility_dict = {
-                "pan_number": data.get("pan_number"),
-                "first_name": data.get("first_name"),
-                "last_name": data.get("last_name"),
-                "full_name": data.get("full_name"),
-                "masked_aadhaar": data.get("masked_aadhaar"),
-                "flat_no": data.get("flat_no"),
-                "line_1": data.get("address_line_1"),
-                "line_2": data.get("address_line_2"),
-                "street_name": data.get("address_street_name"),
-                "zip": data.get("zip"),
-                "pan_city": data.get("city"),
-                "pan_state": data.get("state"),
-                "pan_country": data.get("country"),
-                "full_address": data.get("full_address"),
-                "email_id": data.get("email"),
-                "phone_number": data.get("phone_number"),
-                "gender": data.get("gender"),
-                "dob": data.get("dob"),
-                "pan_details_filled": 1
-            }
-        eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
-        frappe.db.commit()
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
-        return ucl.responder.respondWithSuccess(message=frappe._("Data updated successfuly"), data={"id": data.get("id")})
+        eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
+        if eligibility_doc.mobile_no != data.get("phone_number"):
+            return ucl.responder.respondWithFailure(message=frappe._("Mobile Number entered should be same as the mobile number from PAN card."), data={"id": data.get("id")})
+        else:
+            eligibility_dict = {
+                    "pan_number": data.get("pan_number"),
+                    "first_name": data.get("first_name"),
+                    "last_name": data.get("last_name"),
+                    "full_name": data.get("full_name"),
+                    "masked_aadhaar": data.get("masked_aadhaar"),
+                    "flat_no": data.get("flat_no"),
+                    "line_1": data.get("address_line_1"),
+                    "line_2": data.get("address_line_2"),
+                    "street_name": data.get("address_street_name"),
+                    "zip": data.get("zip"),
+                    "pan_city": data.get("city"),
+                    "pan_state": data.get("state"),
+                    "pan_country": data.get("country"),
+                    "full_address": data.get("full_address"),
+                    "email_id": data.get("email"),
+                    "phone_number": data.get("phone_number"),
+                    "gender": data.get("gender"),
+                    "dob": data.get("dob"),
+                    "pan_details_filled": 1
+                }
+            eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
+            frappe.db.commit()
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(eligibility_doc))
+            return ucl.responder.respondWithSuccess(message=frappe._("Data updated successfuly"), data={"id": data.get("id")})
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Eligibility PAN Details", request_time = datetime.now(), request = "")

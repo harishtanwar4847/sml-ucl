@@ -59,7 +59,7 @@ def lead_details(**kwargs):
             "requested_loan_amount": ["required"]
         })
         api_log_doc = ucl.log_api(method = "Save Lead Details", request_time = datetime.now(), request = str(data))
-        if int(data.get("mobile_number")[0]) < 5:
+        if int(data.get("mobile_number")[0]) < 6:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             dup_entry_check(product=data.get("sub_product"), mobile=data.get("mobile_number"), loan_amt=data.get("requested_loan_amount"))

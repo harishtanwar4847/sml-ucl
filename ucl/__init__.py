@@ -453,26 +453,33 @@ def validate_receiver_nos(receiver_list):
 
 
 def send_sms_custom(receiver_list, msg, sender_name="", success_msg=True, sms_template_id=None):
-    from six import string_types
+    try:
+        from six import string_types
 
-    if isinstance(receiver_list, string_types):
-        receiver_list = json.loads(receiver_list)
-        if not isinstance(receiver_list, list):
-            receiver_list = [receiver_list]
+        if isinstance(receiver_list, string_types):
+            receiver_list = json.loads(receiver_list)
+            if not isinstance(receiver_list, list):
+                receiver_list = [receiver_list]
 
-    receiver_list = validate_receiver_nos(receiver_list)
+        receiver_list = validate_receiver_nos(receiver_list)
 
-    arg = {
-        "receiver_list": receiver_list,
-        "message": frappe.safe_decode(msg).encode("utf-8"),
-        "success_msg": success_msg,
-        "sms_template_id": sms_template_id,
-    }
+        arg = {
+            "receiver_list": receiver_list,
+            "message": frappe.safe_decode(msg).encode("utf-8"),
+            "success_msg": success_msg,
+            "sms_template_id": sms_template_id,
+        }
 
-    if frappe.db.get_value("SMS Settings", None, "sms_gateway_url"):
-        send_via_gateway(arg)
-    else:
-        frappe.msgprint(_("Please Update SMS Settings"))
+        if frappe.db.get_value("SMS Settings", None, "sms_gateway_url"):
+            send_via_gateway(arg)
+        else:
+            frappe.msgprint(_("Please Update SMS Settings"))
+    except Exception as e:
+        frappe.log_error(
+            message=frappe.get_traceback()
+            + "\nNotification Info:\n",
+            title="UCL SMS Notification Error",
+        )
 
 
 def send_via_gateway(arg):

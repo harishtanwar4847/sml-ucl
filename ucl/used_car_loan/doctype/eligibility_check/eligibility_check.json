@@ -557,8 +557,9 @@
   },
   {
    "fieldname": "current_rate_of_interest",
-   "fieldtype": "Data",
-   "label": "Current Rate of Interest"
+   "fieldtype": "Float",
+   "label": "Current Rate of Interest",
+   "precision": "2"
   },
   {
    "fieldname": "sanctioned_tenure",
@@ -596,7 +597,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-15 14:38:48.579848",
+ "modified": "2024-03-18 14:47:17.872006",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
