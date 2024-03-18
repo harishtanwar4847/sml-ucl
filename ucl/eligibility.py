@@ -708,8 +708,8 @@ def validate_mobile_otp(**kwargs):
                     score = json_dict['INProfileResponse']['SCORE']['BureauScore']
                     eligibility_doc.coapplicant_cibil_score = score
                     eligibility_doc.save(ignore_permissions=True)
-
-            validate_response = {"id" : data.get("id"), "response" : response.json()}
+            message['errorString'] = None
+            validate_response = {"id" : data.get("id"), "response" : message}
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(validate_response), status_code=response.status_code)
             return ucl.responder.respondWithSuccess(message = frappe._(message['errorString']), data=validate_response)
 
@@ -1136,8 +1136,8 @@ def ibb(**kwargs):
         },
         )
         ucl_setting = frappe.get_single("UCL Settings")
-        # url = ucl_setting.ibb_url
-        url = "https://api2.stageibb.com/api/SwitchMyLoan"
+        url = ucl_setting.ibb_url
+        # url = "https://api2.stageibb.com/api/SwitchMyLoan"
 
         if data.get("for") == "year":
             payload = {
