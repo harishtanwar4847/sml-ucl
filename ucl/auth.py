@@ -941,7 +941,6 @@ def rc_advance(**kwargs):
                 month = rc_response.json()['data']['registration_date'].split("-")[1]
                 maker_description = rc_response.json()['data']['maker_description'].split()
                 maker_model = rc_response.json()['data']['maker_model'].split()
-                print(maker_model)
                 location = rc_response.json()['data']['registered_at'].split()
                 owner = rc_response.json()['data']['owner_number']
                 make = ""
@@ -980,7 +979,6 @@ def rc_advance(**kwargs):
                     "access_token": ucl_setting.ibb_token 
                 }
                 model_response = requests.request("POST", url, data=model_payload)
-                print(model_response.text)
                 if model_response.json():
                     if model_response.status_code == 200:
                         model_list = model_response.json()['model']
