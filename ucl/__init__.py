@@ -272,7 +272,7 @@ def add_firebase_token(firebase_token, app_version_platform, entity):
 
     if frappe.db.exists("User Token", {"token_type": "Firebase Token", "entity":entity, "used":0}):
         old_token = frappe.get_last_doc("User Token",filters={"token_type": "Firebase Token", "entity":entity, "used":0})
-        if old_token:
+        if old_token.token != firebase_token:
             token_mark_as_used(old_token)
 
     get_user_token = frappe.db.get_value(

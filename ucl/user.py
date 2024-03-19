@@ -604,6 +604,7 @@ def esign_request(**kwargs):
         headers = {
             "authorization": f"Basic {base64_credentials}",
         }
+        user.name = "aditi.patade@atriina.com"
         # user.name = "harish.tanwar@atriina.com"
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str(data), url=str(url), headers= str(headers))
         if data.get("consent") == 1:

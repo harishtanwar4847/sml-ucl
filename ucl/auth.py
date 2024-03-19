@@ -1168,7 +1168,7 @@ def cheque_ocr(**kwargs):
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def logout():
     try:
         ucl.validate_http_method("POST")
