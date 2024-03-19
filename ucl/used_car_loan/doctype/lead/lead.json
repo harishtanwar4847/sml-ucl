@@ -138,8 +138,7 @@
   {
    "fieldname": "address",
    "fieldtype": "Small Text",
-   "label": "Full Address",
-   "reqd": 1
+   "label": "Full Address"
   },
   {
    "fieldname": "email_id",
@@ -604,7 +603,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-18 14:46:22.641083",
+ "modified": "2024-03-18 16:27:18.676695",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
