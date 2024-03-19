@@ -744,7 +744,7 @@ def pan_plus(pan_number):
         if response.json()['code'] == 200:
             return response.json()
         else:
-            raise ucl.exceptions.NotFoundException(message = frappe._(response.json()['message']))
+            raise ucl.exceptions.NotFoundException(message = frappe._("Invalid PAN"))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
