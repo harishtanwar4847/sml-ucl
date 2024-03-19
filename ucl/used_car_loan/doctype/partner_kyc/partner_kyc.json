@@ -12,6 +12,7 @@
   "live_image",
   "live_image_remarks",
   "kyc_live_image_linked",
+  "reason_of_rejection",
   "pan_details_tab",
   "pan_card_file",
   "pan_number",
@@ -575,11 +576,17 @@
    "fieldtype": "Data",
    "label": "Live Image Remarks",
    "read_only": 1
+  },
+  {
+   "fieldname": "reason_of_rejection",
+   "fieldtype": "Data",
+   "label": "Reason of Rejection",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-27 23:01:33.523408",
+ "modified": "2024-03-18 21:44:20.224914",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner KYC",
