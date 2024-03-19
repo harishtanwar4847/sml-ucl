@@ -1055,13 +1055,13 @@ def retrieve_workorder(id,eligibility_id):
             while attempts < max_attempts:
                 dow_rep = download_report(id,eligibility_id)
                 if dow_rep.status_code == 200:
-                    return ucl.responder.respondWithSuccess(message=frappe._("success"), data=dow_rep.json())                
+                    return ucl.responder.respondWithSuccess(message=frappe._("Your bank statement has been uploaded successfully."), data=dow_rep.json())                
                 else:
                     attempts += 1
                     time.sleep(2)
                     
             else:
-                return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=dow_rep.text)
+                return ucl.responder.respondWithFailure(message=frappe._("It is taking too much time. Please try after some time."), data=dow_rep.text)
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._("Failed"), data=response.text)
