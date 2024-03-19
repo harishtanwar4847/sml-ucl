@@ -795,6 +795,12 @@ def pan_ocr(**kwargs):
 
             if ocr_response.json()['code'] == 200:
                 id_number = ocr_response.json()["data"]["id_number"]
+                if frappe.db.exists("Partner KYC", {"pan_number": id_number,"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
+                    message = "This Pan Card Already exists in the system."
+                    partner_kyc.kyc_validation_remark = message
+                    partner_kyc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    return ucl.responder.respondWithFailure(message=frappe._(message), data=str(ocr_response.json()))
 
                 if id_number and ocr_response.json()['data']["pan_type"]:
                     if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
@@ -886,10 +892,17 @@ def aadhaar_ocr(**kwargs):
         if response.json()['code'] == 200:
             if response.json()['data']['id_number']:
                 id_number = response.json()['data']['id_number'][-4:]
-                if partner_kyc.aadhaar_linked and id_number != partner_kyc.masked_aadhaar[-4:]:
-                    raise ucl.exceptions.FailureException(
-                            _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
-                        )
+                if frappe.db.exists("Partner KYC", {"id_number": response.json()['data']['id_number'],"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
+                    message = "This Aadhaar Card Already exists in the system."
+                    partner_kyc.kyc_validation_remark = message
+                    partner_kyc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    return ucl.responder.respondWithFailure(message=frappe._(message), data=str(response.json()))
+                elif partner_kyc.aadhaar_linked and id_number != partner_kyc.masked_aadhaar[-4:]:
+                    return ucl.responder.respondWithFailure(message = frappe._("Aadhaar Number does not match the Aadhaar linked with the provided PAN"))
+                else:
+                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code) 
+                    return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
             else:
                 partner_kyc.aadhaar_front = ""
                 partner_kyc.aadhaar_back  = ""
@@ -906,9 +919,6 @@ def aadhaar_ocr(**kwargs):
             ucl.log_api_response(is_error = 1, error  = response.json()["message"], api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
 
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code) 
-    
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = "")

@@ -8,11 +8,11 @@
   "status",
   "associate",
   "naming_series",
+  "kyc_validation_remark",
   "column_break_ufuf",
   "live_image",
   "live_image_remarks",
   "kyc_live_image_linked",
-  "reason_of_rejection",
   "pan_details_tab",
   "pan_card_file",
   "pan_number",
@@ -578,15 +578,15 @@
    "read_only": 1
   },
   {
-   "fieldname": "reason_of_rejection",
+   "fieldname": "kyc_validation_remark",
    "fieldtype": "Data",
-   "label": "Reason of Rejection",
+   "label": "KYC Validation Remark",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-18 21:44:20.224914",
+ "modified": "2024-03-19 17:15:58.826721",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner KYC",
