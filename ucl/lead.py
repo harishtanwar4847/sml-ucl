@@ -21,15 +21,15 @@ def dup_entry_check(product, mobile, loan_amt):
 def lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user()
-        user_roles = frappe.db.get_values(
-            "Has Role", {"parent": user.name, "parenttype": "User"}, ["role"]
-        )
-        user_role = []
-        for i in list(user_roles):
-            user_role.append(i[0])
-        if "Partner" in user_role or "Partner Associate" in user_role:
-            partner = ucl.__partner(user.name)
+        # user = ucl.__user()
+        # user_roles = frappe.db.get_values(
+        #     "Has Role", {"parent": user.name, "parenttype": "User"}, ["role"]
+        # )
+        # user_role = []
+        # for i in list(user_roles):
+        #     user_role.append(i[0])
+        # if "Partner" in user_role or "Partner Associate" in user_role:
+        #     partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,{
@@ -90,7 +90,7 @@ def lead_details(**kwargs):
                 "monthly_income": data.get("monthly_income"),
                 "obligations": data.get("obligations"),
                 "requested_loan_amount": data.get("requested_loan_amount")
-            })
+            }).save(ignore_permissions=True)
             if data.get("sub_product") == "New Car":
                 lead.status = "Open"
                 lead.workflow_state = "Open"

@@ -799,10 +799,10 @@ def pan_ocr(**kwargs):
                 if id_number and ocr_response.json()['data']["pan_type"]:
                     if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
                         ucl.log_api_response(is_error = 1, error  = "Please upload a valid Company Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response), status_code=ocr_response.status_code)
-                        raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
+                        return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
                     elif data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] != "Individual":
                         ucl.log_api_response(is_error = 1, error  = "Please upload a valid Individual Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response), status_code=ocr_response.status_code)
-                        raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
+                        return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
                     else:
                         pan_plus_response = pan_plus(id_number)
 
@@ -1115,3 +1115,85 @@ def penny_drop(beneficiary_account_no,beneficiary_ifsc):
         api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = "")
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def cheque_ocr(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
+
+        data = ucl.validate(
+            kwargs,
+            {
+                "document1": ["required"],
+                "document2": "",
+                "name": "",
+                "extension": ["required"]
+        })
+        cheque_file_name = "{}_cancelled_cheque.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
+
+        cheque_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=cheque_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name, attached_to_field="cancelled_cheque",partner=partner)
+        partner_kyc.cancelled_cheque = cheque_file_url1
+        partner_kyc.save(ignore_permissions=True)
+        frappe.db.commit()
+        payload = {
+            "document1": cheque_file_url1,
+            "document2": "",
+            "name" : ""
+        }
+        ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.aadhaar_ocr 
+        
+        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str(payload), url = str(url), headers=str(headers))
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+        if response.json()['code'] == 200:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code) 
+            return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])   
+            
+        else:
+            partner_kyc.cancelled_cheque = ""
+            partner_kyc.save(ignore_permissions=True)
+            frappe.db.commit()
+            ucl.log_api_response(is_error = 1, error  = response.json()["message"], api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
+            return ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
+
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
+        return e.respond()
+    
+@frappe.whitelist()
+def logout():
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        api_log_doc = ucl.log_api(method = "Logout API", request_time = datetime.now(), request = str(user.name))
+        if frappe.db.exists("User Token", {"token_type": "Firebase Token", "entity":user.mobile_no, "used":0}):
+            old_token = frappe.get_last_doc("User Token",filters={"token_type": "Firebase Token", "entity":user.mobile_no, "used":0})
+            if old_token:
+                ucl.token_mark_as_used(old_token)
+                frappe.db.sql(
+                """ delete from `__Auth` where doctype='User' and name='{}' and fieldname='api_secret' """.format(
+                    frappe.session.user
+                    )
+                )
+                frappe.local.login_manager.logout()
+                frappe.db.commit()
+                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "Logged out Successfully", status_code=200)
+                return ucl.responder.respondWithSuccess(message=frappe._("Logged out Successfully"))   
+        else:
+            ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "Firebase Token does not exist.", status_code=417)
+            return ucl.responder.respondWithFailure(message = frappe._("Firebase Token for this user does not exist. Please login again with the App Pin."))
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Logout API", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
+        return e.respond()
+        
