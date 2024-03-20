@@ -24,7 +24,7 @@ from frappe.core.doctype.sms_settings.sms_settings import (
 import html_to_json
 
 
-__version__ = "1.1.0-uat"
+__version__ = "1.1.1-dev"
 
 
 
