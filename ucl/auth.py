@@ -521,7 +521,7 @@ def login(**kwargs):
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
         return ucl.responder.respondUnauthorized(message=str(e))
     
 
