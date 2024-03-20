@@ -265,7 +265,7 @@
   },
   {
    "fieldname": "aadhaar_dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB"
   },
   {
@@ -586,7 +586,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-19 17:15:58.826721",
+ "modified": "2024-03-20 09:39:12.021597",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner KYC",

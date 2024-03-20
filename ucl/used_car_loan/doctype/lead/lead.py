@@ -57,34 +57,28 @@ class Lead(Document):
 		if self.status == "Draft":
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Draft State")
 			message = sms_notification_doc.message.format(lead_name = self.full_name)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Open" and self.workflow_state == "Open":
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Open State")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, lead_id =  self.name)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Call Done" and self.caller_name:
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Call Done State")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, caller_name = self.caller_name, website=ucl_setting.sml_website)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Lender Selection" and self.caller_name:
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Lender Selection")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, lender = "the lender", phone=ucl_setting.sml_contact_number, email=ucl_setting.sml_email_id)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Logged In":
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Logged In")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, lender = "the lender", phone=ucl_setting.sml_contact_number, email=ucl_setting.sml_email_id)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Decisioned - Sanctioned":
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Decisioned - Sanctioned")
 			message = sms_notification_doc.message.format(phone=ucl_setting.sml_contact_number)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Decisioned - Rejected":
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Decisioned - Rejected")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, website=ucl_setting.sml_website)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 		elif self.status == "Post Sanction Docs" and self.caller_name:
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Post Sanctioned Docs")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, phone=ucl_setting.sml_contact_number, email=ucl_setting.sml_email_id)
-			frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
+			
+		frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)
 
 			
