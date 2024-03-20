@@ -82,6 +82,12 @@ class NotFoundException(APIException):
     http_status_code = 404
     message = frappe._("Data not found")
     save_error_log = False
+    
+
+class LeadNotFoundException(APIException):
+    http_status_code = 404
+    message = frappe._("Lead not found")
+    save_error_log = False
 
 
 class ForbiddenException(APIException):

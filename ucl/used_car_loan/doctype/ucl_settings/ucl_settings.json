@@ -5,6 +5,14 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "min_income",
+  "min_loan_amount",
+  "sml_website",
+  "sml_email_id",
+  "column_break_nqgl",
+  "max_income",
+  "max_loan_amount",
+  "sml_contact_number",
   "deepvue_details_section",
   "deepvue_client_id",
   "column_break_tydl",
@@ -279,12 +287,51 @@
    "fieldname": "ibb_url",
    "fieldtype": "Data",
    "label": "IBB URL"
+  },
+  {
+   "fieldname": "min_income",
+   "fieldtype": "Data",
+   "label": "Min. Income"
+  },
+  {
+   "fieldname": "min_loan_amount",
+   "fieldtype": "Data",
+   "label": "Min. Loan Amount "
+  },
+  {
+   "fieldname": "sml_website",
+   "fieldtype": "Data",
+   "label": "SML Website"
+  },
+  {
+   "fieldname": "sml_email_id",
+   "fieldtype": "Data",
+   "label": "SML Email id"
+  },
+  {
+   "fieldname": "column_break_nqgl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_income",
+   "fieldtype": "Data",
+   "label": "Max. Income"
+  },
+  {
+   "fieldname": "max_loan_amount",
+   "fieldtype": "Data",
+   "label": "Max. Loan Amount"
+  },
+  {
+   "fieldname": "sml_contact_number",
+   "fieldtype": "Data",
+   "label": "SML Contact Number"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-26 15:52:29.455292",
+ "modified": "2024-03-18 12:32:15.491579",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "UCL Settings",

@@ -80,11 +80,11 @@ def verify_email(**kwargs):
 
     except (ucl.ValidationError, ucl.ServerError) as e:
         api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(status=e.http_status_code, message=str(e))
     except Exception as e:
         api_log_doc = ucl.log_api(method = "Verify Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(is_success=False, error=e)
     
 
@@ -104,11 +104,11 @@ def request_verification_email():
         return ucl.generateResponse(message=frappe._("Verification email sent"))
     except (ucl.ValidationError, ucl.ServerError) as e:
         api_log_doc = ucl.log_api(method = "Request Verification Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(status=e.http_status_code, message=str(e))
     except Exception as e:
         api_log_doc = ucl.log_api(method = "Request Verification Email", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.generateResponse(is_success=False, error=e)"""
     
 
@@ -151,6 +151,7 @@ def verify_otp(**kwargs):
             if data.get("otp") == dummy_account.token:
                 token = dummy_account.token
             else:
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
                 return ucl.responder.respondWithFailure(message=frappe._("Invalid OTP"), data = data) 
         else:               
             token = ucl.verify_user_token(
@@ -167,6 +168,7 @@ def verify_otp(**kwargs):
                         raise ucl.exceptions.UserNotFoundException(
                             _("User disabled or missing")
                         )
+                    ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
                 raise ucl.exceptions.FailureException(message)
 
             if token:
@@ -216,12 +218,12 @@ def verify_otp(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.respondUnauthorized(message=str(e))
     
 
@@ -285,12 +287,12 @@ def verify_utility_otp(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.respondUnauthorized(message=str(e))
 
 @frappe.whitelist(allow_guest=True)
@@ -348,7 +350,7 @@ def set_pin(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Set Pin", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
     
@@ -421,7 +423,7 @@ def verify_forgot_pin_otp(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Verify Forgot Pin OTP", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -514,12 +516,12 @@ def login(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Login", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
     
 
@@ -561,12 +563,12 @@ def get_user_details(**kwargs):
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get User Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get User Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
 
 
@@ -584,12 +586,12 @@ def get_lender_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lender List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lender List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))  
 
 @frappe.whitelist(allow_guest=True)
@@ -606,12 +608,12 @@ def get_bank_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Bank List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Bank List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))      
     
 @frappe.whitelist(allow_guest=True)
@@ -628,12 +630,12 @@ def get_pincode_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Pincode List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Pincode List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))    
 
 @frappe.whitelist(allow_guest=True)
@@ -650,12 +652,12 @@ def get_employer_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Employer List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Employer List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))        
 
 @frappe.whitelist(allow_guest=True)
@@ -675,12 +677,12 @@ def get_partner_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Partner List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
     
 
@@ -698,12 +700,12 @@ def get_associate_list():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Associate List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Associate List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
     
     
@@ -724,7 +726,7 @@ def terms_of_use_nd_privacy_policy():
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Terms of use and privacy policy", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()"""
     
 @frappe.whitelist(allow_guest=True)
@@ -742,11 +744,11 @@ def pan_plus(pan_number):
         if response.json()['code'] == 200:
             return response.json()
         else:
-            raise ucl.exceptions.NotFoundException(message = frappe._(response.json()['message']))
+            raise ucl.exceptions.NotFoundException(message = frappe._("Invalid PAN"))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
 
     
@@ -793,12 +795,20 @@ def pan_ocr(**kwargs):
 
             if ocr_response.json()['code'] == 200:
                 id_number = ocr_response.json()["data"]["id_number"]
+                if frappe.db.exists("Partner KYC", {"pan_number": id_number,"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
+                    message = "This Pan Card Already exists in the system."
+                    partner_kyc.kyc_validation_remark = message
+                    partner_kyc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    return ucl.responder.respondWithFailure(message=frappe._(message), data=str(ocr_response.json()))
 
                 if id_number and ocr_response.json()['data']["pan_type"]:
                     if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
-                        raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
+                        ucl.log_api_response(is_error = 1, error  = "Please upload a valid Company Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response), status_code=ocr_response.status_code)
+                        return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
                     elif data.get("company_pan") == 0 and ocr_response.json()['data']["pan_type"] != "Individual":
-                        raise ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
+                        ucl.log_api_response(is_error = 1, error  = "Please upload a valid Individual Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response), status_code=ocr_response.status_code)
+                        return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
                     else:
                         pan_plus_response = pan_plus(id_number)
 
@@ -813,14 +823,14 @@ def pan_ocr(**kwargs):
                     partner_kyc.save(ignore_permissions=True)
                     frappe.db.commit()
                     response = ocr_response.json()
-                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=response.json()['code'])
+                    ucl.log_api_response(is_error = 1, error  = str(ocr_response.json()["message"]), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
                     return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
             else:
                 partner_kyc.company_pan_file = ""
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
                 response = ocr_response.json()
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=response.json()['code'])
+                ucl.log_api_response(is_error = 1, error  = str(ocr_response.json()["message"]), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._(ocr_response.json()["message"]), data=response)
             
         else:
@@ -828,12 +838,12 @@ def pan_ocr(**kwargs):
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
             api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(data))
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly")
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Document processed successfuly", status_code="200")
             return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"))
     
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
     
@@ -882,16 +892,23 @@ def aadhaar_ocr(**kwargs):
         if response.json()['code'] == 200:
             if response.json()['data']['id_number']:
                 id_number = response.json()['data']['id_number'][-4:]
-                if partner_kyc.aadhaar_linked and id_number != partner_kyc.masked_aadhaar[-4:]:
-                    raise ucl.exceptions.FailureException(
-                            _("Aadhaar Number does not match the Aadhaar linked with the provided PAN")
-                        )
+                if frappe.db.exists("Partner KYC", {"id_number": response.json()['data']['id_number'],"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
+                    message = "This Aadhaar Card Already exists in the system."
+                    partner_kyc.kyc_validation_remark = message
+                    partner_kyc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    return ucl.responder.respondWithFailure(message=frappe._(message), data=str(response.json()))
+                elif partner_kyc.aadhaar_linked and id_number != partner_kyc.masked_aadhaar[-4:]:
+                    return ucl.responder.respondWithFailure(message = frappe._("Aadhaar Number does not match the Aadhaar linked with the provided PAN"))
+                else:
+                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code) 
+                    return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
             else:
                 partner_kyc.aadhaar_front = ""
                 partner_kyc.aadhaar_back  = ""
                 partner_kyc.save(ignore_permissions=True)
                 frappe.db.commit()
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code']))
+                ucl.log_api_response(is_error = 1, error  = "Please Upload a valid Aadhaar Card.", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
                 return ucl.responder.respondWithFailure(message=frappe._("Please Upload a valid Aadhaar Card."), data=response.json()['data'])
 
         else:
@@ -899,16 +916,13 @@ def aadhaar_ocr(**kwargs):
             partner_kyc.aadhaar_back  = ""
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code']))
+            ucl.log_api_response(is_error = 1, error  = response.json()["message"], api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
 
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=str(response.json()['code'])) 
-    
-        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -922,137 +936,158 @@ def rc_advance(**kwargs):
             {
             "rc_number": ["required"]
         })
+        special_char=re.compile('[@_!$%^&*()<>?/\|}{~:]#')
+
         ucl_setting = frappe.get_single("UCL Settings")
         url = ucl_setting.rc_advance.format(rc_number =data.get("rc_number"))
         payload = {}
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str(data), url = str(url), headers=str(headers), path_params=str(data.get("rc_number")))
         rc_response = requests.request("GET",url, headers=headers, json = payload)
-        if rc_response.json()['code'] == 200:
+        if rc_response.status_code == 200:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text)
-            year = rc_response.json()['data']['registration_date'].split("-")[0]
-            month = rc_response.json()['data']['registration_date'].split("-")[1]
-            maker_description = rc_response.json()['data']['maker_description'].split()
-            maker_model = rc_response.json()['data']['maker_model'].split()
-            location = rc_response.json()['data']['registered_at'].split()
-            owner = rc_response.json()['data']['owner_number']
-            make = ""
-            model = ""
-            city = ""
-            variant_list = []
-            color_list = []
+            if rc_response.json()['data']:
+                year = rc_response.json()['data']['registration_date'].split("-")[0]
+                month = rc_response.json()['data']['registration_date'].split("-")[1]
+                maker_description = rc_response.json()['data']['maker_description'].split()
+                maker_model = rc_response.json()['data']['maker_model'].split()
+                location = rc_response.json()['data']['registered_at'].split()
+                owner = rc_response.json()['data']['owner_number']
+                make = ""
+                model = ""
+                city = ""
+                variant_list = []
+                color_list = []
 
-            url = ucl_setting.ibb_url
-            make_payload = {
-                "for": "make", 
-                "year": year, 
-                "month": str(int(month)), 
-                "access_token": ucl_setting.ibb_token 
-            }
-            make_response = requests.request("POST", url, data=make_payload)
-            if make_response.json()['status'] == 200:
-                make_list = make_response.json()['make']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
-            
-            for i in make_list:
-                if maker_description[0] in i:
-                    make = i
+                url = ucl_setting.ibb_url
+                # url = "https://api2.stageibb.com/api/SwitchMyLoan"
+                make_payload = {
+                    "for": "make", 
+                    "year": year, 
+                    "month": str(int(month)), 
+                    "access_token": ucl_setting.ibb_token 
+                }
+                make_response = requests.request("POST", url, data=make_payload)
+                if make_response.json():
+                    if make_response.status_code == 200:
+                        make_list = make_response.json()['make']
+                    else: 
+                        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = make_response.text, status_code=make_response.status_code)
+                        raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
+                    
+                    for i in make_list:
+                        if maker_description[0] in i:
+                            make = i
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
 
-            model_payload = {
-                "for": "model",  
-                "year": year, 
-                "month": str(int(month)),
-                "make": make,
-                "access_token": ucl_setting.ibb_token 
-            }
-            model_response = requests.request("POST", url, data=model_payload)
-            if model_response.json()['status'] == 200:
-                model_list = model_response.json()['model']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
-            for i in model_list:
-                if maker_model[0] in i:
-                    model = i
-
-            city_payload = {
-                "for": "city",
-                "access_token": ucl_setting.ibb_token 
-            }
-            city_response = requests.request("POST", url, data=city_payload)
-            if city_response.json()['status'] == 200:
-                city_list = city_response.json()['city']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
-            
-            for i in city_list:
-                if location[0] in i:
-                    city = i
-
-            variant_payload = {
-                "for": "variant", 
-                "year": year, 
-                "month": str(int(month)),
-                "make": make,
-                "model": model,
-                "access_token": ucl_setting.ibb_token 
-            }
-            variant_response = requests.request("POST", url, data=variant_payload)
-
-            if variant_response.json()['status'] == 200:
-                variant_list = variant_response.json()['variant']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(variant_response.json()['message']))
-
-            color_payload = {
-                "for": "color",
-                "access_token": ucl_setting.ibb_token 
-            }
-            color_response = requests.request("POST", url, data=color_payload)
-            if color_response.json()['status'] == 200:
-                color_list = color_response.json()['color']
-            else: 
-                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=response.json()['status'])
-                raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
-
-            if not city:
-                response = { 
+                model_payload = {
+                    "for": "model",  
                     "year": year, 
                     "month": str(int(month)),
-                    "make" : make,
-                    "model" : model,
-                    "city" : city,
-                    "owner_number" : owner,
-                    "variant" : variant_list,
-                    "color" : color_list,
-                    "city_list": city_list
-
+                    "make": make,
+                    "access_token": ucl_setting.ibb_token 
                 }
+                model_response = requests.request("POST", url, data=model_payload)
+                if model_response.json():
+                    if model_response.status_code == 200:
+                        model_list = model_response.json()['model']
+                    else: 
+                        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=model_response.status_code)
+                        raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
+                    for i in model_list:
+                        if maker_model[0] in i or maker_model[1] in i:
+                            model = i
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
+                city_payload = {
+                    "for": "city",
+                    "access_token": ucl_setting.ibb_token 
+                }
+                city_response = requests.request("POST", url, data=city_payload)
+                if city_response.json():
+                    if city_response.status_code == 200:
+                        city_list = city_response.json()['city']
+                    else: 
+                        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = city_response.text, status_code=city_response.status_code)
+                        raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
+                    
+                    for i in city_list:
+                        if location[0] in i:
+                            city = i
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
+                variant_payload = {
+                    "for": "variant", 
+                    "year": year, 
+                    "month": str(int(month)),
+                    "make": make,
+                    "model": model,
+                    "access_token": ucl_setting.ibb_token 
+                }
+                variant_response = requests.request("POST", url, data=variant_payload)
+                if variant_response.json():
+                    if variant_response.status_code == 200:
+                        variant_list = variant_response.json()['variant']
+                    else: 
+                        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = variant_response.text, status_code=variant_response.status_code)
+                        raise ucl.exceptions.NotFoundException(message=frappe._(variant_response.json()['message']))
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
+                color_payload = {
+                    "for": "color",
+                    "access_token": ucl_setting.ibb_token 
+                }
+                color_response = requests.request("POST", url, data=color_payload)
+                if color_response.json():
+                    if color_response.status_code == 200:
+                        color_list = color_response.json()['color']
+                    else: 
+                        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = color_response.text, status_code=color_response.status_code)
+                        raise ucl.exceptions.NotFoundException(message=frappe._(color_response.json()['message']))
+                else:
+                    return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
+
+                if not city:
+                    response = { 
+                        "year": year, 
+                        "month": str(int(month)),
+                        "make" : make,
+                        "model" : model,
+                        "city" : city,
+                        "owner_number" : owner,
+                        "variant" : variant_list,
+                        "color" : color_list,
+                        "city_list": city_list
+
+                    }
+                else:
+                    response = { 
+                        "year": year, 
+                        "month": str(int(month)),
+                        "make" : make,
+                        "model" : model,
+                        "city" : city,
+                        "owner_number" : owner,
+                        "variant" : variant_list,
+                        "color" : color_list
+
+                    }
+
+                return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response)
             else:
-                response = { 
-                    "year": year, 
-                    "month": str(int(month)),
-                    "make" : make,
-                    "model" : model,
-                    "city" : city,
-                    "owner_number" : owner,
-                    "variant" : variant_list,
-                    "color" : color_list
-
-                }
-
-            return ucl.responder.respondWithSuccess(message=frappe._("RC Verified Successfully."), data=response)
+                ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=rc_response.status_code)
+                return ucl.responder.respondWithFailure(message=frappe._(rc_response.json()['message']))
         else:
-            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=response.status_code)
+            ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text, status_code=rc_response.status_code)
             return ucl.responder.respondWithFailure(message=frappe._(rc_response.json()['message']))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -1076,11 +1111,97 @@ def penny_drop(beneficiary_account_no,beneficiary_ifsc):
         api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = str(payload), url=str(url), headers=str(headers) )
         
         response = requests.request("POST",url, headers=headers, json = payload)
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
+        if response.status_code == 200:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
 
-        return response.json()
+            return response.json()
+        else:
+            ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
+            raise ucl.exceptions.FailureException(frappe._(response.json()['message'] if response.json()['message'] else response.json()['error_msg']))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
+    
+
+@frappe.whitelist(allow_guest=True)
+def cheque_ocr(**kwargs):
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        partner = ucl.__partner(user.name)
+        if partner.partner_kyc:
+            partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+        else:
+            raise ucl.exceptions.PartnerKYCNotFoundException()
+
+        data = ucl.validate(
+            kwargs,
+            {
+                "document1": ["required"],
+                "document2": "",
+                "name": "",
+                "extension": ["required"]
+        })
+        cheque_file_name = "{}_cancelled_cheque.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
+
+        cheque_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=cheque_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name, attached_to_field="cancelled_cheque",partner=partner)
+        partner_kyc.cancelled_cheque = cheque_file_url1
+        partner_kyc.save(ignore_permissions=True)
+        frappe.db.commit()
+        payload = {
+            "document1": cheque_file_url1,
+            "document2": "",
+            "name" : ""
+        }
+        ucl_setting = frappe.get_single("UCL Settings")
+        url = ucl_setting.aadhaar_ocr 
+        
+        headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str(payload), url = str(url), headers=str(headers))
+
+        response = requests.request("POST", url, headers=headers, json=payload)
+        if response.json()['code'] == 200:
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code) 
+            return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response.json()['data'])   
+            
+        else:
+            partner_kyc.cancelled_cheque = ""
+            partner_kyc.save(ignore_permissions=True)
+            frappe.db.commit()
+            ucl.log_api_response(is_error = 1, error  = response.json()["message"], api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
+            return ucl.responder.respondWithFailure(message=frappe._(response.json()["message"]), data=response.json()['data'])
+
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
+        return e.respond()
+    
+@frappe.whitelist(allow_guest=True)
+def logout():
+    try:
+        ucl.validate_http_method("POST")
+        user = ucl.__user()
+        api_log_doc = ucl.log_api(method = "Logout API", request_time = datetime.now(), request = str(user.name))
+        if frappe.db.exists("User Token", {"token_type": "Firebase Token", "entity":user.mobile_no, "used":0}):
+            old_token = frappe.get_last_doc("User Token",filters={"token_type": "Firebase Token", "entity":user.mobile_no, "used":0})
+            if old_token:
+                ucl.token_mark_as_used(old_token)
+                frappe.db.sql(
+                """ delete from `__Auth` where doctype='User' and name='{}' and fieldname='api_secret' """.format(
+                    frappe.session.user
+                    )
+                )
+                frappe.local.login_manager.logout()
+                frappe.db.commit()
+                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "Logged out Successfully", status_code=200)
+                return ucl.responder.respondWithSuccess(message=frappe._("Logged out Successfully"))   
+        else:
+            ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "Firebase Token does not exist.", status_code=417)
+            return ucl.responder.respondWithFailure(message = frappe._("Firebase Token for this user does not exist. Please login again with the App Pin."))
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Logout API", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
+        return e.respond()
+        

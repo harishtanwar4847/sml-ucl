@@ -72,12 +72,12 @@ def update_partner_type(**kwargs):
         partner.save(ignore_permissions = True)
         frappe.db.commit()
 
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "success")
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "success", status_code=200)
         return ucl.responder.respondWithSuccess(message=frappe._("success"), data=data)
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Partner Type", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
 
 
@@ -161,12 +161,12 @@ def update_pan_details(**kwargs):
         
         response = {"message" : "Pan details updated successfully", "partner" : partner_doc.as_dict()}
 
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response), status_code=200)
         return ucl.responder.respondWithSuccess(message=frappe._("Pan details updated successfully"), data = partner_doc.as_dict())    
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Pan Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -214,12 +214,12 @@ def update_aadhaar_details(**kwargs):
         partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(partner_dict).save(ignore_permissions = True)
         frappe.db.commit()
         response = {"message" : "Aadhaar details updated successfully", "partner" : partner_doc.as_dict()}
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response))
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(response), status_code=200)
         return ucl.responder.respondWithSuccess(message=frappe._("Aadhaar details updated successfully"), data = partner_doc.as_dict())    
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Aadhaar Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
 
 
@@ -284,13 +284,13 @@ def update_current_address(**kwargs):
         partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(address_dict).save(ignore_permissions = True)
         frappe.db.commit()
         response = "Address updated successfully"
-        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response, status_code=200)
             
         return ucl.responder.respondWithSuccess(message=frappe._(response))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Current Address", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
 
 def download_pdf_from_url(pdf_url):
@@ -381,14 +381,14 @@ def face_match(**kwargs):
                 results = face_recognition.compare_faces([face_encoding_1], face_encoding_2)
 
                 if results[0]:
-                    fcm_notification = frappe.get_doc(
-                        "UCL Push Notification",
-                        "Face Match successful",
-                        fields=["*"],
-                    )
-                    ucl.send_ucl_push_notification(
-                        fcm_notification=fcm_notification, partner=partner
-                    )
+                    # fcm_notification = frappe.get_doc(
+                    #     "UCL Push Notification",
+                    #     "Face Match successful",
+                    #     fields=["*"],
+                    # )
+                    # ucl.send_ucl_push_notification(
+                    #     fcm_notification=fcm_notification, partner=partner
+                    # )
 
                     partner_kyc.live_image_remarks = "Faces match."
                     message="Faces Match!"
@@ -406,7 +406,7 @@ def face_match(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Face Match", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -438,7 +438,7 @@ def update_business_proof(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Business Proof", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -459,6 +459,7 @@ def update_gst_certificate(**kwargs):
                 "document1": ["required" if partner.company_type not in ["Proprietary Firm", "HUF"] else ""],
                 "extension" : ["required" if partner.company_type not in ["Proprietary Firm", "HUF"] else ""]
         })
+        api_log_doc = ucl.log_api(method = "Update GST Certificate", request_time = datetime.now(), request = str(data))
         if data.get("document1"):
             file_name = "{}_gst_cert.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
             file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="company_gst_certificate",partner=partner)
@@ -466,16 +467,18 @@ def update_gst_certificate(**kwargs):
             partner_kyc.kyc_company_gst_certificate_linked = 1
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "GST Certificate processed successfuly", status_code=200)
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
         else:
             partner_kyc.kyc_company_gst_certificate_linked = 1
             partner_kyc.save(ignore_permissions=True)
             frappe.db.commit()
+            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "GST Certificate processed successfuly", status_code=200)
             return ucl.responder.respondWithSuccess(message=frappe._("GST Certificate processed successfuly"))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update GST Certificate", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -512,26 +515,33 @@ def update_bank_details(**kwargs):
         if data.get("document1"):
             file_name = "{}_cancelled_cheque.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
         if data.get("bank_account_number") and data.get("ifsc_code"):
-            penny_drop = auth.penny_drop(beneficiary_account_no = data.get("bank_account_number"),beneficiary_ifsc = data.get("ifsc_code"))
-            if "verified" in penny_drop:
-                if penny_drop["verified"] == True:
-                    if data.get("document1"):
-                        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="cancelled_cheque",partner=partner)
-                    bank_details_dict = {
-                        "cancelled_cheque": file_url if data.get("document1") else "",
-                        "bank_account_number" : data.get("bank_account_number"),
-                        "bank_name": data.get("bank_name"),
-                        "ifsc_code": data.get("ifsc_code"),
-                        "beneficiary_name": data.get("beneficiary_name"),
-                        "kyc_bank_details_linked": 1
-                    }
-                    partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(bank_details_dict).save(ignore_permissions = True)
-                    frappe.db.commit()
-                    return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
-                else:
-                    return ucl.responder.respondInvalidData(message=penny_drop["error_msg"])
+            if frappe.db.exists("Partner KYC", {"bank_account_number": data.get("bank_account_number"),"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
+                message = "This Account Number already exists in the system."
+                partner_kyc.kyc_validation_remark = message
+                partner_kyc.save(ignore_permissions=True)
+                frappe.db.commit()
+                return ucl.responder.respondWithFailure(message=frappe._(message), data=str(data))
             else:
-                return ucl.responder.respondInvalidData(message=penny_drop["message"])
+                penny_drop = auth.penny_drop(beneficiary_account_no = data.get("bank_account_number"),beneficiary_ifsc = data.get("ifsc_code"))
+                if "verified" in penny_drop:
+                    if penny_drop["verified"] == True:
+                        if data.get("document1"):
+                            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name,attached_to_field="cancelled_cheque",partner=partner)
+                        bank_details_dict = {
+                            "cancelled_cheque": file_url if data.get("document1") else "",
+                            "bank_account_number" : data.get("bank_account_number"),
+                            "bank_name": data.get("bank_name"),
+                            "ifsc_code": data.get("ifsc_code"),
+                            "beneficiary_name": data.get("beneficiary_name"),
+                            "kyc_bank_details_linked": 1
+                        }
+                        partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(bank_details_dict).save(ignore_permissions = True)
+                        frappe.db.commit()
+                        return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
+                    else:
+                        return ucl.responder.respondInvalidData(message=penny_drop["error_msg"])
+                else:
+                    return ucl.responder.respondInvalidData(message=penny_drop["message"])
         else:
             partner_kyc.kyc_bank_details_linked = 1
             partner_kyc.save(ignore_permissions = True)
@@ -539,7 +549,7 @@ def update_bank_details(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update Bank Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 @frappe.whitelist(allow_guest=True)
@@ -561,12 +571,12 @@ def get_esign_consent():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Esign Consent", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Esign Consent", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))    
 
 
@@ -601,6 +611,7 @@ def esign_request(**kwargs):
         headers = {
             "authorization": f"Basic {base64_credentials}",
         }
+        # user.name = "harish.tanwar@atriina.com"
         api_log_doc = ucl.log_api(method = "Esign request", request_time = datetime.now(), request = str(data), url=str(url), headers= str(headers))
         if data.get("consent") == 1:
 
@@ -680,11 +691,12 @@ def esign_request(**kwargs):
             return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"document_id":id,"esign_url":"https://app.digio.in/#/gateway/login/{}/vI3atY/{}?redirect_url=https://atriina.com".format(id,user.name)})
 
         else:
-            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = "Consent not received")
-            return ucl.responder.respondInvalidData(message="Not received your consent yet. To continue please review agreement once.")
+            message = "Not received your consent yet. To continue please review agreement once."
+            ucl.log_api_response(is_error = 1, error  = message, api_log_doc = api_log_doc, api_type = "Third Party", response = "Consent not received")
+            return ucl.responder.respondInvalidData(message=message)
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Esign Request", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
 
 @frappe.whitelist(allow_guest=True)
@@ -723,7 +735,7 @@ def get_esign_details(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Get Esign Details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond() 
 
 def download_esign_document(document_id):
@@ -768,7 +780,7 @@ def download_esign_document(document_id):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Download Esign Document", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -798,11 +810,11 @@ def kyc_submit():
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "KYC Submit", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     except frappe.SecurityException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "KYC Submit", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return ucl.responder.respondUnauthorized(message=str(e))
 

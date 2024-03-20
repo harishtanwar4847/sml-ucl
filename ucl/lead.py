@@ -21,8 +21,15 @@ def dup_entry_check(product, mobile, loan_amt):
 def lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user()
-        partner = ucl.__partner(user.name)
+        # user = ucl.__user()
+        # user_roles = frappe.db.get_values(
+        #     "Has Role", {"parent": user.name, "parenttype": "User"}, ["role"]
+        # )
+        # user_role = []
+        # for i in list(user_roles):
+        #     user_role.append(i[0])
+        # if "Partner" in user_role or "Partner Associate" in user_role:
+        #     partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,{
@@ -52,7 +59,7 @@ def lead_details(**kwargs):
             "requested_loan_amount": ["required"]
         })
         api_log_doc = ucl.log_api(method = "Save Lead Details", request_time = datetime.now(), request = str(data))
-        if int(data.get("mobile_number")[0]) < 5:
+        if int(data.get("mobile_number")[0]) < 6:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             dup_entry_check(product=data.get("sub_product"), mobile=data.get("mobile_number"), loan_amt=data.get("requested_loan_amount"))
@@ -82,8 +89,12 @@ def lead_details(**kwargs):
                 "occupation_type": data.get("occupation_type"),
                 "monthly_income": data.get("monthly_income"),
                 "obligations": data.get("obligations"),
-                "requested_loan_amount": data.get("requested_loan_amount"),
-            }).insert(ignore_permissions=True)
+                "requested_loan_amount": data.get("requested_loan_amount")
+            }).save(ignore_permissions=True)
+            if data.get("sub_product") == "New Car":
+                lead.status = "Open"
+                lead.workflow_state = "Open"
+            lead.save(ignore_permissions=True)
             frappe.db.commit()
             
             message = "Lead details saved successfully"
@@ -94,7 +105,7 @@ def lead_details(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Lead details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -103,7 +114,14 @@ def update_lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
         user = ucl.__user()
-        partner = ucl.__partner(user.name)
+        user_roles = frappe.db.get_values(
+            "Has Role", {"parent": user.name, "parenttype": "User"}, ["role"]
+        )
+        user_role = []
+        for i in list(user_roles):
+            user_role.append(i[0])
+        if "Partner" in user_role or "Partner Associate" in user_role:
+            partner = ucl.__partner(user.name)
 
         data = ucl.validate(
             kwargs,{
@@ -112,7 +130,6 @@ def update_lead_details(**kwargs):
             "make": "",
             "model": "",
             "insurance_expiry_date": "",
-            "total_existing_obligations": "",
             "existing_lender": "",
             "existing_banker": "",
             "principal_outstanding": "",
@@ -126,12 +143,13 @@ def update_lead_details(**kwargs):
             "make": data.get("make"),
             "model": data.get("model"),
             "insurance_expiry_date": data.get("insurance_expiry_date"),
-            "total_existing_obligations": data.get("total_existing_obligations"),
             "existing_lender": data.get("existing_lender"),
             "existing_banker": data.get("existing_banker"),
             "principal_outstanding": data.get("principal_outstanding"),
             "rate_of_interest": data.get("rate_of_interest"),
             "tenure_serviced": data.get("tenure_serviced"),
+            "status" : "Open",
+            "workflow_state" : "Open"
         }
         lead_doc = frappe.get_doc("Lead", data.get("id")).update(lead).save(ignore_permissions = True)
         
@@ -142,7 +160,7 @@ def update_lead_details(**kwargs):
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Update lead details", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
 
@@ -156,14 +174,9 @@ def all_lead_details():
                 )
             
         except NotFoundException:
-            raise ucl.exceptions.PartnerNotFoundException()
+            raise ucl.exceptions.LeadNotFoundException()
     except ucl.exceptions.APIException as e:
         frappe.db.rollback()
         api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
-    except frappe.SecurityException as e:
-        frappe.db.rollback()
-        api_log_doc = ucl.log_api(method = "Get Lead Dashboard List", request_time = datetime.now(), request = "")
-        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
-        return ucl.responder.respondUnauthorized(message=str(e))
