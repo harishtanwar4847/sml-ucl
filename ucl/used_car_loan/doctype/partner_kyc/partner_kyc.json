@@ -8,6 +8,7 @@
   "status",
   "associate",
   "naming_series",
+  "kyc_validation_remark",
   "column_break_ufuf",
   "live_image",
   "live_image_remarks",
@@ -264,7 +265,7 @@
   },
   {
    "fieldname": "aadhaar_dob",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "DOB"
   },
   {
@@ -575,11 +576,17 @@
    "fieldtype": "Data",
    "label": "Live Image Remarks",
    "read_only": 1
+  },
+  {
+   "fieldname": "kyc_validation_remark",
+   "fieldtype": "Data",
+   "label": "KYC Validation Remark",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-27 23:01:33.523408",
+ "modified": "2024-03-20 09:39:12.021597",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner KYC",

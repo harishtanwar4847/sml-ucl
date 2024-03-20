@@ -24,7 +24,7 @@ from frappe.core.doctype.sms_settings.sms_settings import (
 import html_to_json
 
 
-__version__ = "1.1.0-uat"
+__version__ = "1.1.1-uat"
 
 
 
@@ -92,7 +92,7 @@ def send_otp(**kwargs):
                 "token_type": "required",
             },
         )
-        if int(data.get("mobile")[0]) < 5:
+        if int(data.get("mobile")[0]) < 6:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
             if frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1}):
@@ -105,13 +105,14 @@ def send_otp(**kwargs):
                     token_mark_as_used(old_user_token)
                 api_log_doc = log_api(method = "Send OTP", request_time = datetime.now(), request = str(data))
                 user_token = create_user_token(entity=data.get("mobile"), token=random_token(length=4, is_numeric=True), token_type = data.get("token_type"))
-                login_consent_doc = frappe.get_doc(
-                        {
-                            "doctype": "User Consent",
-                            "mobile": data.get("mobile"),
-                            "consent": "Login",
-                        }
-                    ).insert(ignore_permissions=True)
+                if data.get("token_type") == "Login OTP":
+                    login_consent_doc = frappe.get_doc(
+                            {
+                                "doctype": "User Consent",
+                                "mobile": data.get("mobile"),
+                                "consent": "Login",
+                            }
+                        ).insert(ignore_permissions=True)
                 log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "OTP Sent")
                 sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Send OTP")
                 message = sms_notification_doc.message.format(partner = "Partner", token =  user_token.token)
@@ -271,15 +272,15 @@ def add_firebase_token(firebase_token, app_version_platform, entity):
 
     if frappe.db.exists("User Token", {"token_type": "Firebase Token", "entity":entity, "used":0}):
         old_token = frappe.get_last_doc("User Token",filters={"token_type": "Firebase Token", "entity":entity, "used":0})
-        if old_token:
-            token_mark_as_used(old_token)
+        # if old_token.token != firebase_token:
+        token_mark_as_used(old_token)
 
-    get_user_token = frappe.db.get_value(
-        "User Token",
-        {"token_type": "Firebase Token", "token": firebase_token, "entity": entity},
-    )
-    if get_user_token:
-        return
+    # get_user_token = frappe.db.get_value(
+    #     "User Token",
+    #     {"token_type": "Firebase Token", "token": firebase_token, "entity": entity},
+    # )
+    # if get_user_token:
+    #     return
 
     create_user_token(
         entity=entity,
@@ -452,26 +453,33 @@ def validate_receiver_nos(receiver_list):
 
 
 def send_sms_custom(receiver_list, msg, sender_name="", success_msg=True, sms_template_id=None):
-    from six import string_types
+    try:
+        from six import string_types
 
-    if isinstance(receiver_list, string_types):
-        receiver_list = json.loads(receiver_list)
-        if not isinstance(receiver_list, list):
-            receiver_list = [receiver_list]
+        if isinstance(receiver_list, string_types):
+            receiver_list = json.loads(receiver_list)
+            if not isinstance(receiver_list, list):
+                receiver_list = [receiver_list]
 
-    receiver_list = validate_receiver_nos(receiver_list)
+        receiver_list = validate_receiver_nos(receiver_list)
 
-    arg = {
-        "receiver_list": receiver_list,
-        "message": frappe.safe_decode(msg).encode("utf-8"),
-        "success_msg": success_msg,
-        "sms_template_id": sms_template_id,
-    }
+        arg = {
+            "receiver_list": receiver_list,
+            "message": frappe.safe_decode(msg).encode("utf-8"),
+            "success_msg": success_msg,
+            "sms_template_id": sms_template_id,
+        }
 
-    if frappe.db.get_value("SMS Settings", None, "sms_gateway_url"):
-        send_via_gateway(arg)
-    else:
-        frappe.msgprint(_("Please Update SMS Settings"))
+        if frappe.db.get_value("SMS Settings", None, "sms_gateway_url"):
+            send_via_gateway(arg)
+        else:
+            frappe.msgprint(_("Please Update SMS Settings"))
+    except Exception as e:
+        frappe.log_error(
+            message=frappe.get_traceback()
+            + "\nNotification Info:\n",
+            title="UCL SMS Notification Error",
+        )
 
 
 def send_via_gateway(arg):
@@ -605,7 +613,6 @@ def partner_list():
 def associate_list():
     user = __user()
     partner = frappe.get_all("Partner", filters = {"user_id": user.name}, fields = ["name"])
-    print(partner)
     if len(partner) == 0:
         raise NotFoundException
     else:
@@ -619,10 +626,10 @@ def lead_dashboard_list():
     user = __user()
     lead = frappe.get_all("Lead", filters= {"owner": user.name}, fields = ["name", "mobile_number", "email_id", "full_name", "pan_number", "workflow_state", "sub_product"])
     if len(lead) == 0:
-        raise NotFoundException
+        dict = {"lead_list": lead}
     else:
         dict = {"lead_list": lead}
-        return dict
+    return dict
 
 @frappe.whitelist()
 def authorize_deepvue():

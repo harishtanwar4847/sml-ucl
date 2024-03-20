@@ -9,3 +9,4 @@ requests==2.31.0
 PyMuPDF==1.23.18
 frontend
 html_to_json==2.0.0
+PyPDF2==3.0.1

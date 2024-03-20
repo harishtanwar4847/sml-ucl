@@ -7,41 +7,98 @@
  "engine": "InnoDB",
  "field_order": [
   "sub_product",
-  "naming_series",
-  "source",
-  "partner_code",
   "mobile_number",
-  "pan_number",
-  "full_name",
   "first_name",
   "last_name",
+  "requested_loan_amount",
+  "status",
+  "caller_name",
+  "column_break_qgqn",
+  "source",
+  "partner_code",
+  "naming_series",
+  "occupation_type",
+  "monthly_income",
+  "obligations",
+  "pan_details_tab",
+  "pan_number",
+  "full_name",
   "gender",
   "dob",
-  "line_1",
+  "email_id",
+  "aadhar",
+  "address",
+  "column_break_dlkr",
   "line_2",
+  "line_1",
   "street",
   "zip",
   "city",
   "state",
   "country",
-  "address",
-  "email_id",
-  "aadhar",
-  "column_break_qgqn",
-  "occupation_type",
-  "monthly_income",
-  "obligations",
-  "requested_loan_amount",
+  "loan_details_tab",
   "vehicle_owned",
   "make",
   "model",
   "insurance_expiry_date",
-  "total_existing_obligations",
+  "column_break_vmtn",
   "existing_lender",
   "existing_banker",
   "principal_outstanding",
   "rate_of_interest",
-  "tenure_serviced"
+  "tenure_serviced",
+  "documents_checklist_tab",
+  "pre_sanction_checklist_section",
+  "kyc",
+  "id_proof",
+  "address_proof",
+  "s_v_proof",
+  "column_break_vtyq",
+  "income_documents",
+  "salary_slips",
+  "itr",
+  "financials",
+  "bank_statements",
+  "column_break_lyel",
+  "vehicle_related_docs",
+  "rc_copy",
+  "valid_vehicle_insurance",
+  "pre_sanction_checklist_count",
+  "post_sanction_checklist_section",
+  "loan_agreement",
+  "pdcsspdcs",
+  "post_sanction_checklist_count",
+  "column_break_boim",
+  "nach_mandate",
+  "additional_document_asked_by_lender",
+  "pdd_checklist_section",
+  "sale_purchase_case",
+  "form28",
+  "form29",
+  "form30",
+  "noc_previous_financer",
+  "form35",
+  "form34",
+  "original_rc",
+  "valid_insurance",
+  "valid_puc",
+  "chasis_imprint",
+  "seller_pan_card",
+  "seller_aadhaar_card",
+  "buyer_id",
+  "buyer_address_proof",
+  "column_break_kacu",
+  "bt_topup",
+  "noc_of_previous_financer",
+  "bt_form35",
+  "bt_form34",
+  "bt_original_rc",
+  "bt_valid_insurance",
+  "bt_valid_puc",
+  "pan_card_of_owner",
+  "aadhaar_card_of_owner",
+  "lender_selection_tab",
+  "lender_selection_and_decision"
  ],
  "fields": [
   {
@@ -60,7 +117,6 @@
    "options": "\nDirect\nPartner"
   },
   {
-   "default": "NA",
    "fetch_if_empty": 1,
    "fieldname": "partner_code",
    "fieldtype": "Link",
@@ -81,9 +137,8 @@
   },
   {
    "fieldname": "address",
-   "fieldtype": "Data",
-   "label": "Full Address",
-   "reqd": 1
+   "fieldtype": "Small Text",
+   "label": "Full Address"
   },
   {
    "fieldname": "email_id",
@@ -141,12 +196,6 @@
    "mandatory_depends_on": "eval:doc.vehicle_owned == \"Yes\";"
   },
   {
-   "default": "0",
-   "fieldname": "total_existing_obligations",
-   "fieldtype": "Int",
-   "label": "Total Existing Obligations"
-  },
-  {
    "depends_on": "eval:doc.total_existing_obligations != 0 || doc.sub_product == \"BT+Top Up\";",
    "fieldname": "existing_lender",
    "fieldtype": "Link",
@@ -170,9 +219,11 @@
   {
    "depends_on": "eval:doc.sub_product == \"BT+Top Up\";",
    "fieldname": "rate_of_interest",
-   "fieldtype": "Percent",
+   "fieldtype": "Float",
    "label": "Rate of Interest",
-   "mandatory_depends_on": "eval:doc.sub_product == \"BT+Top Up\";"
+   "mandatory_depends_on": "eval:doc.sub_product == \"BT+Top Up\";",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "depends_on": "eval:doc.sub_product == \"BT+Top Up\";",
@@ -260,11 +311,299 @@
    "fieldname": "last_name",
    "fieldtype": "Data",
    "label": "Last Name"
+  },
+  {
+   "fieldname": "pan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "PAN Details"
+  },
+  {
+   "fieldname": "column_break_dlkr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "loan_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Loan Details"
+  },
+  {
+   "fieldname": "column_break_vmtn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nOpen\nCall Done\nPartial Docs Received\nComplete Docs Received\nLender Selection\nLogged In\nDecisioned - Sanctioned\nDecisioned - Rejected\nPost Sanction Docs\nPost Sanction Queried\nDisbursed To SML\nComplete RTO Docs Received\nDisbursed To Existing Lender\nExisting Lender NOC Received\nDisbursed To Customer\nDisbursed To Dealer/Seller\nPDD Received"
+  },
+  {
+   "fieldname": "caller_name",
+   "fieldtype": "Data",
+   "label": "Caller Name"
+  },
+  {
+   "fieldname": "documents_checklist_tab",
+   "fieldtype": "Tab Break",
+   "label": "Documents Checklist"
+  },
+  {
+   "fieldname": "pre_sanction_checklist_section",
+   "fieldtype": "Section Break",
+   "label": "Pre Sanction checklist"
+  },
+  {
+   "fieldname": "kyc",
+   "fieldtype": "Heading",
+   "label": "KYC"
+  },
+  {
+   "fieldname": "id_proof",
+   "fieldtype": "Attach",
+   "label": "ID Proof"
+  },
+  {
+   "fieldname": "address_proof",
+   "fieldtype": "Attach",
+   "label": "Address Proof"
+  },
+  {
+   "fieldname": "s_v_proof",
+   "fieldtype": "Attach",
+   "label": "S V Proof"
+  },
+  {
+   "fieldname": "column_break_vtyq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "income_documents",
+   "fieldtype": "Heading",
+   "label": "Income Documents"
+  },
+  {
+   "fieldname": "salary_slips",
+   "fieldtype": "Attach",
+   "label": "Salary Slips"
+  },
+  {
+   "fieldname": "itr",
+   "fieldtype": "Attach",
+   "label": "ITR"
+  },
+  {
+   "fieldname": "financials",
+   "fieldtype": "Attach",
+   "label": "Financials"
+  },
+  {
+   "fieldname": "bank_statements",
+   "fieldtype": "Attach",
+   "label": "Bank Statements"
+  },
+  {
+   "fieldname": "column_break_lyel",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vehicle_related_docs",
+   "fieldtype": "Heading",
+   "label": "Vehicle Related Docs"
+  },
+  {
+   "fieldname": "rc_copy",
+   "fieldtype": "Attach",
+   "label": "RC Copy"
+  },
+  {
+   "fieldname": "valid_vehicle_insurance",
+   "fieldtype": "Attach",
+   "label": "Valid Vehicle Insurance"
+  },
+  {
+   "fieldname": "post_sanction_checklist_section",
+   "fieldtype": "Section Break",
+   "label": "Post Sanction Checklist"
+  },
+  {
+   "fieldname": "loan_agreement",
+   "fieldtype": "Attach",
+   "label": "Loan Agreement"
+  },
+  {
+   "fieldname": "pdcsspdcs",
+   "fieldtype": "Attach",
+   "label": "PDCS/SPDCS"
+  },
+  {
+   "fieldname": "column_break_boim",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nach_mandate",
+   "fieldtype": "Attach",
+   "label": "NACH Mandate"
+  },
+  {
+   "fieldname": "additional_document_asked_by_lender",
+   "fieldtype": "Attach",
+   "label": "Additional document asked by Lender"
+  },
+  {
+   "fieldname": "pre_sanction_checklist_count",
+   "fieldtype": "Int",
+   "label": "Pre Sanction Checklist Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "post_sanction_checklist_count",
+   "fieldtype": "Int",
+   "label": "Post Sanction Checklist Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pdd_checklist_section",
+   "fieldtype": "Section Break",
+   "label": "PDD Checklist"
+  },
+  {
+   "fieldname": "sale_purchase_case",
+   "fieldtype": "Heading",
+   "label": "Sale Purchase case"
+  },
+  {
+   "fieldname": "form28",
+   "fieldtype": "Attach",
+   "label": "Form 28 - 3 Sets"
+  },
+  {
+   "fieldname": "form29",
+   "fieldtype": "Attach",
+   "label": "Form 29 - 2 Sets"
+  },
+  {
+   "fieldname": "form30",
+   "fieldtype": "Attach",
+   "label": "Form 30 - 2 Sets"
+  },
+  {
+   "fieldname": "noc_previous_financer",
+   "fieldtype": "Attach",
+   "label": "NOC of previous financer  (If Applicable)"
+  },
+  {
+   "fieldname": "form35",
+   "fieldtype": "Attach",
+   "label": "Form 35 - 2 Sets"
+  },
+  {
+   "fieldname": "form34",
+   "fieldtype": "Attach",
+   "label": "Form 34 - 2 Sets"
+  },
+  {
+   "fieldname": "original_rc",
+   "fieldtype": "Attach",
+   "label": "Original RC"
+  },
+  {
+   "fieldname": "valid_insurance",
+   "fieldtype": "Attach",
+   "label": "Valid Insurance"
+  },
+  {
+   "fieldname": "valid_puc",
+   "fieldtype": "Attach",
+   "label": "Valid PUC"
+  },
+  {
+   "fieldname": "chasis_imprint",
+   "fieldtype": "Attach",
+   "label": "Chasis imprint - 5 Sets"
+  },
+  {
+   "fieldname": "seller_pan_card",
+   "fieldtype": "Attach",
+   "label": "Seller Pan Card"
+  },
+  {
+   "fieldname": "seller_aadhaar_card",
+   "fieldtype": "Attach",
+   "label": "Seller Aadhaar Card"
+  },
+  {
+   "fieldname": "buyer_id",
+   "fieldtype": "Attach",
+   "label": "Buyer ID"
+  },
+  {
+   "fieldname": "buyer_address_proof",
+   "fieldtype": "Attach",
+   "label": "Buyer Address Proof"
+  },
+  {
+   "fieldname": "column_break_kacu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bt_topup",
+   "fieldtype": "Heading",
+   "label": "BT & Top up cases"
+  },
+  {
+   "fieldname": "noc_of_previous_financer",
+   "fieldtype": "Attach",
+   "label": "NOC of previous financer"
+  },
+  {
+   "fieldname": "bt_form35",
+   "fieldtype": "Attach",
+   "label": "Form 35 - 2 Sets"
+  },
+  {
+   "fieldname": "bt_form34",
+   "fieldtype": "Attach",
+   "label": "Form 34 - 2 Sets"
+  },
+  {
+   "fieldname": "bt_original_rc",
+   "fieldtype": "Attach",
+   "label": "Original RC"
+  },
+  {
+   "fieldname": "bt_valid_insurance",
+   "fieldtype": "Attach",
+   "label": "Valid Insurance"
+  },
+  {
+   "fieldname": "bt_valid_puc",
+   "fieldtype": "Attach",
+   "label": "Valid PUC"
+  },
+  {
+   "fieldname": "pan_card_of_owner",
+   "fieldtype": "Attach",
+   "label": "PAN Card of Owner"
+  },
+  {
+   "fieldname": "aadhaar_card_of_owner",
+   "fieldtype": "Attach",
+   "label": "Aadhaar Card of Owner"
+  },
+  {
+   "fieldname": "lender_selection_tab",
+   "fieldtype": "Tab Break",
+   "label": "Lender Selection"
+  },
+  {
+   "fieldname": "lender_selection_and_decision",
+   "fieldtype": "Table",
+   "label": "Lender Selection and Decision",
+   "options": "Lead Lender Decision"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-12 15:39:34.277881",
+ "modified": "2024-03-19 16:33:01.310146",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
@@ -313,6 +652,30 @@
    "read": 1,
    "report": 1,
    "role": "CBO",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "if_owner": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Partner",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "if_owner": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Partner Associate",
    "share": 1,
    "write": 1
   }

@@ -17,8 +17,7 @@
    "fieldtype": "Text",
    "in_list_view": 1,
    "label": "Consent",
-   "mandatory_depends_on": "eval:doc.consent_name != \"E-sign\";",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.consent_name != \"E-sign\";"
   },
   {
    "depends_on": "eval:doc.consent_name == \"E-sign\";",
@@ -37,7 +36,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-23 13:59:34.667556",
+ "modified": "2024-03-19 15:00:18.960985",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Consent",

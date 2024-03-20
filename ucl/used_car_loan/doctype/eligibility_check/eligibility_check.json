@@ -31,6 +31,7 @@
   "dob",
   "masked_aadhaar",
   "column_break_tqqg",
+  "flat_no",
   "line_1",
   "line_2",
   "street_name",
@@ -80,6 +81,7 @@
   "coapplicant_pan_details_filled",
   "column_break_ubfd",
   "coapplicant_full_address",
+  "coapplicant_flat_no",
   "coapplicant_line_1",
   "coapplicant_line_2",
   "coapplicant_street_name",
@@ -92,9 +94,9 @@
   "coapplicant_credit_report",
   "bank_statement_details_tab",
   "bank_statement_file",
+  "file_password",
   "salary_slip",
   "column_break_acqa",
-  "monthly_income",
   "obligations",
   "offers_tab",
   "offers_section",
@@ -450,11 +452,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "monthly_income",
-   "fieldtype": "Data",
-   "label": "Monthly Income"
-  },
-  {
    "fieldname": "obligations",
    "fieldtype": "Data",
    "label": "Obligations (Percent)"
@@ -573,11 +570,27 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Coapplicant Pan Details Filled"
+  },
+  {
+   "fieldname": "file_password",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "File Password"
+  },
+  {
+   "fieldname": "flat_no",
+   "fieldtype": "Data",
+   "label": "Flat No"
+  },
+  {
+   "fieldname": "coapplicant_flat_no",
+   "fieldtype": "Data",
+   "label": "Coapplicant Flat No"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-14 12:34:46.356606",
+ "modified": "2024-03-18 15:37:07.104471",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",
