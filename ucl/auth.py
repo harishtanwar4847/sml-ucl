@@ -16,6 +16,21 @@ from frappe.utils.password import (
     delete_login_failed_cache,
     update_password,
 )
+from cryptography.fernet import Fernet, InvalidToken
+from passlib.context import CryptContext
+from pypika.terms import Values
+from frappe.query_builder import Table
+from frappe.utils import cstr, encode
+
+Auth = Table("__Auth")
+
+
+passlibctx = CryptContext(
+	schemes=[
+		"pbkdf2_sha256",
+		"argon2",
+	],
+)
 
 @frappe.whitelist(allow_guest=True)
 def verify_email(**kwargs):
@@ -353,7 +368,7 @@ def set_pin(**kwargs):
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "", status_code=e.http_status_code)
         return e.respond()
     
-    
+
 @frappe.whitelist(allow_guest=True)
 def verify_forgot_pin_otp(**kwargs):
     try:
@@ -405,6 +420,22 @@ def verify_forgot_pin_otp(**kwargs):
 
         if data.get("otp") and data.get("new_pin"):
             if data.get("new_pin"):
+                result = (
+                    frappe.qb.from_(Auth)
+                    .select(Auth.name, Auth.password)
+                    .where(
+                        (Auth.doctype == "User")
+                        & (Auth.name == user.name)
+                        & (Auth.fieldname == "password")
+                        & (Auth.encrypted == 0)
+                    )
+                    .limit(1)
+                    .run(as_dict=True)
+                )
+                if passlibctx.verify(data.get("new_pin"), result[0].password):
+                    raise ucl.exceptions.FailureException(
+                    _("This PIN is already in use please try with a different PIN.")
+                )
                 update_password(user.name, data.get("new_pin"))
                 response = "User PIN has been updated."
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
