@@ -505,16 +505,29 @@ def login(**kwargs):
                 response = "Incorrect PIN."
                 message = frappe._(response)
                 ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
-                invalid_login_attempts = get_login_attempt_tracker(user.name)
-                if 0 < invalid_login_attempts.login_failed_count <= 3:
+                # invalid_login_attempts = get_login_attempt_tracker(user.name)
+                sys_settings = frappe.get_doc("System Settings")
+                track_login_attempts = sys_settings.allow_consecutive_login_attempts > 0
+                tracker_kwargs = {}
+
+                if track_login_attempts:
+                    tracker_kwargs["lock_interval"] = sys_settings.allow_login_after_fail
+                    tracker_kwargs["max_consecutive_login_attempts"] = sys_settings.allow_consecutive_login_attempts
+
+                tracker = LoginAttemptTracker(user.name, **tracker_kwargs)
+
+                if 0 < tracker.login_failed_count <= 3:
                     message += " {} invalid {}.".format(
-                        invalid_login_attempts.login_failed_count,
+                        tracker.login_failed_count,
                         "attempt"
-                        if invalid_login_attempts.login_failed_count == 1
+                        if tracker.login_failed_count == 1
                         else "attempts",
                                    empty_token = {}
                 )
-                else:
+                # else:
+                #     message = "3 invalid attempts done. Please try again after 60 seconds."
+                #     raise ucl.exceptions.ForbiddenException(message=message)
+                if track_login_attempts and not tracker.is_user_allowed():
                     message = "3 invalid attempts done. Please try again after 60 seconds."
                     raise ucl.exceptions.ForbiddenException(message=message)
                 raise ucl.exceptions.FailureException(message)
