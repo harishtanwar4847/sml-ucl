@@ -127,8 +127,13 @@ def update_lead_details(**kwargs):
             kwargs,{
             "id": ["required"],
             "vehicle_owned": "",
+            "registration_number": "",
             "make": "",
             "model": "",
+            "variant": "",
+            "manufacturing_year": "",
+            "month": "",
+            "colour": "",
             "insurance_expiry_date": "",
             "existing_lender": "",
             "existing_banker": "",
@@ -140,8 +145,13 @@ def update_lead_details(**kwargs):
         api_log_doc = ucl.log_api(method = "Save Lead Details", request_time = datetime.now(), request = str(data))
         lead = {
             "vehicle_owned": data.get("vehicle_owned"),
+            "registration_number": data.get("registration_number"),
             "make": data.get("make"),
             "model": data.get("model"),
+            "variant": data.get("variant"),
+            "manufacturing_year": data.get("manufacturing_year"),
+            "month": data.get("month"),
+            "colour": data.get("colour"),
             "insurance_expiry_date": data.get("insurance_expiry_date"),
             "existing_lender": data.get("existing_lender"),
             "existing_banker": data.get("existing_banker"),

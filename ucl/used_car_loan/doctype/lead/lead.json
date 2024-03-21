@@ -38,8 +38,13 @@
   "country",
   "loan_details_tab",
   "vehicle_owned",
+  "registration_number",
   "make",
   "model",
+  "variant",
+  "manufacturing_year",
+  "month",
+  "colour",
   "insurance_expiry_date",
   "column_break_vmtn",
   "existing_lender",
@@ -337,11 +342,6 @@
    "options": "Draft\nOpen\nCall Done\nPartial Docs Received\nComplete Docs Received\nLender Selection\nLogged In\nDecisioned - Sanctioned\nDecisioned - Rejected\nPost Sanction Docs\nPost Sanction Queried\nDisbursed To SML\nComplete RTO Docs Received\nDisbursed To Existing Lender\nExisting Lender NOC Received\nDisbursed To Customer\nDisbursed To Dealer/Seller\nPDD Received"
   },
   {
-   "fieldname": "caller_name",
-   "fieldtype": "Data",
-   "label": "Caller Name"
-  },
-  {
    "fieldname": "documents_checklist_tab",
    "fieldtype": "Tab Break",
    "label": "Documents Checklist"
@@ -599,11 +599,41 @@
    "fieldtype": "Table",
    "label": "Lender Selection and Decision",
    "options": "Lead Lender Decision"
+  },
+  {
+   "fieldname": "registration_number",
+   "fieldtype": "Data",
+   "label": "Registration Number"
+  },
+  {
+   "fieldname": "variant",
+   "fieldtype": "Data",
+   "label": "Variant"
+  },
+  {
+   "fieldname": "manufacturing_year",
+   "fieldtype": "Data",
+   "label": "Manufacturing Year"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Data",
+   "label": "Colour"
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Data",
+   "label": "Month"
+  },
+  {
+   "fieldname": "caller_name",
+   "fieldtype": "Data",
+   "label": "Caller Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-19 16:33:01.310146",
+ "modified": "2024-03-21 16:09:34.862104",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
