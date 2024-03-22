@@ -527,9 +527,9 @@ def login(**kwargs):
                 # else:
                 #     message = "3 invalid attempts done. Please try again after 60 seconds."
                 #     raise ucl.exceptions.ForbiddenException(message=message)
-                if track_login_attempts and not tracker.is_user_allowed():
-                    message = "3 invalid attempts done. Please try again after 60 seconds."
-                    raise ucl.exceptions.ForbiddenException(message=message)
+                # if track_login_attempts and not tracker.is_user_allowed():
+                #     message = "3 invalid attempts done. Please try again after 60 seconds."
+                #     raise ucl.exceptions.ForbiddenException(message=message)
                 raise ucl.exceptions.FailureException(message)
 
             token = dict(
@@ -908,10 +908,11 @@ def aadhaar_ocr(**kwargs):
                 "document1": ["required"],
                 "document2": "",
                 "name": "",
-                "extension": ["required"]
+                "extension1": ["required"],
+                "extension2": ""
         })
-        aadhaar_front_file_name = "{}_aadhaar_card_front.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
-        aadhaar_back_file_name = "{}_aadhaar_card_back.{}".format(partner.partner_name,data.get("extension")).replace(" ", "-")
+        aadhaar_front_file_name = "{}_aadhaar_card_front.{}".format(partner.partner_name,data.get("extension1")).replace(" ", "-")
+        aadhaar_back_file_name = "{}_aadhaar_card_back.{}".format(partner.partner_name,data.get("extension2")).replace(" ", "-")
 
         aadhaar_file_url1 = ucl.attach_files(image_bytes=data.get("document1"),file_name=aadhaar_front_file_name,attached_to_doctype="Partner KYC",attached_to_name=partner_kyc.name, attached_to_field="aadhaar_front",partner=partner)
         partner_kyc.aadhaar_front = aadhaar_file_url1

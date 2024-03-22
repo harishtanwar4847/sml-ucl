@@ -9,10 +9,13 @@ from .exceptions import *
 
 
 @frappe.whitelist(allow_guest=True)
-def dup_entry_check(product, mobile, loan_amt):
+def dup_entry_check(mobile, loan_amt = None, product= None, pan_number= None):
     if frappe.db.exists("Lead", {"mobile_number" : mobile, "sub_product" : product, "requested_loan_amount" : loan_amt}):
         lead = frappe.get_last_doc("Lead", filters={"mobile_number" : mobile, "sub_product" : product, "requested_loan_amount" : loan_amt})
         message = "Lead with the same mobile number and loan amount already exists"
+        raise ucl.exceptions.FailureException(message=message)
+    if frappe.db.exists("Lead", {"mobile_number" : ["not in", [mobile]], "pan_number" : pan_number}):
+        message = "Pan Number already exists for a different mobile number."
         raise ucl.exceptions.FailureException(message=message)
 
 
@@ -62,7 +65,7 @@ def lead_details(**kwargs):
         if int(data.get("mobile_number")[0]) < 6:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
         else:
-            dup_entry_check(product=data.get("sub_product"), mobile=data.get("mobile_number"), loan_amt=data.get("requested_loan_amount"))
+            dup_entry_check(mobile=data.get("mobile_number"), loan_amt=data.get("requested_loan_amount"), product=data.get("sub_product"), pan_number = data.get("pan_number"))
 
             lead = frappe.get_doc({
                 "doctype": "Lead",
