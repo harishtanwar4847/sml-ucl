@@ -153,7 +153,7 @@ scheduler_events = {
         "1 0 * * *": [
             "ucl.authorize_deepvue"
         ],  # At 12:00 AM
-        "5 0, 5 12 * * *": [
+        "5 */12* * *": [
             "ucl.authorize_ibb"
         ]
 	},
