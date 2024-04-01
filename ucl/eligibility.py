@@ -84,18 +84,25 @@ def update_basic_details(**kwargs):
 def verify_pan(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        user = ucl.__user()
+        # user = ucl.__user()
         data = ucl.validate(
             kwargs,
             {
-            "pan_number" : "required"
+            "pan_number" : ["required", ucl.validator.rules.LengthRule(10)]
         })
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(data))
-        pan_plus_response = auth.pan_plus(data.get("pan_number"))
-        if pan_plus_response["code"] == 200 and pan_plus_response["sub_code"] == "SUCCESS":
-            return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=pan_plus_response['data'])
+        regex=re.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}")
+        if re.search(regex, data.get("pan_number")):
+            pan_plus_response = auth.pan_plus(data.get("pan_number"))
+            if pan_plus_response and pan_plus_response["code"] == 200 and pan_plus_response["sub_code"] == "SUCCESS" and 'data' in pan_plus_response['message']:
+                return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=pan_plus_response['data'])
+            else:
+                return ucl.responder.respondWithFailure(message=frappe._("Pan Verification Failed"), data=pan_plus_response)
         else:
-            return ucl.responder.respondWithFailure(message=frappe._("Pan Verification Failed"), data=pan_plus_response)
+            return ucl.responder.respondWithFailure(
+                status=422,
+                message=frappe._("Invalid PAN Card Number."),
+            )
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
@@ -273,8 +280,11 @@ def update_coapplicant_basic_details(**kwargs):
                 "mobile": "required"
         })
         api_log_doc = ucl.log_api(method = "Update Coapplicant Basic Details", request_time = datetime.now(), request = str(data))
+        eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
         if int(data.get("mobile")[0]) < 5:
             return ucl.responder.respondInvalidData(message=frappe._("Please Enter Valid Mobile Number"),)
+        elif data.get("mobile") == eligibility_doc.mobile_no:
+            return ucl.responder.respondInvalidData(message=frappe._("Co-applicant mobile number cannot be the same as the applicant"),)
         else:
             if frappe.db.exists("Lead", {"mobile_number" : data.get("mobile")}):
                 lead = frappe.get_last_doc("Lead", filters={"mobile_number" : data.get("mobile")})
@@ -329,6 +339,7 @@ def update_coapplicant_details(**kwargs):
                 "first_name": "required",
                 "last_name": "",
                 "full_name": "",
+                "phone_number":"",
                 "email": "",
                 "gender": "required",
                 "dob": "required",
@@ -344,6 +355,9 @@ def update_coapplicant_details(**kwargs):
                 "address": "",
         })
         api_log_doc = ucl.log_api(method = "Update Coapplicant Details", request_time = datetime.now(), request = str(data))
+        eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
+        if eligibility_doc.coapplicant_mobile_no != data.get("phone_number"):
+            return ucl.responder.respondWithFailure(message=frappe._("Mobile Number entered should be same as the mobile number from PAN card."), data={"id": data.get("id")})
         eligibility_dict ={
                 "coapplicant_pan": data.get("pan_number"),
                 "coapplicant_first_name": data.get("first_name"),
@@ -495,24 +509,24 @@ def enhance_match(**kwargs):
             kwargs,
             {
             "id" : "required",
-            "occupation_type": "required",
+            "from_lead" : "decimal|between:0,1",
+            "occupation_type": "",
             "requested_loan_amount" : "",
-            "monthly_salary" : "",
-            "monthly_gross_income": "",
+            "monthly_income": "",
             "obligation": "",
             "coapplicant": "decimal|between:0,1"
         })
         api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = str(data))
         if data.get("coapplicant") == 0:
-            eligibility_dict ={
-                    "occupation_type": data.get("occupation_type"),
-                    "requested_loan_amount" : data.get("requested_loan_amount"),
-                    "monthly_salary" : data.get("monthly_salary"),
-                    "monthly_gross_income": data.get("monthly_gross_income"),
-                    "obligations": data.get("obligation")
-            }
-            eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
-            frappe.db.commit()
+            if data.get("from_lead") == 0:
+                eligibility_dict ={
+                        "occupation_type": data.get("occupation_type"),
+                        "requested_loan_amount" : data.get("requested_loan_amount"),
+                        "monthly_income" : data.get("monthly_income"),
+                        "obligations": data.get("obligation")
+                }
+                eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
+                frappe.db.commit()
             register_data = {
                 "firstName" : eligibility_doc.first_name,
                 "surName" : eligibility_doc.last_name,
@@ -532,7 +546,7 @@ def enhance_match(**kwargs):
             eligibility_dict ={
                     "coapplicant_occupation_type": data.get("occupation_type"),
                     "coapplicant_requested_loan_amount" : data.get("requested_loan_amount"),
-                    "coapplicant_monthly_salary" : data.get("monthly_salary"),
+                    "coapplicant_monthly_salary" : data.get("monthly_income"),
                     "coapplicant_monthly_gross_income": data.get("monthly_gross_income"),
                     "coapplicant_obligation": data.get("obligation")
             }
@@ -740,9 +754,12 @@ def bre_offers(**kwargs):
             "id" : "required"
         })
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
-        if eligibility_doc.product == "New Car":
+        product = eligibility_doc.product
+        if eligibility_doc.product == "Loan against car":
+            product = "Refinance"
+        if not frappe.db.exists("Lead", {"mobile_number": eligibility_doc.mobile_no, "sub_product":eligibility_doc.mobile_no, "requested_loan_amount":eligibility_doc.requested_loan_amount}):
             lead = frappe.new_doc("Lead")
-            lead.sub_product = "New Car"
+            lead.sub_product = product
             lead.partner_code = ""
             lead.mobile_number = eligibility_doc.mobile_no
             lead.occupation_type = eligibility_doc.occupation_type
@@ -763,7 +780,8 @@ def bre_offers(**kwargs):
             lead.address = eligibility_doc.full_address
             lead.email_id = eligibility_doc.email_id
             lead.aadhar = eligibility_doc.masked_aadhaar
-            lead.insert()
+            lead.insert(ignore_permissions=True)
+        if eligibility_doc.product == "New Car":
             return ucl.responder.respondWithSuccess(message=frappe._("Thanks for sharing your details. We will get back to you shortly to assist you for your loan application."))
 
         else:
@@ -786,10 +804,7 @@ def bre_offers(**kwargs):
                 previous_emi_amount = eligibility_doc.emi
             else:
                 previous_emi_amount = 0
-            if eligibility_doc.occupation_type == "Salaried":
-                netincome = eligibility_doc.monthly_salary
-            else:
-                netincome = eligibility_doc.monthly_gross_income
+            netincome = eligibility_doc.statement_monthly_income if eligibility_doc.statement_monthly_income else eligibility_doc.monthly_income
             input_date = eligibility_doc.dob
             date_pattern_str1 = r'^\d{4}-\d{2}-\d{2}$'
             date_pattern_str2 = r'^\d{2}-\d{2}-\d{4}$'
@@ -821,17 +836,13 @@ def bre_offers(**kwargs):
             else:
                 obligations = 0
             profession = eligibility_doc.occupation_type
-            if eligibility_doc.coapplicant != "":
+            if eligibility_doc.coapplicant == "Yes":
                 coapplicant = True
+                coapplicant_income = eligibility_doc.coapplicant_monthly_income if eligibility_doc.coapplicant_monthly_income else eligibility_doc.coapplicant_monthly_salary
             else:
                 coapplicant = False
-            coapplicant_profile = eligibility_doc.coapplicant_occupation_type
-            if eligibility_doc.coapplicant_occupation_type == "Salaried":
-                coapplicant_income = eligibility_doc.coapplicant_monthly_salary
-            if eligibility_doc.coapplicant_occupation_type == "Self Employed":
-                coapplicant_income = eligibility_doc.coapplicant_monthly_gross_income
-            else:
                 coapplicant_income = 0
+            coapplicant_profile = eligibility_doc.coapplicant_occupation_type
             creditreport = eligibility_doc.credit_report
         
             payload={
@@ -887,16 +898,27 @@ def update_bank_statement(**kwargs):
                 "id": "required",
                 "document1": ["required"],
                 "extension" : ["required"],
-                "password": ""
+                "password": "",
+                "coapplicant": "decimal|between:0,1"
         })
+        api_log_doc = ucl.log_api(method = "Update Bank Statement", request_time = datetime.now(), request = str(data))
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
         file_name = "{}_{}.{}".format(eligibility_doc.name,"bank_statement",data.get("extension")).replace(" ", "-")
-        file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Eligibility Check",attached_to_name=eligibility_doc.name,attached_to_field="bank_statement_file")
-        eligibility_doc.bank_statement_file = file_url
-        eligibility_doc.file_password = data.get("password")
+        if data.get("coapplicant") == 0:
+            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Eligibility Check",attached_to_name=eligibility_doc.name,attached_to_field="bank_statement_file")
+            eligibility_doc.bank_statement_file = file_url
+            eligibility_doc.file_password = data.get("password")
+            coapplicant="False"
+        else:
+            file_url = ucl.attach_files(image_bytes=data.get("document1"),file_name=file_name,attached_to_doctype="Eligibility Check",attached_to_name=eligibility_doc.name,attached_to_field="coapplicant_bank_statement_file")
+            eligibility_doc.coapplicant_bank_statement_file = file_url
+            eligibility_doc.coapplicant_file_password = data.get("password")
+            coapplicant="True"
+
         eligibility_doc.save(ignore_permissions=True)
         frappe.db.commit()
-        create_workorder(eligibility_doc.name)
+        create_workorder(eligibility_doc.name,coapplicant)
+        # ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str(create_wo.text))
         # return ucl.responder.respondWithSuccess(message=frappe._("Bank Statement Uploaded Successfully."))
 
     except ucl.exceptions.APIException as e:
@@ -932,7 +954,7 @@ def update_salary_slip(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def create_workorder(eligibility_id):
+def create_workorder(eligibility_id, coapplicant):
     try:
         user = ucl.__user()
         ucl_setting = frappe.get_single("UCL Settings")
@@ -947,7 +969,8 @@ def create_workorder(eligibility_id):
         if response.status_code == 201:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             id = response.json()['id']
-            add_bank_statement(id,eligibility_id)
+            add_bank_st = add_bank_statement(id,eligibility_id, coapplicant)
+            return add_bank_st
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
@@ -960,7 +983,7 @@ def create_workorder(eligibility_id):
         return e.respond()
     
 
-def add_bank_statement(id,eligibility_id):
+def add_bank_statement(id,eligibility_id,coapplicant):
     try:
         user = ucl.__user()
         ucl_setting = frappe.get_single("UCL Settings")
@@ -974,9 +997,14 @@ def add_bank_statement(id,eligibility_id):
             "file_type" : "bank_statement"
         }
         eligibility_doc = frappe.get_doc("Eligibility Check", eligibility_id)
-        bank_file = eligibility_doc.bank_statement_file
-        response = requests.get(bank_file)
-        password = eligibility_doc.file_password
+        if coapplicant == "True":
+            bank_file = eligibility_doc.coapplicant_bank_statement_file
+            response = requests.get(bank_file)
+            password = eligibility_doc.coapplicant_file_password
+        else:
+            bank_file = eligibility_doc.bank_statement_file
+            response = requests.get(bank_file)
+            password = eligibility_doc.file_password
         if response.status_code == 200:
             pdf_data = io.BytesIO(response.content)
             reader = PyPDF2.PdfReader(pdf_data)
@@ -1000,7 +1028,8 @@ def add_bank_statement(id,eligibility_id):
         api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("Workorder id" + id + "Eligibility Id : " + eligibility_id), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
-            process_workorder(id,eligibility_id)
+            process_wo = process_workorder(id,eligibility_id, coapplicant)
+            return process_wo
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
@@ -1011,7 +1040,7 @@ def add_bank_statement(id,eligibility_id):
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
 
-def process_workorder(id,eligibility_id):
+def process_workorder(id,eligibility_id, coapplicant):
     try:
         user = ucl.__user()
         ucl_setting = frappe.get_single("UCL Settings")
@@ -1025,7 +1054,8 @@ def process_workorder(id,eligibility_id):
         api_log_doc = ucl.log_api(method = "Glib process workorder", request_time = datetime.now(), request =str("Workorder id" + id ), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
-            retrieve_workorder(id,eligibility_id)
+            retrieve_wo = retrieve_workorder(id,eligibility_id, coapplicant)
+            return retrieve_wo
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
         else:
@@ -1036,7 +1066,7 @@ def process_workorder(id,eligibility_id):
         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = "", status_code=e.http_status_code)
         return e.respond()
 
-def retrieve_workorder(id,eligibility_id):
+def retrieve_workorder(id,eligibility_id, coapplicant):
     try:
         user = ucl.__user()
         ucl_setting = frappe.get_single("UCL Settings")
@@ -1053,12 +1083,13 @@ def retrieve_workorder(id,eligibility_id):
             max_attempts = 10
             attempts = 0
             while attempts < max_attempts:
-                dow_rep = download_report(id,eligibility_id)
+                dow_rep = download_report(id,eligibility_id, coapplicant)
                 if dow_rep.status_code == 200:
                     return ucl.responder.respondWithSuccess(message=frappe._("Your bank statement has been uploaded successfully."), data=dow_rep.json())                
                 else:
                     attempts += 1
                     time.sleep(2)
+                return dow_rep
                     
             else:
                 return ucl.responder.respondWithFailure(message=frappe._("It is taking too much time. Please try after some time."), data=dow_rep.text)
@@ -1072,7 +1103,7 @@ def retrieve_workorder(id,eligibility_id):
         return e.respond()
     
     
-def download_report(id, eligibility_id):
+def download_report(id, eligibility_id, coapplicant):
     try:
         user = ucl.__user()
         ucl_setting = frappe.get_single("UCL Settings")
@@ -1091,21 +1122,39 @@ def download_report(id, eligibility_id):
                 if i['Type'] == "Salary":
                     salary = i['Amount']
                     if salary == "NA" or salary == "Not Identified":
-                        eligibility_doc.monthly_salary = 0
+                        if coapplicant == "True":
+                            eligibility_doc.coapplicant_monthly_income = 0
+                        else:
+                            eligibility_doc.statement_monthly_income = 0
                     else:
-                        eligibility_doc.monthly_salary = salary
+                        if coapplicant == "True":
+                            eligibility_doc.coapplicant_monthly_income = salary
+                        else:
+                            eligibility_doc.statement_monthly_income = salary
                 if i['Type'] == "Probable Salary":
                     salary = i['Amount']
                     if salary == "NA" or salary == "Not Identified":
-                        eligibility_doc.monthly_salary = 0
+                        if coapplicant == "True":
+                            eligibility_doc.coapplicant_monthly_income = 0
+                        else:
+                            eligibility_doc.statement_monthly_income = 0
                     else:
-                        eligibility_doc.monthly_salary = salary
+                        if coapplicant == "True":
+                            eligibility_doc.coapplicant_monthly_income = salary
+                        else:
+                            eligibility_doc.statement_monthly_income = salary
                 if i['Type'] == "EMI/LOAN":
                     obligation = i["Amount"]
                     if obligation == "NA" or obligation == "Not Identified":
-                        eligibility_doc.obligations = 0
+                        if coapplicant == "True":
+                            eligibility_doc.coapplicant_obligations = 0
+                        else:
+                            eligibility_doc.obligations = 0
                     else:
-                        eligibility_doc.obligations = obligation
+                        if coapplicant == "True":
+                            eligibility_doc.coapplicant_obligations = obligation
+                        else:
+                            eligibility_doc.obligations = obligation
             eligibility_doc.save(ignore_permissions=True)
             frappe.db.commit()
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
@@ -1286,6 +1335,97 @@ def ibb(**kwargs):
         return e.respond()
     
 
+@frappe.whitelist(allow_guest=True)
+def eligiblity_from_lead(**kwargs):
+    try:
+        user = ucl.__user()
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,{
+            "lead_id" : "",
+        },
+        )
 
+        api_log_doc = ucl.log_api(method = "Eligibility From Lead", request_time = datetime.now(), request = str(data))
+        lead = frappe.get_doc("Lead", data.get("lead_id"))
+        eligibility_doc = frappe.get_doc(
+            {
+                "doctype": "Eligibility Check",
+                "lead" : lead.name,
+                "mobile_no": lead.mobile_number,
+                "product": lead.sub_product,
+                "pan_number": lead.pan_number,
+                "first_name": lead.first_name,
+                "last_name": lead.last_name,
+                "full_name": lead.full_name,
+                "line_1": lead.line_1,
+                "line_2": lead.line_2,
+                "zip": lead.zip,
+                "pan_city": lead.city,
+                "pan_state": lead.state,
+                "pan_country": lead.country,
+                "street_name": lead.street,
+                "gender": lead.gender,
+                "dob": lead.dob,
+                "full_address": lead.address,
+                "email_id": lead.email_id,
+                "masked_aadhaar": lead.aadhar,
+                "pan_details_filled": 1,
+                "occupation_type" : lead.occupation_type,
+                "monthly_salary" : lead.monthly_income,
+                "obligations" : lead.obligations,
+                "requested_loan_amount" : lead.requested_loan_amount,
+                "registration_number" : lead.rc_number,
+                "manufacturing_year" : lead.vehicle_registration_year,
+                "month" : lead.vehicle_registration_month,
+                "brand" : lead.make,
+                "model" : lead.model,
+                "variant" : lead.variant,
+                "colour" : lead.colour,
+                "city" : lead.location,
+                "kms_driven" : lead.kms_driven,
+                "car_owner" : lead.car_owner,
+                "estimated_value" : lead.estimated_value,
+                "lender_name" : lead.existing_lender,
+                "pos" : lead.principal_outstanding,
+                "current_rate_of_interest" : lead.rate_of_interest,
+                "tenure_served" : lead.tenure_serviced,
+                "emi" : lead.emi
+
+            }
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str({"id" : eligibility_doc.name}))
+        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"id" : eligibility_doc.name})
+
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Eligibility From Lead", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
+
+
+@frappe.whitelist(allow_guest=True)
+def offers_selected(**kwargs):
+    try:
+        user = ucl.__user()
+        ucl.validate_http_method("POST")
+        data = ucl.validate(
+            kwargs,{
+            "id" : "",
+            "offer" : "required",
+        },
+        )
+        api_log_doc = ucl.log_api(method = "Offer Selected", request_time = datetime.now(), request = str(data))
+        lead = frappe.get_doc("Lead", data.get("lead_id"))
+        lead.offer_selected = str(data.get("offers"))
+        lead.insert(ignore_permissions=True)
+        frappe.db.commit()
+        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = "Success")
+        return ucl.responder.respondWithSuccess(message=frappe._("success"))
+
+    except ucl.exceptions.APIException as e:
+        api_log_doc = ucl.log_api(method = "Offer Selected", request_time = datetime.now(), request = "")
+        ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Internal", response = "")
+        return e.respond()
 
     

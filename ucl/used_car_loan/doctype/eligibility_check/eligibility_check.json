@@ -11,13 +11,12 @@
   "column_break_dbha",
   "occupation_type",
   "income_details_section",
-  "monthly_salary",
   "other_income",
   "coapplicant_running_loan",
   "cibil_score",
   "coapplicant",
   "column_break_vzrh",
-  "monthly_gross_income",
+  "monthly_income",
   "requested_loan_amount",
   "credit_report",
   "pan_details_tab",
@@ -76,7 +75,6 @@
   "coapplicant_gender",
   "coapplicant_dob",
   "coapplicant_monthly_salary",
-  "coapplicant_monthly_gross_income",
   "coapplicant_obligation",
   "coapplicant_pan_details_filled",
   "column_break_ubfd",
@@ -93,11 +91,20 @@
   "coapplicant_cibil_score",
   "coapplicant_credit_report",
   "bank_statement_details_tab",
+  "applicant_details_section",
   "bank_statement_file",
   "file_password",
   "salary_slip",
   "column_break_acqa",
+  "statement_monthly_income",
   "obligations",
+  "coapplicant_bank_statement_details_section",
+  "coapplicant_bank_statement_file",
+  "coapplicant_file_password",
+  "coapplicant_salary_slip",
+  "column_break_clbk",
+  "coapplicant_monthly_income",
+  "coapplicant_obligations",
   "offers_tab",
   "offers_section",
   "offers"
@@ -251,12 +258,7 @@
   {
    "fieldname": "coapplicant_monthly_salary",
    "fieldtype": "Data",
-   "label": "Monthly Salary"
-  },
-  {
-   "fieldname": "coapplicant_monthly_gross_income",
-   "fieldtype": "Data",
-   "label": "Monthly Gross Income"
+   "label": "Monthly Income"
   },
   {
    "fieldname": "coapplicant_running_loan",
@@ -367,12 +369,6 @@
    "label": "Income Details"
   },
   {
-   "depends_on": "eval:doc.occupation_type==\"Salaried\";",
-   "fieldname": "monthly_salary",
-   "fieldtype": "Data",
-   "label": "Monthly Salary"
-  },
-  {
    "fieldname": "column_break_vzrh",
    "fieldtype": "Column Break"
   },
@@ -380,12 +376,6 @@
    "fieldname": "requested_loan_amount",
    "fieldtype": "Data",
    "label": "Requested Loan Amount"
-  },
-  {
-   "depends_on": "eval:doc.occupation_type==\"Self Employed\";",
-   "fieldname": "monthly_gross_income",
-   "fieldtype": "Data",
-   "label": "Monthly Gross Income"
   },
   {
    "fieldname": "coapplicant_full_address",
@@ -454,7 +444,7 @@
   {
    "fieldname": "obligations",
    "fieldtype": "Data",
-   "label": "Obligations (Percent)"
+   "label": "Obligations"
   },
   {
    "fieldname": "first_name",
@@ -497,7 +487,7 @@
    "fieldname": "coapplicant",
    "fieldtype": "Select",
    "label": "Coapplicant",
-   "options": "\nYes\nNo"
+   "options": "No\nYes"
   },
   {
    "fieldname": "offers_section",
@@ -551,8 +541,9 @@
   },
   {
    "fieldname": "current_rate_of_interest",
-   "fieldtype": "Data",
-   "label": "Current Rate of Interest"
+   "fieldtype": "Float",
+   "label": "Current Rate of Interest",
+   "precision": "2"
   },
   {
    "fieldname": "sanctioned_tenure",
@@ -586,11 +577,62 @@
    "fieldname": "coapplicant_flat_no",
    "fieldtype": "Data",
    "label": "Coapplicant Flat No"
+  },
+  {
+   "depends_on": "eval:doc.occupation_type==\"Self Employed\";",
+   "fieldname": "monthly_income",
+   "fieldtype": "Data",
+   "label": "Monthly Income"
+  },
+  {
+   "fieldname": "coapplicant_bank_statement_details_section",
+   "fieldtype": "Section Break",
+   "label": "Co-applicant Bank Statement Details"
+  },
+  {
+   "fieldname": "coapplicant_bank_statement_file",
+   "fieldtype": "Attach",
+   "label": "Co-applicant Bank Statement File"
+  },
+  {
+   "fieldname": "coapplicant_file_password",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Co-applicant File Password"
+  },
+  {
+   "fieldname": "coapplicant_salary_slip",
+   "fieldtype": "Attach",
+   "label": "Co-applicant Salary Slip"
+  },
+  {
+   "fieldname": "column_break_clbk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "coapplicant_monthly_income",
+   "fieldtype": "Data",
+   "label": "Co-applicant Monthly Income"
+  },
+  {
+   "fieldname": "coapplicant_obligations",
+   "fieldtype": "Data",
+   "label": "Co-applicant Obligations"
+  },
+  {
+   "fieldname": "applicant_details_section",
+   "fieldtype": "Section Break",
+   "label": "Applicant Details"
+  },
+  {
+   "fieldname": "statement_monthly_income",
+   "fieldtype": "Data",
+   "label": "Monthly Income"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-18 15:37:07.104471",
+ "modified": "2024-04-01 16:13:17.957342",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Eligibility Check",

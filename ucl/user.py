@@ -535,7 +535,7 @@ def update_bank_details(**kwargs):
                             "beneficiary_name": data.get("beneficiary_name"),
                             "kyc_bank_details_linked": 1
                         }
-                        partner_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(bank_details_dict).save(ignore_permissions = True)
+                        partner_kyc_doc = frappe.get_doc("Partner KYC", partner.partner_kyc).update(bank_details_dict).save(ignore_permissions = True)
                         frappe.db.commit()
                         return ucl.responder.respondWithSuccess(message=frappe._("Bank details updated successfuly"))
                     else:

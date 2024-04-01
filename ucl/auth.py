@@ -433,17 +433,18 @@ def verify_forgot_pin_otp(**kwargs):
                     .run(as_dict=True)
                 )
                 if passlibctx.verify(data.get("new_pin"), result[0].password):
-                    raise ucl.exceptions.FailureException(
+                    return ucl.responder.respondForbidden(
                     _("This PIN is already in use please try with a different PIN.")
                 )
-                update_password(user.name, data.get("new_pin"))
-                response = "User PIN has been updated."
-                ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
-                if not dummy_account_exists:
-                    ucl.token_mark_as_used(token)
-                return ucl.responder.respondWithSuccess(
-                    message=frappe._(response)
-                )
+                else:
+                    update_password(user.name, data.get("new_pin"))
+                    response = "User PIN has been updated."
+                    ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = response)
+                    if not dummy_account_exists:
+                        ucl.token_mark_as_used(token)
+                    return ucl.responder.respondWithSuccess(
+                        message=frappe._(response)
+                    )
 
         elif not data.get("new_pin"):
             response = "Please Enter value for new pin."
@@ -785,10 +786,7 @@ def pan_plus(pan_number):
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = str(pan_number), url = str(url), headers = str(headers), path_params= str(pan_number))
         response = requests.request("GET", url, headers=headers, data=payload)
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=str(response.json()['code']))
-        if response.json()['code'] == 200:
-            return response.json()
-        else:
-            raise ucl.exceptions.NotFoundException(message = frappe._("Invalid PAN"))
+        return response.json()
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Pan Plus", request_time = datetime.now(), request = "")
@@ -837,7 +835,7 @@ def pan_ocr(**kwargs):
             api_log_doc = ucl.log_api(method = "Pan OCR", request_time = datetime.now(), request = str(payload), url = str(url), headers=str(headers))
             ocr_response = requests.request("POST", url, headers=headers, json=payload)
 
-            if ocr_response.json()['code'] == 200:
+            if ocr_response.json()['code'] == 200 and response.message ==  "Document processed successfuly":
                 id_number = ocr_response.json()["data"]["id_number"]
                 if frappe.db.exists("Partner KYC", {"pan_number": id_number,"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
                     message = "This Pan Card Already exists in the system."
@@ -846,7 +844,7 @@ def pan_ocr(**kwargs):
                     frappe.db.commit()
                     return ucl.responder.respondWithFailure(message=frappe._(message), data=str(ocr_response.json()))
 
-                if id_number and ocr_response.json()['data']["pan_type"]:
+                elif id_number and ocr_response.json()['data']["pan_type"]:
                     if data.get("company_pan") == 1 and ocr_response.json()['data']["pan_type"] == "Individual":
                         ucl.log_api_response(is_error = 1, error  = "Please upload a valid Company Pan Card", api_log_doc = api_log_doc, api_type = "Third Party", response = str(ocr_response), status_code=ocr_response.status_code)
                         return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Company Pan Card"), data=str(ocr_response.json()))
@@ -855,12 +853,19 @@ def pan_ocr(**kwargs):
                         return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Individual Pan Card"), data=str(ocr_response.json()))
                     else:
                         pan_plus_response = pan_plus(id_number)
-
-                        response = pan_plus_response["data"]
-                        response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
-                        response["pan_type"] = ocr_response.json()['data']["pan_type"]
-                        ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code="200")
-                        return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
+                        if pan_plus_response and pan_plus_response['code'] == 200 and 'data' in pan_plus_response and pan_plus_response["sub_code"] == "SUCCESS":
+                            response = pan_plus_response["data"]
+                            response["fathers_name"] = ocr_response.json()['data']["fathers_name"]
+                            response["pan_type"] = ocr_response.json()['data']["pan_type"]
+                            ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code="200")
+                            return ucl.responder.respondWithSuccess(message=frappe._("Document processed successfuly"), data=response)
+                        else:
+                            partner_kyc.company_pan_file = ""
+                            partner_kyc.save(ignore_permissions=True)
+                            frappe.db.commit()
+                            response = ocr_response.json()
+                            ucl.log_api_response(is_error = 1, error  = str(ocr_response.json()["message"]), api_log_doc = api_log_doc, api_type = "Third Party", response = str(response), status_code=ocr_response.status_code)
+                            return ucl.responder.respondWithFailure(message=frappe._("Please upload a valid Pan Card"), data=response)
 
                 else:
                     partner_kyc.company_pan_file = ""
@@ -934,7 +939,7 @@ def aadhaar_ocr(**kwargs):
         api_log_doc = ucl.log_api(method = "Aadhaar OCR", request_time = datetime.now(), request = str(payload), url = str(url), headers=str(headers))
 
         response = requests.request("POST", url, headers=headers, json=payload)
-        if response.json()['code'] == 200:
+        if response.json()['code'] == 200 and response.message ==  "Document processed successfuly":
             if response.json()['data']['id_number']:
                 id_number = response.json()['data']['id_number'][-4:]
                 if frappe.db.exists("Partner KYC", {"id_number": response.json()['data']['id_number'],"status":["not in", ["Rejected by Partner", "Rejected by SML"]]}):
@@ -989,7 +994,7 @@ def rc_advance(**kwargs):
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str(data), url = str(url), headers=str(headers), path_params=str(data.get("rc_number")))
         rc_response = requests.request("GET",url, headers=headers, json = payload)
-        if rc_response.status_code == 200:
+        if rc_response.status_code == 200 and rc_response.message == "RC Verified Successfully.":
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text)
             if rc_response.json()['data']:
                 year = rc_response.json()['data']['registration_date'].split("-")[0]
@@ -1021,7 +1026,7 @@ def rc_advance(**kwargs):
                         raise ucl.exceptions.NotFoundException(message=frappe._(make_response.json()['message']))
                     
                     for i in make_list:
-                        if maker_description[0] in i:
+                        if maker_description and maker_description[0] in i:
                             make = i
                 else:
                     return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
@@ -1041,7 +1046,7 @@ def rc_advance(**kwargs):
                         ucl.log_api_response(is_error = 1, error  = frappe.get_traceback(), api_log_doc = api_log_doc, api_type = "Third Party", response = model_response.text, status_code=model_response.status_code)
                         raise ucl.exceptions.NotFoundException(message=frappe._(model_response.json()['message']))
                     for i in model_list:
-                        if maker_model[0] in i or maker_model[1] in i:
+                        if maker_model and (maker_model[0] in i or maker_model[1] in i):
                             model = i
                 else:
                     return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
@@ -1059,7 +1064,7 @@ def rc_advance(**kwargs):
                         raise ucl.exceptions.NotFoundException(message=frappe._(city_response.json()['message']))
                     
                     for i in city_list:
-                        if location[0] in i:
+                        if location and location[0] in i:
                             city = i
                 else:
                     return ucl.responder.respondWithFailure(message=frappe._("Unable to fetch details. Please try after some time."))
@@ -1162,7 +1167,8 @@ def penny_drop(beneficiary_account_no,beneficiary_ifsc):
             return response.json()
         else:
             ucl.log_api_response(is_error = 1, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = response.text, status_code=response.status_code)
-            raise ucl.exceptions.FailureException(frappe._(response.json()['message'] if response.json()['message'] else response.json()['error_msg']))
+            return response.json()
+            # raise ucl.exceptions.FailureException(frappe._(response.json()['message'] if response.json()['message'] else response.json()['error_msg']))
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Penny Drop", request_time = datetime.now(), request = "")

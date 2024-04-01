@@ -12,6 +12,7 @@ class Lead(Document):
 	def before_save(self):
 		ucl_setting = frappe.get_single("UCL Settings")
 		receiver_list = [self.mobile_number]
+		message = ""
 		if self.status == "Call Done" and not self.caller_name:
 			frappe.throw(_("Please enter the caller name."))
 		pre_sanction_count = 0
@@ -77,6 +78,15 @@ class Lead(Document):
 			message = sms_notification_doc.message.format(lead_name = self.full_name, website=ucl_setting.sml_website)
 		elif self.status == "Post Sanction Docs" and self.caller_name:
 			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Post Sanctioned Docs")
+			message = sms_notification_doc.message.format(lead_name = self.full_name, phone=ucl_setting.sml_contact_number, email=ucl_setting.sml_email_id)
+		elif self.status == "Post Sanction Docs" and self.caller_name:
+			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Partial Docs Received")
+			message = sms_notification_doc.message.format(lead_name = self.full_name)
+		elif self.status == "Post Sanction Docs" and self.caller_name:
+			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Complete Docs Received")
+			message = sms_notification_doc.message.format(lead_name = self.full_name)
+		elif self.status == "Post Sanction Docs" and self.caller_name:
+			sms_notification_doc = frappe.get_doc("UCL SMS Notification", "Lead Disbursed to Customer")
 			message = sms_notification_doc.message.format(lead_name = self.full_name, phone=ucl_setting.sml_contact_number, email=ucl_setting.sml_email_id)
 			
 		frappe.enqueue(method=send_sms_custom, receiver_list=receiver_list, msg=message, sms_template_id = sms_notification_doc.template_id)

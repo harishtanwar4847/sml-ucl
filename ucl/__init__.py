@@ -624,7 +624,7 @@ def associate_list():
     
 def lead_dashboard_list():
     user = __user()
-    lead = frappe.get_all("Lead", filters= {"owner": user.name}, fields = ["name", "mobile_number", "email_id", "full_name", "pan_number", "workflow_state", "sub_product"])
+    lead = frappe.get_all("Lead", filters= {"owner": user.name}, fields = ["name", "mobile_number", "email_id", "full_name", "pan_number", "workflow_state", "sub_product", "occupation_type", "requested_loan_amount"])
     if len(lead) == 0:
         dict = {"lead_list": lead}
     else:

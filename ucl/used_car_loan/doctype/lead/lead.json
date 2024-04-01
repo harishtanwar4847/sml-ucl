@@ -20,6 +20,7 @@
   "occupation_type",
   "monthly_income",
   "obligations",
+  "offer_selected",
   "pan_details_tab",
   "pan_number",
   "full_name",
@@ -38,13 +39,17 @@
   "country",
   "loan_details_tab",
   "vehicle_owned",
-  "registration_number",
+  "rc_number",
+  "vehicle_registration_year",
+  "vehicle_registration_month",
   "make",
   "model",
   "variant",
-  "manufacturing_year",
-  "month",
   "colour",
+  "location",
+  "estimated_value",
+  "car_owner",
+  "kms_driven",
   "insurance_expiry_date",
   "column_break_vmtn",
   "existing_lender",
@@ -52,6 +57,7 @@
   "principal_outstanding",
   "rate_of_interest",
   "tenure_serviced",
+  "emi",
   "documents_checklist_tab",
   "pre_sanction_checklist_section",
   "kyc",
@@ -143,7 +149,8 @@
   {
    "fieldname": "address",
    "fieldtype": "Small Text",
-   "label": "Full Address"
+   "label": "Full Address",
+   "reqd": 1
   },
   {
    "fieldname": "email_id",
@@ -305,7 +312,7 @@
   {
    "fieldname": "obligations",
    "fieldtype": "Data",
-   "label": "Obligations (Percent)"
+   "label": "Obligations"
   },
   {
    "fieldname": "first_name",
@@ -601,9 +608,29 @@
    "options": "Lead Lender Decision"
   },
   {
-   "fieldname": "registration_number",
+   "fieldname": "caller_name",
    "fieldtype": "Data",
-   "label": "Registration Number"
+   "label": "Caller Name"
+  },
+  {
+   "fieldname": "offer_selected",
+   "fieldtype": "Data",
+   "label": "Offer Selected"
+  },
+  {
+   "fieldname": "rc_number",
+   "fieldtype": "Data",
+   "label": "RC Number"
+  },
+  {
+   "fieldname": "vehicle_registration_year",
+   "fieldtype": "Data",
+   "label": "Vehicle Registration Year"
+  },
+  {
+   "fieldname": "vehicle_registration_month",
+   "fieldtype": "Data",
+   "label": "Vehicle Registration Month"
   },
   {
    "fieldname": "variant",
@@ -611,29 +638,39 @@
    "label": "Variant"
   },
   {
-   "fieldname": "manufacturing_year",
-   "fieldtype": "Data",
-   "label": "Manufacturing Year"
-  },
-  {
    "fieldname": "colour",
    "fieldtype": "Data",
    "label": "Colour"
   },
   {
-   "fieldname": "month",
+   "fieldname": "location",
    "fieldtype": "Data",
-   "label": "Month"
+   "label": "Location"
   },
   {
-   "fieldname": "caller_name",
+   "fieldname": "estimated_value",
    "fieldtype": "Data",
-   "label": "Caller Name"
+   "label": "Estimated Car Value"
+  },
+  {
+   "fieldname": "car_owner",
+   "fieldtype": "Data",
+   "label": "Owner"
+  },
+  {
+   "fieldname": "kms_driven",
+   "fieldtype": "Data",
+   "label": "Kms Drivern"
+  },
+  {
+   "fieldname": "emi",
+   "fieldtype": "Data",
+   "label": "EMI"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-21 16:09:34.862104",
+ "modified": "2024-03-27 18:18:38.953331",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",
@@ -682,30 +719,6 @@
    "read": 1,
    "report": 1,
    "role": "CBO",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "if_owner": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Partner",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "if_owner": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Partner Associate",
    "share": 1,
    "write": 1
   }
