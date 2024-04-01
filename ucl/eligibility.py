@@ -969,8 +969,7 @@ def create_workorder(eligibility_id, coapplicant):
         if response.status_code == 201:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
             id = response.json()['id']
-            add_bank_st = add_bank_statement(id,eligibility_id, coapplicant)
-            return add_bank_st
+            add_bank_statement(id,eligibility_id, coapplicant)
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
@@ -1028,8 +1027,7 @@ def add_bank_statement(id,eligibility_id,coapplicant):
         api_log_doc = ucl.log_api(method = "Glib add bank statement", request_time = datetime.now(), request = str("Workorder id" + id + "Eligibility Id : " + eligibility_id), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
-            process_wo = process_workorder(id,eligibility_id, coapplicant)
-            return process_wo
+            process_workorder(id,eligibility_id, coapplicant)
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
         else:
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
@@ -1054,8 +1052,7 @@ def process_workorder(id,eligibility_id, coapplicant):
         api_log_doc = ucl.log_api(method = "Glib process workorder", request_time = datetime.now(), request =str("Workorder id" + id ), url=str(url), headers=str(headers), path_params=str(id))
         if response.status_code == 200:        
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = str(response.json()), status_code=response.status_code)
-            retrieve_wo = retrieve_workorder(id,eligibility_id, coapplicant)
-            return retrieve_wo
+            retrieve_workorder(id,eligibility_id, coapplicant)
             # return ucl.responder.respondWithSuccess(message=frappe._("success"), data=response.json())
 
         else:
@@ -1089,7 +1086,6 @@ def retrieve_workorder(id,eligibility_id, coapplicant):
                 else:
                     attempts += 1
                     time.sleep(2)
-                return dow_rep
                     
             else:
                 return ucl.responder.respondWithFailure(message=frappe._("It is taking too much time. Please try after some time."), data=dow_rep.text)
