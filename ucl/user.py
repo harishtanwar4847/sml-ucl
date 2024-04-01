@@ -52,6 +52,9 @@ def update_partner_type(**kwargs):
                 user.remove_roles("Partner")
                 user.add_roles("Partner Associate")
                 user.save(ignore_permissions=True)
+                partner_kyc = frappe.get_doc("Partner KYC", partner.partner_kyc)
+                partner_kyc.parent_partner= data.get("parent_partner_name")
+                partner_kyc.save(ignore_permissions=True)
         
         else:
             partner.associate = 0

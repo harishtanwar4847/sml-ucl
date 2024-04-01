@@ -13,6 +13,7 @@
   "live_image",
   "live_image_remarks",
   "kyc_live_image_linked",
+  "parent_partner",
   "pan_details_tab",
   "pan_card_file",
   "pan_number",
@@ -582,11 +583,17 @@
    "fieldtype": "Data",
    "label": "KYC Validation Remark",
    "read_only": 1
+  },
+  {
+   "fieldname": "parent_partner",
+   "fieldtype": "Link",
+   "label": "Parent Partner",
+   "options": "Partner"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-20 09:39:12.021597",
+ "modified": "2024-04-01 18:51:50.123241",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Partner KYC",

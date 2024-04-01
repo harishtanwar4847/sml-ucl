@@ -71,6 +71,15 @@ def verify_email(**kwargs):
                     )
                 
                 partner = ucl.create_partner(first_name = user.full_name, mobile = user.mobile_no, email = user.name, user = user.name)
+                user_permission = frappe.get_doc(
+                    {
+                        "doctype": "User Permission",   
+                        "user": user.name,
+                        "allow": "Customer",
+                        "for_value": partner.partner_name,
+                        "apply_to_all_doctypes": 1,
+                    }
+                ).insert(ignore_permissions=True)   
                 partner_kyc = frappe.new_doc("Partner KYC").save(ignore_permissions = True)
                 partner.partner_kyc = partner_kyc.name
                 partner.save(ignore_permissions = True)
