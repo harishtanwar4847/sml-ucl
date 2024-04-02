@@ -758,7 +758,7 @@ def bre_offers(**kwargs):
         })
         eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id"))
         product = eligibility_doc.product
-        if eligibility_doc.product == "Loan against car":
+        if eligibility_doc.product == "Loan Against Car":
             product = "Refinance"
         if not frappe.db.exists("Lead", {"mobile_number": eligibility_doc.mobile_no, "sub_product":eligibility_doc.mobile_no, "requested_loan_amount":eligibility_doc.requested_loan_amount}):
             lead = frappe.new_doc("Lead")
