@@ -30,8 +30,9 @@
   "aadhar",
   "address",
   "column_break_dlkr",
-  "line_2",
   "line_1",
+  "line_2",
+  "flat_no",
   "street",
   "zip",
   "city",
@@ -666,11 +667,16 @@
    "fieldname": "emi",
    "fieldtype": "Data",
    "label": "EMI"
+  },
+  {
+   "fieldname": "flat_no",
+   "fieldtype": "Data",
+   "label": "Flat No"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-27 18:18:38.953331",
+ "modified": "2024-04-02 14:10:06.319475",
  "modified_by": "Administrator",
  "module": "Used Car Loan",
  "name": "Lead",

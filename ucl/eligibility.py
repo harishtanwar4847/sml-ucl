@@ -1374,6 +1374,7 @@ def eligiblity_from_lead(lead_id):
                 "flat_no" : "01",
                 "line_1": lead.line_1,
                 "line_2": lead.line_2,
+                "flat_no": lead.flat_no,
                 "zip": lead.zip,
                 "pan_city": lead.city,
                 "pan_state": lead.state,
