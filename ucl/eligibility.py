@@ -94,7 +94,7 @@ def verify_pan(**kwargs):
         regex=re.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}")
         if re.search(regex, data.get("pan_number")):
             pan_plus_response = auth.pan_plus(data.get("pan_number"))
-            if pan_plus_response and pan_plus_response["code"] == 200 and pan_plus_response["sub_code"] == "SUCCESS" and 'data' in pan_plus_response['message']:
+            if pan_plus_response and pan_plus_response["code"] == 200 and pan_plus_response["sub_code"] == "SUCCESS":
                 return ucl.responder.respondWithSuccess(message=frappe._("Pan Verified Successfully."), data=pan_plus_response['data'])
             else:
                 return ucl.responder.respondWithFailure(message=frappe._("Pan Verification Failed"), data=pan_plus_response)
@@ -1357,16 +1357,21 @@ def eligiblity_from_lead(lead_id):
     try:
         api_log_doc = ucl.log_api(method = "Eligibility From Lead", request_time = datetime.now(), request = str(lead_id))
         lead = frappe.get_doc("Lead", lead_id)
+        if lead.sub_product in ["New Car", "Preowned Car"]:
+            sub_product = lead.sub_product
+        else:
+            sub_product = "Loan Against Car"
         eligibility_doc = frappe.get_doc(
             {
                 "doctype": "Eligibility Check",
                 "lead" : lead.name,
                 "mobile_no": lead.mobile_number,
-                "product": lead.sub_product,
+                "product": sub_product if sub_product else "",
                 "pan_number": lead.pan_number,
                 "first_name": lead.first_name,
                 "last_name": lead.last_name,
                 "full_name": lead.full_name,
+                "flat_no" : "01",
                 "line_1": lead.line_1,
                 "line_2": lead.line_2,
                 "zip": lead.zip,
