@@ -24,7 +24,7 @@ def dup_entry_check(mobile, loan_amt = None, product= None, pan_number= None):
 def lead_details(**kwargs):
     try:
         ucl.validate_http_method("POST")
-        # user = ucl.__user()
+        user = ucl.__user()
         # user_roles = frappe.db.get_values(
         #     "Has Role", {"parent": user.name, "parenttype": "User"}, ["role"]
         # )

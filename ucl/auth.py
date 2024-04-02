@@ -386,6 +386,7 @@ def verify_forgot_pin_otp(**kwargs):
         data = ucl.validate(
             kwargs,
             {
+                "mobile_no" : ["required", "decimal", ucl.validator.rules.LengthRule(10)],
                 "otp": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
                 "new_pin": ["required", "decimal", ucl.validator.rules.LengthRule(4)],
             },
@@ -402,7 +403,7 @@ def verify_forgot_pin_otp(**kwargs):
             response = "User disabled or missing"
             raise ucl.exceptions.FailureException(_(response))
 
-        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile"), "is_active" : 1})
+        dummy_account_exists = frappe.db.exists("UCL Dummy Account", {"mobile_no" : data.get("mobile_no"), "is_active" : 1})
         if dummy_account_exists:
             dummy_account = frappe.get_doc("UCL Dummy Account", data.get("mobile"))
             if data.get("otp") == dummy_account.token:
@@ -412,7 +413,7 @@ def verify_forgot_pin_otp(**kwargs):
         else:
             try:
                 token = ucl.verify_user_token(
-                    entity=user.mobile_no,
+                    entity=user.mobile_no if user.mobile_no else data.get("mobile_no"),
                     token=data.get("otp"),
                     token_type="Forgot Pin OTP",
                 )
@@ -1003,9 +1004,9 @@ def rc_advance(**kwargs):
         headers = {'Authorization': ucl_setting.bearer_token,'x-api-key': ucl_setting.deepvue_client_secret,}
         api_log_doc = ucl.log_api(method = "RC Advance", request_time = datetime.now(), request = str(data), url = str(url), headers=str(headers), path_params=str(data.get("rc_number")))
         rc_response = requests.request("GET",url, headers=headers, json = payload)
-        if rc_response.status_code == 200 and rc_response.message == "RC Verified Successfully.":
+        if rc_response.status_code == 200 and rc_response.json()['message'] == "RC Verified Successfully.":
             ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Third Party", response = rc_response.text)
-            if rc_response.json()['data']:
+            if 'data' in rc_response.json() and rc_response.json()['data']:
                 year = rc_response.json()['data']['registration_date'].split("-")[0]
                 month = rc_response.json()['data']['registration_date'].split("-")[1]
                 maker_description = rc_response.json()['data']['maker_description'].split()

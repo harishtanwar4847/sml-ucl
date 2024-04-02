@@ -508,8 +508,8 @@ def enhance_match(**kwargs):
         data = ucl.validate(
             kwargs,
             {
-            "id" : "required",
-            "from_lead" : "decimal|between:0,1",
+            "id" : "",
+            "lead_id" : "",
             "occupation_type": "",
             "requested_loan_amount" : "",
             "monthly_income": "",
@@ -517,8 +517,10 @@ def enhance_match(**kwargs):
             "coapplicant": "decimal|between:0,1"
         })
         api_log_doc = ucl.log_api(method = "Enhance Match", request_time = datetime.now(), request = str(data))
+        eligibility_docname = eligiblity_from_lead(data.get("lead_id"))
+        eligibility_doc = frappe.get_doc("Eligibility Check", eligibility_docname)
         if data.get("coapplicant") == 0:
-            if data.get("from_lead") == 0:
+            if data.get("id"):
                 eligibility_dict ={
                         "occupation_type": data.get("occupation_type"),
                         "requested_loan_amount" : data.get("requested_loan_amount"),
@@ -543,15 +545,16 @@ def enhance_match(**kwargs):
  
 
         else:
-            eligibility_dict ={
-                    "coapplicant_occupation_type": data.get("occupation_type"),
-                    "coapplicant_requested_loan_amount" : data.get("requested_loan_amount"),
-                    "coapplicant_monthly_salary" : data.get("monthly_income"),
-                    "coapplicant_monthly_gross_income": data.get("monthly_gross_income"),
-                    "coapplicant_obligation": data.get("obligation")
-            }
-            eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
-            frappe.db.commit()
+            if data.get("id"):
+                eligibility_dict ={
+                        "coapplicant_occupation_type": data.get("occupation_type"),
+                        "coapplicant_requested_loan_amount" : data.get("requested_loan_amount"),
+                        "coapplicant_monthly_salary" : data.get("monthly_income"),
+                        "coapplicant_monthly_gross_income": data.get("monthly_gross_income"),
+                        "coapplicant_obligation": data.get("obligation")
+                }
+                eligibility_doc = frappe.get_doc("Eligibility Check", data.get("id")).update(eligibility_dict).save(ignore_permissions = True)
+                frappe.db.commit()
             register_data = {
                 "firstName" : eligibility_doc.coapplicant_first_name,
                 "surName" : eligibility_doc.coapplicant_last_name,
@@ -780,6 +783,24 @@ def bre_offers(**kwargs):
             lead.address = eligibility_doc.full_address
             lead.email_id = eligibility_doc.email_id
             lead.aadhar = eligibility_doc.masked_aadhaar
+            lead.rc_number = eligibility_doc.registration_number
+            lead.monthly_income = eligibility_doc.monthly_income
+            lead.obligations = eligibility_doc.obligations
+            lead.vehicle_registration_year = eligibility_doc.manufacturing_year
+            lead.vehicle_registration_month = eligibility_doc.month
+            lead.make = eligibility_doc.brand
+            lead.model = eligibility_doc.model
+            lead.variant = eligibility_doc.variant
+            lead.colour = eligibility_doc.colour
+            lead.location = eligibility_doc.city
+            lead.estimated_value = eligibility_doc.estimated_value
+            lead.owner = eligibility_doc.car_owner
+            lead.kms_driven = eligibility_doc.kms_driven
+            lead.existing_lender = eligibility_doc.lender_name
+            lead.principal_outstanding = eligibility_doc.pos
+            lead.rate_of_interest = eligibility_doc.current_rate_of_interest
+            lead.tenure_serviced = eligibility_doc.tenure_served
+            lead.emi = eligibility_doc.emi
             lead.insert(ignore_permissions=True)
         if eligibility_doc.product == "New Car":
             return ucl.responder.respondWithSuccess(message=frappe._("Thanks for sharing your details. We will get back to you shortly to assist you for your loan application."))
@@ -1332,18 +1353,10 @@ def ibb(**kwargs):
     
 
 @frappe.whitelist(allow_guest=True)
-def eligiblity_from_lead(**kwargs):
+def eligiblity_from_lead(lead_id):
     try:
-        user = ucl.__user()
-        ucl.validate_http_method("POST")
-        data = ucl.validate(
-            kwargs,{
-            "lead_id" : "",
-        },
-        )
-
-        api_log_doc = ucl.log_api(method = "Eligibility From Lead", request_time = datetime.now(), request = str(data))
-        lead = frappe.get_doc("Lead", data.get("lead_id"))
+        api_log_doc = ucl.log_api(method = "Eligibility From Lead", request_time = datetime.now(), request = str(lead_id))
+        lead = frappe.get_doc("Lead", lead_id)
         eligibility_doc = frappe.get_doc(
             {
                 "doctype": "Eligibility Check",
@@ -1392,7 +1405,7 @@ def eligiblity_from_lead(**kwargs):
         ).insert(ignore_permissions=True)
         frappe.db.commit()
         ucl.log_api_response(is_error = 0, error  = "", api_log_doc = api_log_doc, api_type = "Internal", response = str({"id" : eligibility_doc.name}))
-        return ucl.responder.respondWithSuccess(message=frappe._("success"), data={"id" : eligibility_doc.name})
+        return eligibility_doc.name
 
     except ucl.exceptions.APIException as e:
         api_log_doc = ucl.log_api(method = "Eligibility From Lead", request_time = datetime.now(), request = "")
